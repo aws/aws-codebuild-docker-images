@@ -14,6 +14,13 @@ FROM ubuntu:14.04.5
 
 ENV LANG="C.UTF-8"
 
+# Install Bio-Rad common tools
+#
+##########################################################################
+RUN apt-get update && apt-get install -y --no-install-recommends \
+   jq curl \
+   && rm -rf /var/lib/apt/lists/*
+
 # Building git from source code:
 #   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
 ##########################################################################
