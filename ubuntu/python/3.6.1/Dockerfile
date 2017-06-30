@@ -99,10 +99,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 CMD ["python3"]
 
-
 # Install Bio-Rad common tools
 #
 ##########################################################################
+COPY ./checkAndSendBuildErrorEmail.sh /usr/bin/checkAndSendBuildErrorEmail
+RUN chmod +x /usr/bin/checkAndSendBuildErrorEmail
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
    jq curl \
    && rm -rf /var/lib/apt/lists/*
