@@ -21,8 +21,7 @@ if [ $EXIT_STATUS -ne "0" ]; then
     echo "Source Version: $CODEBUILD_RESOLVED_SOURCE_VERSION"
 
     echo "Preparing to send email..."
-    sudo apt-get update && sudo apt-get install -y jq curl
-
+    
     # determine who the email should go to
     # This github token is encrypted with AWS KMS and the key is controlled with AWS IAM permissions
     GITHUB_OAUTH_TOKEN=$(aws ssm get-parameters --names github.oathtoken --with-decryption | jq -r .Parameters[0].Value)
