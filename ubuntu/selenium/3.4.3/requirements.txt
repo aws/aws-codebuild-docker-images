@@ -1,0 +1,15 @@
+Pillow==4.1.1
+PyVirtualDisplay==0.2.1
+selenium==3.4.3
+psutil==5.2.2
+requests==2.18.2
+paramiko==2.2.1
+cryptography==1.9
+pyparsing==2.2.0
+snowballstemmer==1.2.1
+six==1.10.0
+packaging==16.8
+coverage==4.4.1
+xvfbwrapper==0.2.9
+pyscreenshot==0.4.2
+dominate==2.3.1
