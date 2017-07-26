@@ -47,6 +47,7 @@ RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
 
 ENV DOCKER_BUCKET="get.docker.com" \
     DOCKER_VERSION="1.12.1" \
+    DOCKER_COMPOSE_VERSION="1.11.2" \
     DOCKER_SHA256="05ceec7fd937e1416e5dce12b0b6e1c655907d349d52574319a1e875077ccb79" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
@@ -61,6 +62,9 @@ RUN set -x \
     && rmdir docker \
     && rm docker.tgz \
     && docker -v \
+    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_VERSION}/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose \
+    && docker-compose --version \
 # From the docker dind 1.11
     && apt-get update && apt-get install -y --no-install-recommends \
        e2fsprogs iptables xfsprogs xz-utils \
