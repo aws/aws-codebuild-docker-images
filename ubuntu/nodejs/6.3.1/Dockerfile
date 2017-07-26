@@ -41,7 +41,7 @@ RUN apt-get update \
 
 RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
     && python /tmp/get-pip.py \
-    && pip install awscli==1.11.25 \
+    && pip install awscli==1.11.112 \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* 
  
 
