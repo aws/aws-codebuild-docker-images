@@ -71,3 +71,15 @@ RUN wget "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD [ "node" ]
+
+# Install Bio-Rad common tools
+#
+##########################################################################
+COPY ./checkAndSendBuildErrorEmail.sh /usr/bin/checkAndSendBuildErrorEmail
+RUN chmod +x /usr/bin/checkAndSendBuildErrorEmail
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+   jq curl \
+   && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g yarn && npm cache clear
