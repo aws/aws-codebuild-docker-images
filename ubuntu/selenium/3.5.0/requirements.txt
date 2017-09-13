@@ -1,10 +1,10 @@
-Pillow==4.1.1
+Pillow==4.2.1
 PyVirtualDisplay==0.2.1
-selenium==3.4.3
-psutil==5.2.2
-requests==2.18.1
+selenium==3.5.0
+psutil==5.3.1
+requests==2.18.4
 paramiko==2.2.1
-cryptography==1.9
+cryptography==2.0.3
 pyparsing==2.2.0
 snowballstemmer==1.2.1
 six==1.10.0
@@ -13,3 +13,5 @@ coverage==4.4.1
 xvfbwrapper==0.2.9
 pyscreenshot==0.4.2
 dominate==2.3.1
+boto3==1.4.7
+webcolors==1.7
