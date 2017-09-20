@@ -35,7 +35,7 @@ RUN apt-get update -qqy \
 #==================
 #https://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip
 
-ARG CHROME_DRIVER_VERSION=2.29
+ARG CHROME_DRIVER_VERSION=2.32
 RUN rm -rf /opt/selenium/chromedriver \
   && wget --no-verbose -P /tmp https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
 
