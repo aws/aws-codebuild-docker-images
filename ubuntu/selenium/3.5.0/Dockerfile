@@ -18,6 +18,8 @@ RUN apt-get update -qqy \
     libc6 \
     awscli\
     scrot\
+    doxygen\
+    graphviz\
   && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 
