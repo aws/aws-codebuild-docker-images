@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-/usr/bin/dockerd \
+/usr/local/bin/dind dockerd \
 	--host=unix:///var/run/docker.sock \
 	--host=tcp://0.0.0.0:2375 \
 	--storage-driver=overlay &>/var/log/docker.log &
