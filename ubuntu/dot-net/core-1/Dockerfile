@@ -17,17 +17,23 @@ FROM ubuntu:14.04.5
 ##########################################################################
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       wget python python2.7-dev fakeroot ca-certificates tar gzip zip \
-       autoconf automake bzip2 file g++ gcc imagemagick libbz2-dev libc6-dev libcurl4-openssl-dev \
-       libdb-dev libevent-dev libffi-dev libgeoip-dev libglib2.0-dev libjpeg-dev libkrb5-dev \
-       liblzma-dev libmagickcore-dev libmagickwand-dev libmysqlclient-dev libncurses-dev libpng-dev \
-       libpq-dev libreadline-dev libsqlite3-dev libssl-dev libtool libwebp-dev libxml2-dev libxslt-dev \
-       libyaml-dev make patch xz-utils zlib1g-dev unzip curl \
-    && apt-get -qy build-dep git \
-    && apt-get -qy install libcurl4-openssl-dev git-man liberror-perl \
+       wget=1.15-* python=2.7.5-* python2.7-dev=2.7.6-* fakeroot=1.20-* ca-certificates \
+       tar=1.27.1-* gzip=1.6-* zip=3.0-* autoconf=2.69-* automake=1:1.14.1-* \
+       bzip2=1.0.6-* file=1:5.14-* g++=4:4.8.2-* gcc=4:4.8.2-* imagemagick=8:6.7.7.10-* \
+       libbz2-dev=1.0.6-* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.0-* libdb-dev=1:5.3.21~* \
+       libevent-dev=2.0.21-stable-* libffi-dev=3.1~rc1+r3.0.13-* libgeoip-dev=1.6.0-* libglib2.0-dev=2.40.2-* \
+       libjpeg-dev=8c-* libkrb5-dev=1.12+dfsg-* liblzma-dev=5.1.1alpha+20120614-* \
+       libmagickcore-dev=8:6.7.7.10-* libmagickwand-dev=8:6.7.7.10-* libmysqlclient-dev=5.5.58-* \
+       libncurses5-dev=5.9+20140118-* libpng12-dev=1.2.50-* libpq-dev=9.3.20-* libreadline-dev=6.3-* \
+       libsqlite3-dev=3.8.2-* libssl-dev=1.0.1f-* libtool=2.4.2-* libwebp-dev=0.4.0-* \
+       libxml2-dev=2.9.1+dfsg1-* libxslt1-dev=1.1.28-* libyaml-dev=0.1.4-* make=3.81-* \
+       patch=2.7.1-* xz-utils=5.1.1alpha+20120614-* zlib1g-dev=1:1.2.8.dfsg-* unzip=6.0-* curl=7.35.0-* \
+    && apt-get install -y -qq less=458-* groff=1.22.2-* \
+    && apt-get -qy build-dep git=1:1.9.1 \
+    && apt-get -qy install libcurl4-openssl-dev=7.35.0-* git-man=1:1.9.1-* liberror-perl=0.17-* \
     && mkdir -p /usr/src/git-openssl \
     && cd /usr/src/git-openssl \
-    && apt-get source git \
+    && apt-get source git=1:1.9.1 \
     && cd $(find -mindepth 1 -maxdepth 1 -type d -name "git-*") \
     && sed -i -- 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/' ./debian/control \
     && sed -i -- '/TEST\s*=\s*test/d' ./debian/rules \
@@ -41,28 +47,26 @@ RUN apt-get update \
 
 RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
     && python /tmp/get-pip.py \
-    && pip install awscli==1.11.25 \
+    && pip install awscli==1.11.157 \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* 
  
 # Install .NET CLI dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libc6 \
-        libcurl3 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu52 \
-        liblttng-ust0 \
-        libssl1.0.0 \
-        libstdc++6 \
-        libunwind8 \
-        libuuid1 \
-        zlib1g \
-        software-properties-common \
+        libc6=2.19-* \
+        libcurl3=7.35.0-* \
+        libgcc1=1:4.9.3-* \
+        libgssapi-krb5-2=1.12+dfsg-* \
+        libicu52=52.1-* \
+        liblttng-ust0=2.4.0-* \
+        libssl1.0.0=1.0.1f-* \
+        libunwind8=1.1-* \
+        libuuid1=2.20.1-* \
+        zlib1g=1:1.2.8.dfsg-* \
+        software-properties-common=0.92.37.8 \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
     && apt-get update \
-    && apt-get upgrade -y \
-    && apt-get dist-upgrade -y \
+    && apt-get install -y libstdc++6=7.2.0-*\
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK

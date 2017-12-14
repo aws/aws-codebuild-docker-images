@@ -51,43 +51,39 @@ RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* 
  
 
-ENV JAVA_VERSION=8 \
-    JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JDK_VERSION="8u141-b15-3~14.04" \
-    JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
-    ANT_VERSION=1.9.6 \
-    MAVEN_VERSION=3.3.3 \
-    MAVEN_HOME="/usr/share/maven" \
-    MAVEN_CONFIG="/root/.m2" \
-    GRADLE_VERSION=2.7 \
-    PROPERTIES_COMMON_VERSIION=0.92.37.8 \
-    PYTHON_TOOL_VERSION="3.3-*"
+ENV DOCKER_BUCKET="download.docker.com" \
+    DOCKER_VERSION="17.09.0-ce" \
+    DOCKER_CHANNEL="stable" \
+    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DOCKER_COMPOSE_VERSION="1.16.1"
 
-# Install Java
-RUN apt-get update \ 
-    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSIION \
-    && add-apt-repository ppa:openjdk-r/ppa \
-    && apt-get update \
-    && apt-get -y install python-setuptools=$PYTHON_TOOL_VERSION \
-    && apt-get -y install openjdk-$JAVA_VERSION-jdk=$JDK_VERSION \
-    && apt-get clean \
-    # Ensure Java cacerts symlink points to valid location
-    && update-ca-certificates -f \
-    && mkdir -p /usr/src/ant \
-    && wget "http://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz" -O /usr/src/ant/apache-ant-$ANT_VERSION-bin.tar.gz \
-    && tar -xzf /usr/src/ant/apache-ant-$ANT_VERSION-bin.tar.gz -C /usr/local \
-    && ln -s /usr/local/apache-ant-$ANT_VERSION/bin/ant /usr/bin/ant \
-    && rm -rf /usr/src/ant \
-    && mkdir -p /usr/share/maven /usr/share/maven/ref $MAVEN_CONFIG \
-    && curl -fsSL "https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz" \
-        | tar -xzC /usr/share/maven --strip-components=1 \
-    && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn \
-    && mkdir -p /usr/src/gradle \
-    && wget "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" -O /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip \
-    && unzip /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip -d /usr/local \
-    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-    && rm -rf /usr/src/gradle \
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY dockerd-entrypoint.sh /usr/local/bin/
 
-COPY m2-settings.xml $MAVEN_CONFIG/settings.xml
+# From the docker:17.09
+RUN set -x \
+    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
+    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
+    && rm docker.tgz \
+    && docker -v \
+# From the docker dind 17.09
+    && apt-get update && apt-get install -y --no-install-recommends \
+              e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
+# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    && addgroup dockremap \
+    && useradd -g dockremap dockremap \
+    && echo 'dockremap:165536:65536' >> /etc/subuid \
+    && echo 'dockremap:165536:65536' >> /etc/subgid \
+    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
+# Ensure docker-compose works
+    && docker-compose version \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+
+VOLUME /var/lib/docker
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
