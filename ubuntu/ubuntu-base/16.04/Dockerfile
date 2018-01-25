@@ -83,7 +83,8 @@ RUN readonly __packages=" \
     " \
     && pip install --no-cache-dir ${__python_packages} \
 # print versions
-    && git --version \
-    && python --version \
     && aws --version \
-    && perl --version
+    && git --version \
+    && perl --version \
+    && pip --version \
+    && python --version
