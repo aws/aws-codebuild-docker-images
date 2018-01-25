@@ -7,4 +7,5 @@ Contains the following pre-installed
 | AWS CLI | 1.14.30 |
 | Git     | 2.7.4   |
 | Perl    | 5.22.1  |
+| Pip     | 9.0.1   |
 | Python  | 2.7.12  |
