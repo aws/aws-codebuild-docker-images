@@ -12,6 +12,13 @@
 
 FROM ubuntu:14.04.5
 
+ENV DOCKER_BUCKET="download.docker.com" \
+    DOCKER_VERSION="17.09.0-ce" \
+    DOCKER_CHANNEL="stable" \
+    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DOCKER_COMPOSE_VERSION="1.16.1"
+
 # Building git from source code:
 #   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
 ##########################################################################
@@ -28,6 +35,7 @@ RUN apt-get update \
        libsqlite3-dev=3.8.2-* libssl-dev=1.0.1f-* libtool=2.4.2-* libwebp-dev=0.4.0-* \
        libxml2-dev=2.9.1+dfsg1-* libxslt1-dev=1.1.28-* libyaml-dev=0.1.4-* make=3.81-* \
        patch=2.7.1-* xz-utils=5.1.1alpha+20120614-* zlib1g-dev=1:1.2.8.dfsg-* unzip=6.0-* curl=7.35.0-* \
+       e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
     && apt-get install -y -qq less=458-* groff=1.22.2-* \
     && apt-get -qy build-dep git=1:1.9.1 \
     && apt-get -qy install libcurl4-openssl-dev=7.35.0-* git-man=1:1.9.1-* liberror-perl=0.17-* \
@@ -40,36 +48,16 @@ RUN apt-get update \
     && dpkg-buildpackage -rfakeroot -b \
     && find .. -type f -name "git_*ubuntu*.deb" -exec dpkg -i \{\} \; \
     && rm -rf /usr/src/git-openssl \
-# Install dependencies by all python images equivalent to buildpack-deps:jessie
-# on the public repos.
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
-    && python /tmp/get-pip.py \
-    && pip install awscli==1.11.157 \
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* 
- 
-
-ENV DOCKER_BUCKET="download.docker.com" \
-    DOCKER_VERSION="17.09.0-ce" \
-    DOCKER_CHANNEL="stable" \
-    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.16.1"
-
-COPY dockerd-entrypoint.sh /usr/local/bin/
-
-# From the docker:17.09
+# Install Docker
 RUN set -x \
     && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
-# From the docker dind 17.09
-    && apt-get update && apt-get install -y --no-install-recommends \
-              e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
 # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && addgroup dockremap \
     && useradd -g dockremap dockremap \
@@ -79,11 +67,21 @@ RUN set -x \
     && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
 # Ensure docker-compose works
-    && docker-compose version \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && docker-compose version
 
+# Install dependencies by all python images equivalent to buildpack-deps:jessie
+# on the public repos.
+
+RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
+    && python /tmp/get-pip.py \
+    && pip install awscli==1.11.157 \
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME /var/lib/docker
+
+COPY dockerd-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
+
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]

@@ -14,6 +14,13 @@ FROM ubuntu:14.04.5
 
 ENV LANG="C.UTF-8"
 
+ENV DOCKER_BUCKET="download.docker.com" \
+    DOCKER_VERSION="17.09.0-ce" \
+    DOCKER_CHANNEL="stable" \
+    DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DOCKER_COMPOSE_VERSION="1.16.1"
+
 # Building git from source code:
 #   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
 ##########################################################################
@@ -36,7 +43,7 @@ RUN apt-get update \
 # on the public repos.
     && apt-get update && apt-get install -y --no-install-recommends autoconf=2.69-* automake=1:1.14.1-* \
         bzip2=1.0.6-* file=1:5.14-* g++=4:4.8.2-* gcc=4:4.8.2-* imagemagick=8:6.7.7.10-* \
-        libbz2-dev=1.0.6-* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.0-* \
+        libbz2-dev=1.0.6-* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.0-* curl=7.35.0-* \
         libdb-dev=1:5.3.21~* libevent-dev=2.0.21-stable-* libffi-dev=3.1~rc1+r3.0.13-* \
         libgeoip-dev=1.6.0-* libglib2.0-dev=2.40.2-* libjpeg-dev=8c-* \
         libkrb5-dev=1.12+dfsg-* liblzma-dev=5.1.1alpha+20120614-* libmagickcore-dev=8:6.7.7.10-* \
@@ -45,9 +52,33 @@ RUN apt-get update \
         libssl-dev=1.0.1f-* libtool=2.4.2-* libwebp-dev=0.4.0-* libxml2-dev=2.9.1+dfsg1-* \
         libxslt1-dev=1.1.28-* libyaml-dev=0.1.4-* make=3.81-* patch=2.7.1-* xz-utils=5.1.1alpha+20120614-* \
         zlib1g-dev=1:1.2.8.dfsg-* tcl=8.6.0+* tk=8.6.0+* ca-certificates \
+        e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
     && apt-get install -y -qq less=458-* groff=1.22.2-* \
-    && rm -rf /var/lib/apt/lists/* 
- 
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -x \
+    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
+    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
+    && rm docker.tgz \
+    && docker -v \
+# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    && addgroup dockremap \
+    && useradd -g dockremap dockremap \
+    && echo 'dockremap:165536:65536' >> /etc/subuid \
+    && echo 'dockremap:165536:65536' >> /etc/subgid \
+    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
+# Ensure docker-compose works
+    && docker-compose version
+
+VOLUME /var/lib/docker
+
+COPY dockerd-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
+
 
 ENV PATH="/usr/local/bin:$PATH" \
     GPG_KEY="97FC712E4C024BBEA48A61ED3A5CA953F73C700D" \
@@ -110,3 +141,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD ["python3"]
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
