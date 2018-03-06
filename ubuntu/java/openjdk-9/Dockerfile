@@ -84,31 +84,81 @@ COPY dockerd-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["dockerd-entrypoint.sh"]
 
 
-ENV NODE_VERSION="4.4.7"
+ENV JAVA_VERSION=9 \
+    JAVA_HOME="/opt/jvm/openjdk-9" \
+    JDK_HOME="/opt/jvm/openjdk-9" \
+    JRE_HOME="/opt/jvm/openjdk-9" \
+    ANT_VERSION=1.10.2 \
+    MAVEN_HOME="/opt/maven" \
+    MAVEN_VERSION=3.5.2 \
+    MAVEN_CONFIG="/root/.m2" \
+    GRADLE_VERSION=4.2.1 \
+    SBT_VERSION=1.0.3 \
+    PROPERTIES_COMMON_VERSION=0.92.37.8 \
+    PYTHON_TOOL_VERSION="3.3-*" \
+    JDK_VERSION=9.0.4 \
+    JDK_DOWNLOAD_SHA256="39362fb9bfb341fcc802e55e8ea59f4664ca58fd821ce956d48e1aa4fb3d2dec" \
+    ANT_DOWNLOAD_SHA512="54805d9b263c3df3552fa4f9221483fc58ebebdbbdb2c34c97b8b13f41290cf9c23f54188a231eb6f3ac9588d618fc74ae0bde35ff80404e00479f1b08555417" \
+    MAVEN_DOWNLOAD_SHA1="190dcebb8a080f983af4420cac4f3ece7a47dd64" \
+    GRADLE_DOWNLOAD_SHA256="b551cc04f2ca51c78dd14edb060621f0e5439bdfafa6fd167032a09ac708fbc0"
 
-RUN set -ex \
-    && for key in \
-      9554F04D7259F04124DE6B476D5A82AC7E37093B \
-      94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
-      0034A06D9D9B0064CE8ADF6BF1747F4AD2306D93 \
-      FD3A5288F042B6850C66B31F09FE44734EB7990E \
-      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
-      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
-      B9AE9905FFD7803F25714661B63B535A4C206CA9 \
-      C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
-    ; do \
-      gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
-    done
+ENV JDK_DOWNLOAD_TAR="openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz"
 
-RUN wget "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" -O node-v$NODE_VERSION-linux-x64.tar.gz \
-	&& wget "https://nodejs.org/download/release/v$NODE_VERSION/SHASUMS256.txt.asc" -O SHASUMS256.txt.asc \
-	&& gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
-	&& grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt | sha256sum -c - \
-    && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-    && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc SHASUMS256.txt \
-    && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get update \
+    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSION \
+    && apt-get -y install python-setuptools=$PYTHON_TOOL_VERSION \
 
-CMD [ "node" ]
+    # Install OpenJDK 9
+    # Note: Installing ca-certificates-java installs JDK7 because it's a depedency.
+    # We will use update-alternatives to make sure JDK9 has higher priority for all
+    # the tools
+    && apt-get install -y ca-certificates-java \
+
+    && mkdir -p $JAVA_HOME \
+    && curl -LSso /var/tmp/$JDK_DOWNLOAD_TAR https://download.java.net/java/GA/jdk9/$JDK_VERSION/binaries/$JDK_DOWNLOAD_TAR \
+    && echo "$JDK_DOWNLOAD_SHA256 /var/tmp/$JDK_DOWNLOAD_TAR" | tee foo.txt | sha256sum -c - \
+    && tar xzvf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
+    && for tool_path in $JAVA_HOME/bin/*; do \
+          tool=`basename $tool_path`; \
+          update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
+          update-alternatives --set $tool $tool_path; \
+        done \
+     && rm $JAVA_HOME/lib/security/cacerts && ln -s /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts \
+
+    # Install Ant
+    && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://www.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
+    && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
+    && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
+
+    # Install Maven
+    && mkdir -p $MAVEN_HOME \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && echo "$MAVEN_DOWNLOAD_SHA1 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha1sum -c - \
+    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
+    && mkdir -p $MAVEN_CONFIG \
+
+    # Install Gradle
+    && curl -LSso /var/tmp/gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip \
+    && echo "$GRADLE_DOWNLOAD_SHA256 /var/tmp/gradle-$GRADLE_VERSION-bin.zip" | sha256sum -c - \
+    && unzip /var/tmp/gradle-$GRADLE_VERSION-bin.zip -d /opt \
+    && update-alternatives --install /usr/local/bin/gradle gradle /opt/gradle-$GRADLE_VERSION/bin/gradle 10000 \
+
+    # Install SBT
+    && curl -LSso /var/tmp/sbt-$SBT_VERSION.tgz https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz \
+    && curl -LSso /var/tmp/sbt-$SBT_VERSION.tgz.asc https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz.asc \
+    && curl -LSso /var/tmp/sbt.key.asc https://bintray.com/user/downloadSubjectPublicKey?username=sbt \
+
+    && gpg --no-default-keyring --keyring /var/tmp/tmp-keyring.gpg --import /var/tmp/sbt.key.asc \
+    && gpg --no-default-keyring --keyring /var/tmp/tmp-keyring.gpg --verify /var/tmp/sbt-$SBT_VERSION.tgz.asc /var/tmp/sbt-$SBT_VERSION.tgz \
+
+    && tar xzvf /var/tmp/sbt-$SBT_VERSION.tgz -C /opt && update-alternatives --install /usr/local/bin/sbt sbt /opt/sbt/bin/sbt 10000 \
+
+    # Cleanup
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && apt-get clean
+
+COPY m2-settings.xml $MAVEN_CONFIG/settings.xml
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]

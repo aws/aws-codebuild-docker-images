@@ -74,7 +74,7 @@ RUN set -x \
 
 RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
     && python /tmp/get-pip.py \
-    && pip install awscli==1.11.157 \
+    && pip install awscli \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME /var/lib/docker
@@ -86,7 +86,9 @@ ENTRYPOINT ["dockerd-entrypoint.sh"]
 
 ENV GOLANG_VERSION="1.7.3" \
     GOLANG_DOWNLOAD_SHA256="508028aac0654e993564b6e2014bf2d4a9751e3b286661b0b0040046cf18028e" \
-    GOPATH="/go"
+    GOPATH="/go" \
+    DEP_VERSION="0.4.1" \
+    DEP_BINARY="dep-linux-amd64"
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" \
     && chmod -R 777 "$GOPATH" \
@@ -96,10 +98,10 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" \
     && wget "https://storage.googleapis.com/golang/go$GOLANG_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
     && echo "$GOLANG_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/golang.tar.gz -C /usr/local \
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && wget "https://github.com/golang/dep/releases/download/v$DEP_VERSION/$DEP_BINARY" -O "$GOPATH/bin/dep"
 
 ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
-
 WORKDIR $GOPATH
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]

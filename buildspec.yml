@@ -33,5 +33,13 @@ phases:
       - docker build -t aws/codebuild/ruby:2.2.5 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/ruby/2.3.1
       - docker build -t aws/codebuild/ruby:2.3.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.10
+      - docker build -t aws/codebuild/golang:1.10 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-9
+      - docker build -t aws/codebuild/java:openjdk-9 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/php/5.6
+      - docker build -t aws/codebuild/php:5.6 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/php/7.0
+      - docker build -t aws/codebuild/php:7.0 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/ubuntu-base/14.04
       - docker build -t aws/codebuild/ubuntu-base:14.04 .
