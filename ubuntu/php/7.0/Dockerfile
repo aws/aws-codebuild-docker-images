@@ -193,7 +193,7 @@ RUN set -xe; \
 ENV PATH="$PHPPATH/bin:/usr/local/php/bin:$PATH"
 
 # Install Composer globally
-RUN wget https://getcomposer.org/download/1.6.3/composer.phar | php -- --install-dir=/usr/local/bin --filename=composer.phar
+RUN wget https://getcomposer.org/installer -O composer-setup.php && php composer-setup.php --install-dir=/usr/local/bin --filename=composer --version=1.6.3
 
 WORKDIR $PHPPATH
 
