@@ -81,9 +81,6 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
 ENV RUBY_MAJOR="2.3" \
     RUBY_VERSION="2.3.1" \
     RUBY_DOWNLOAD_SHA256="b87c738cb2032bf4920fef8e3864dc5cf8eae9d89d8d523ce0236945c5797dcd" \

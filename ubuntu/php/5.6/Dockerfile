@@ -81,9 +81,6 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
 ENV GPG_KEYS 0BD78B5F97500D450838F95DFE857D9A90D90EC1 6E4F6AB321FDC07F2C332E3AC2BF0BC433CFC8B3
 ENV SRC_DIR="/usr/src" \
     PHP_VERSION=5.6.33 \

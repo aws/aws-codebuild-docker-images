@@ -81,9 +81,6 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
 ENV JAVA_VERSION=9 \
     JAVA_HOME="/opt/jvm/openjdk-9" \
     JDK_HOME="/opt/jvm/openjdk-9" \

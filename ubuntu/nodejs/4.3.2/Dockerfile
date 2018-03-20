@@ -81,9 +81,6 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
 ENV NODE_VERSION="4.3.2"
 
 RUN set -ex \

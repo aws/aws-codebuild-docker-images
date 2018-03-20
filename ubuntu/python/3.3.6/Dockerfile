@@ -77,9 +77,6 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
 ENV PATH="/usr/local/bin:$PATH" \
     GPG_KEY="26DEA9D4613391EF3E25C9FF0A5B101836580288" \
     PYTHON_VERSION="3.3.6" \
