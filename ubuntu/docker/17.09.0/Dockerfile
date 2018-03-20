@@ -82,6 +82,3 @@ VOLUME /var/lib/docker
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
-
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]
