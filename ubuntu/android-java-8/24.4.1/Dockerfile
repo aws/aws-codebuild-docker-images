@@ -86,7 +86,7 @@ COPY tools /opt/tools
 
 ENV ANDROID_HOME="/usr/local/android-sdk-linux" \
     JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JDK_VERSION="8u141-b15-3~14.04" \
+    JDK_VERSION="8u162-b12-1~14.04" \
     JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
     JAVA_VERSION="8" \
