@@ -27,3 +27,31 @@ $ cd ubuntu/ruby/2.3.1
 $ docker build -t aws/codebuild/ruby:2.3.1 .
 $ docker run -it --entrypoint sh aws/codebuild/ruby:2.3.1 -c bash
 ```
+
+### Image maintenance
+
+Some of the images in this repository are no longer actively maintained by AWS CodeBuild and may no longer build successfully.  These images will not receive any further updates.  They remain in this repository as a reference for the contents of these images that were previously released by CodeBuild.
+
+The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
+
++ [android-java-8 24.4.1](ubuntu/android-java-8/24.4.1)
++ [docker 17.09.0](ubuntu/docker/17.09.0)
++ [dot-net core-1](ubuntu/dot-net/core-1)
++ [dot-net core-2](ubuntu/dot-net/core-2)
++ [golang 1.10](ubuntu/golang/1.10)
++ [golang 1.7.3](ubuntu/golang/1.7.3)
++ [java openjdk-8](ubuntu/java/openjdk-8)
++ [java openjdk-9](ubuntu/java/openjdk-9)
++ [nodejs 4.3.2](ubuntu/nodejs/4.3.2)
++ [nodejs 4.4.7](ubuntu/nodejs/4.4.7)
++ [nodejs 6.3.1](ubuntu/nodejs/6.3.1)
++ [php 5.6](ubuntu/php/5.6)
++ [php 7.0](ubuntu/php/7.0)
++ [python 2.7.12](ubuntu/python/2.7.12)
++ [python 3.3.6](ubuntu/python/3.3.6)
++ [python 3.4.5](ubuntu/python/3.4.5)
++ [python 3.5.2](ubuntu/python/3.5.2)
++ [ruby 2.2.5](ubuntu/ruby/2.2.5)
++ [ruby 2.3.1](ubuntu/ruby/2.3.1)
++ [ubuntu-base 14.04](ubuntu/ubuntu-base/14.04)
+
