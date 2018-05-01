@@ -35,16 +35,15 @@ Some of the images in this repository are no longer actively maintained by AWS C
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
 + [android-java-8 24.4.1](ubuntu/android-java-8/24.4.1)
++ [android-java-8 26.1.1](ubuntu/android-java-8/26.1.1)
 + [docker 17.09.0](ubuntu/docker/17.09.0)
 + [dot-net core-1](ubuntu/dot-net/core-1)
 + [dot-net core-2](ubuntu/dot-net/core-2)
 + [golang 1.10](ubuntu/golang/1.10)
-+ [golang 1.7.3](ubuntu/golang/1.7.3)
 + [java openjdk-8](ubuntu/java/openjdk-8)
 + [java openjdk-9](ubuntu/java/openjdk-9)
-+ [nodejs 4.3.2](ubuntu/nodejs/4.3.2)
-+ [nodejs 4.4.7](ubuntu/nodejs/4.4.7)
 + [nodejs 6.3.1](ubuntu/nodejs/6.3.1)
++ [nodejs 8.11.0](ubuntu/nodejs/8.11.0)
 + [php 5.6](ubuntu/php/5.6)
 + [php 7.0](ubuntu/php/7.0)
 + [python 2.7.12](ubuntu/python/2.7.12)
@@ -53,5 +52,6 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [python 3.5.2](ubuntu/python/3.5.2)
 + [ruby 2.2.5](ubuntu/ruby/2.2.5)
 + [ruby 2.3.1](ubuntu/ruby/2.3.1)
++ [ruby 2.5.1](ubuntu/ruby/2.5.1)
 + [ubuntu-base 14.04](ubuntu/ubuntu-base/14.04)
 

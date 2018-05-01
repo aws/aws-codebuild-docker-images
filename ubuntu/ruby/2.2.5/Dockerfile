@@ -17,12 +17,15 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="a9e90a73c3cdfbf238f148e1ec0eaff5eb181f92f35bdd938fd7dab18e1c4647" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.16.1"
+    DOCKER_COMPOSE_VERSION="1.16.1" \
+    GITVERSION_VERSION="3.6.5"
 
 # Building git from source code:
 #   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
 ##########################################################################
-RUN apt-get update \
+RUN set -ex \
+    && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
        wget=1.15-* python=2.7.5-* python2.7-dev=2.7.6-* fakeroot=1.20-* ca-certificates \
        tar=1.27.1-* gzip=1.6-* zip=3.0-* autoconf=2.69-* automake=1:1.14.1-* \
@@ -36,6 +39,7 @@ RUN apt-get update \
        libxml2-dev=2.9.1+dfsg1-* libxslt1-dev=1.1.28-* libyaml-dev=0.1.4-* make=3.81-* \
        patch=2.7.1-* xz-utils=5.1.1alpha+20120614-* zlib1g-dev=1:1.2.8.dfsg-* unzip=6.0-* curl=7.35.0-* \
        e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
+       mono-mcs=3.2.8+dfsg-* \
     && apt-get install -y -qq less=458-* groff=1.22.2-* \
     && apt-get -qy build-dep git=1:1.9.1 \
     && apt-get -qy install libcurl4-openssl-dev=7.35.0-* git-man=1:1.9.1-* liberror-perl=0.17-* \
@@ -51,8 +55,16 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# Download and set up GitVersion
+RUN set -ex \
+    && wget "https://github.com/GitTools/GitVersion/releases/download/v${GITVERSION_VERSION}/GitVersion_${GITVERSION_VERSION}.zip" -O /tmp/GitVersion_${GITVERSION_VERSION}.zip \
+    && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
+    && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
+    && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
+    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe /output json /showvariable \$1" >> /usr/local/bin/gitversion \
+    && chmod +x /usr/local/bin/gitversion
 # Install Docker
-RUN set -x \
+RUN set -ex \
     && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
@@ -72,7 +84,8 @@ RUN set -x \
 # Install dependencies by all python images equivalent to buildpack-deps:jessie
 # on the public repos.
 
-RUN wget "https://bootstrap.pypa.io/get-pip.py" -O /tmp/get-pip.py \
+RUN set -ex \
+    && wget "https://bootstrap.pypa.io/2.6/get-pip.py" -O /tmp/get-pip.py \
     && python /tmp/get-pip.py \
     && pip install awscli \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -95,7 +108,8 @@ ENV BUNDLE_PATH="$GEM_HOME" \
 
 ENV PATH $BUNDLE_BIN:$PATH
 
-RUN mkdir -p /usr/local/etc \
+RUN set -ex \
+	&& mkdir -p /usr/local/etc \
 	&& { \
         echo 'install: --no-document'; \
         echo 'update: --no-document'; \
