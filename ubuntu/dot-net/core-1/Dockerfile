@@ -111,7 +111,7 @@ RUN set -ex \
         software-properties-common=0.92.37.8 \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
     && apt-get update \
-    && apt-get install -y libstdc++6=7.3.0-*\
+    && apt-get install -y libstdc++6=8-*\
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK
