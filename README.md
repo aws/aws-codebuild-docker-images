@@ -50,6 +50,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [python 3.3.6](ubuntu/python/3.3.6)
 + [python 3.4.5](ubuntu/python/3.4.5)
 + [python 3.5.2](ubuntu/python/3.5.2)
++ [python 3.6.5](ubuntu/python/3.6.5)
 + [ruby 2.2.5](ubuntu/ruby/2.2.5)
 + [ruby 2.3.1](ubuntu/ruby/2.3.1)
 + [ruby 2.5.1](ubuntu/ruby/2.5.1)

@@ -31,6 +31,8 @@ phases:
       - docker build -t aws/codebuild/python:3.4.5 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.5.2
       - docker build -t aws/codebuild/python:3.5.2 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.6.5
+      - docker build -t aws/codebuild/python:3.6.5 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/ruby/2.2.5
       - docker build -t aws/codebuild/ruby:2.2.5 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/ruby/2.3.1
