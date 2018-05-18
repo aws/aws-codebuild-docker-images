@@ -122,5 +122,3 @@ RUN set -ex \
 		&& rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD [ "node" ]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

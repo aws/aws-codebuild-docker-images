@@ -153,5 +153,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD ["python3"]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

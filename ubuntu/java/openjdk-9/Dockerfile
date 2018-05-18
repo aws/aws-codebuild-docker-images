@@ -168,5 +168,3 @@ RUN set -ex \
     && apt-get clean
 
 COPY m2-settings.xml $MAVEN_CONFIG/settings.xml
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

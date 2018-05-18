@@ -136,5 +136,3 @@ RUN set -ex \
     && cd .. \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

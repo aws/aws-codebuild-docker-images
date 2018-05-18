@@ -101,5 +101,3 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" \
 
 ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 WORKDIR $GOPATH
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

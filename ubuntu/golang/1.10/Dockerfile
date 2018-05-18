@@ -116,4 +116,3 @@ RUN set -ex \
 ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 WORKDIR $GOPATH
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]

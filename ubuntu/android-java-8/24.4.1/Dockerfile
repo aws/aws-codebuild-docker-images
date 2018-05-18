@@ -148,5 +148,3 @@ RUN set -ex \
       && ln -s $ANDROID_HOME/tools/android /usr/bin/android \
       && /opt/tools/android-accept-licenses.sh "android update sdk --all --no-ui --filter platform-tools,build-tools-23.0.3,build-tools-24.0.3,build-tools-25.0.3,build-tools-26.0.2,android-23,android-24,android-25,android-26" \
       && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

@@ -182,5 +182,3 @@ RUN set -ex \
       && android-accept-licenses.sh "sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS} ${ANDROID_SDK_PLATFORM_TOOLS} ${ANDROID_SDK_EXTRAS}" \
       && android-accept-licenses.sh "sdkmanager --licenses" \
       && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

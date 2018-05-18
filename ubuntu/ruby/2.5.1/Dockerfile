@@ -139,5 +139,3 @@ RUN mkdir -p /usr/local/etc \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD [ "irb" ]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

@@ -142,5 +142,3 @@ RUN set -ex \
     && rm -rf /usr/src/python ~/.cache
 
 CMD ["python2"]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

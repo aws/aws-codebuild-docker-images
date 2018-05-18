@@ -152,5 +152,3 @@ RUN set -ex \
         && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD ["python3"]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

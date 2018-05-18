@@ -135,5 +135,3 @@ RUN set -ex \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY m2-settings.xml $MAVEN_CONFIG/settings.xml
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

@@ -211,5 +211,3 @@ RUN set -xe; \
     chmod +x /usr/local/bin/composer;
 
 WORKDIR $PHPPATH
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]

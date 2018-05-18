@@ -107,5 +107,3 @@ RUN wget "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD [ "node" ]
-
-ENTRYPOINT ["dockerd-entrypoint.sh"]
