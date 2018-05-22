@@ -96,7 +96,7 @@ COPY dockerd-entrypoint.sh /usr/local/bin/
 
 ENV JAVA_VERSION=8 \
     JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JDK_VERSION="8u162-b12-1~14.04" \
+    JDK_VERSION="8u171-b11-2~14.04" \
     JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
     ANT_VERSION=1.9.6 \
