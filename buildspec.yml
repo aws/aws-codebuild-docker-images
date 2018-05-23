@@ -43,5 +43,7 @@ phases:
       - docker build -t aws/codebuild/php:5.6 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/php/7.0
       - docker build -t aws/codebuild/php:7.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/php/7.1
+      - docker build -t aws/codebuild/php:7.1 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/ubuntu-base/14.04
       - docker build -t aws/codebuild/ubuntu-base:14.04 .
