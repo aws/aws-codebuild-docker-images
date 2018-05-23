@@ -46,6 +46,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [nodejs 8.11.0](ubuntu/nodejs/8.11.0)
 + [php 5.6](ubuntu/php/5.6)
 + [php 7.0](ubuntu/php/7.0)
++ [php 7.1](ubuntu/php/7.1)
 + [python 2.7.12](ubuntu/python/2.7.12)
 + [python 3.3.6](ubuntu/python/3.3.6)
 + [python 3.4.5](ubuntu/python/3.4.5)
