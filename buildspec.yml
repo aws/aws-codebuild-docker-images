@@ -23,6 +23,8 @@ phases:
       - docker build -t aws/codebuild/nodejs:6.3.1 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/8.11.0
       - docker build -t aws/codebuild/nodejs:8.11.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/10.1.0
+      - docker build -t aws/codebuild/nodejs:10.1.0 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/python/2.7.12
       - docker build -t aws/codebuild/python:2.7.12 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.3.6

@@ -87,7 +87,7 @@ RUN set -ex \
 RUN set -ex \
     && wget "https://bootstrap.pypa.io/2.6/get-pip.py" -O /tmp/get-pip.py \
     && python /tmp/get-pip.py \
-    && pip install awscli \
+    && pip install awscli==1.* \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME /var/lib/docker

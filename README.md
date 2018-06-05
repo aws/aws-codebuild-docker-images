@@ -42,6 +42,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [golang 1.10](ubuntu/golang/1.10)
 + [java openjdk-8](ubuntu/java/openjdk-8)
 + [java openjdk-9](ubuntu/java/openjdk-9)
++ [nodejs 10.1.0](ubuntu/nodejs/10.1.0)
 + [nodejs 6.3.1](ubuntu/nodejs/6.3.1)
 + [nodejs 8.11.0](ubuntu/nodejs/8.11.0)
 + [php 5.6](ubuntu/php/5.6)

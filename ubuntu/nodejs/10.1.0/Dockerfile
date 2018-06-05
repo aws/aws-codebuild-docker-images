@@ -94,57 +94,31 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-# Copy install tools
-COPY tools /opt/tools
+ENV NODE_VERSION="10.1.0"
 
-ENV ANDROID_HOME="/usr/local/android-sdk-linux" \
-    JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JDK_VERSION="8u171-b11-2~14.04" \
-    JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
-    JAVA_VERSION="8" \
-    INSTALLED_GRADLE_VERSIONS="2.14.1 3.5 4.0.2 4.1 4.2.1 4.3.1 4.4" \
-    GRADLE_VERSION="4.4" \
-    ANDROID_TOOLS_VER="24.4.1" \
-    ANDROID_TOOLS_SHA1="725bb360f0f7d04eaccff5a2d57abdd49061326d"
-ENV PATH="${PATH}:/opt/tools:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools"
-
-# Install java8
 RUN set -ex \
-      && apt-get update \
-      && apt-get install -y software-properties-common=0.92.37.8 \
-      && add-apt-repository -y ppa:openjdk-r/ppa \
-      && (echo oracle-java$JAVA_VERSION-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections) \
-      && apt-get update \
-      && apt-get -y install openjdk-$JAVA_VERSION-jdk=$JDK_VERSION \
-      && update-ca-certificates -f \
-      && apt-get install -y -qq less=458-* groff=1.22.2-* \
-      && dpkg --add-architecture i386 \
-      && apt-get update && apt-get install -y --force-yes expect=5.45-* libc6-i386=2.19-* \
-         lib32stdc++6=4.8.4-* lib32gcc1=1:4.9.3-* lib32ncurses5=5.9+20140118-* \
-         lib32z1=1:1.2.8.dfsg-* libqt5widgets5=5.2.1+dfsg-* \
-      && apt-get clean \
-# Precache most relevant versions of Gradle for `gradlew` scripts
-      && mkdir -p /usr/src/gradle \
-      && for version in $INSTALLED_GRADLE_VERSIONS; do {\
-           wget "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "/usr/src/gradle/gradle-$version-all.zip" \
-           && unzip "/usr/src/gradle/gradle-$version-all.zip" -d /usr/local \
-           && mkdir "/tmp/gradle-$version" \
-           && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
-           # Android Studio uses the "-all" distribution for it's wrapper script.
-           && perl -pi -e "s/gradle-$version-bin.zip/gradle-$version-all.zip/" "/tmp/gradle-$version/gradle/wrapper/gradle-wrapper.properties" \
-           && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init \
-           && rm -rf "/tmp/gradle-$version" \
-           && if [ "$version" != "$GRADLE_VERSION" ]; then rm -rf "/usr/local/gradle-$version"; fi; \
-         }; done \
-# Install default GRADLE_VERSION to path
-      && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-      && rm -rf /usr/src/gradle \
-# Install Android SDK
-      && wget "http://dl.google.com/android/android-sdk_r$ANDROID_TOOLS_VER-linux.tgz" -O /tmp/android-sdk.tgz \
-      && echo "${ANDROID_TOOLS_SHA1} /tmp/android-sdk.tgz" | sha1sum -c - \
-      && tar -xzf /tmp/android-sdk.tgz -C /usr/local/ \
-      && chown -R root.root $ANDROID_HOME \
-      && ln -s $ANDROID_HOME/tools/android /usr/bin/android \
-      && /opt/tools/android-accept-licenses.sh "android update sdk --all --no-ui --filter platform-tools,build-tools-23.0.3,build-tools-24.0.3,build-tools-25.0.3,build-tools-26.0.2,android-23,android-24,android-25,android-26" \
-      && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && for key in \
+      94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+      0034A06D9D9B0064CE8ADF6BF1747F4AD2306D93 \
+      FD3A5288F042B6850C66B31F09FE44734EB7990E \
+      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+      B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+      C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+      77984A986EBC2AA786BC0F66B01FBB92821C587A \
+      56730D5401028683275BD23C23EFEFE93C4CFFFE \
+    ; do \
+      gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+    done
+
+RUN set -ex \
+	&& wget "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" -O node-v$NODE_VERSION-linux-x64.tar.gz \
+	&& wget "https://nodejs.org/download/release/v$NODE_VERSION/SHASUMS256.txt.asc" -O SHASUMS256.txt.asc \
+	&& gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+	&& grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt | sha256sum -c - \
+		&& tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
+		&& rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc SHASUMS256.txt \
+		&& ln -s /usr/local/bin/node /usr/local/bin/nodejs \
+		&& rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+CMD [ "node" ]
