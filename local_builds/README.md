@@ -11,18 +11,28 @@ Start by pulling the signed local agent image from [DockerHub](https://hub.docke
 
     docker pull amazon/aws-codebuild-local:latest --disable-content-trust=false
 
-You will run a docker run command and set three environment variables:
 
+You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/codebuild/latest/userguide/samples.html). Please allow at least an hour after a new version has been pushed for the updated SHA to be reflected in our documentation. 
+
+You will run a docker run command and set three environment variables. Please note the fourth variable is optional:
  1. IMAGE_NAME: your curated environment image 
- 2. SOURCE: your local source directory 
- 3. ARTIFACTS: an artifact output directory
+ 2. SOURCE: the absolute path of your local source directory 
+ 3. ARTIFACTS: the absolute path of an artifact output directory
+ 4. BUILDSPEC: The path to your buildspec in your source directory
 
 Note that if you want to use an AWS CodeBuild Curated image, you can build it locally on your machine by cloning this repository and performing a docker build on your choice of image.
 
 Command:
 
-    docker run -it -v /var/run/docker.sock/var/run/docker.sock -e "IMAGE_NAME=<Build image>" -e "ARTIFACTS=<Absolute path to your artifact output folder>" -e "SOURCE=<Absolute path to your source directory>" amazon/aws-codebuild-local
+    docker run -it -v /var/run/docker.sock/var/run/docker.sock -e "IMAGE_NAME=<Build image>" -e "ARTIFACTS=<Absolute path to your artifact output folder>" -e "SOURCE=<Absolute path to your source directory>" -e "BUILDSPEC=<Relative path to your buildspec override> amazon/aws-codebuild-local
 
-For example:
+For example on a Linux machine:
 
-    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -e "IMAGE_NAME=awscodebuild/java:openjdk-8" -e "ARTIFACTS=/home/user/testProjectArtifacts" -e "SOURCE=/home/user/testProject" amazon/aws-codebuild-local 
+    docker run -it -v /var/run/docker.sock:/var/run/docker.sock -e "IMAGE_NAME=awscodebuild/java:openjdk-8" -e "ARTIFACTS=/home/user/testProjectArtifacts" -e "SOURCE=/home/user/testProject" -e "BUILDSPEC=test.yml" amazon/aws-codebuild-local 
+
+
+Note: If running on a different operating system, your **absolute path** may vary:
+
+    Linux: /home/user/...
+    MacOS: /Users/user/...
+
