@@ -8,38 +8,32 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_COMPOSE_VERSION="1.16.1" \
     GITVERSION_VERSION="3.6.5"
 
-# Building git from source code:
-#   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
-##########################################################################
+# Install git
+RUN set -ex \
+    && apt-get update \
+    && apt-get install software-properties-common -y --no-install-recommends\
+    && apt-add-repository ppa:git-core/ppa \
+    && apt-get update \
+    && apt-get install git=1:2.17.1* -y --no-install-recommends\
+    && git version
+
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-       wget=1.15-* python=2.7.5-* python2.7-dev=2.7.6-* fakeroot=1.20-* ca-certificates \
-       tar=1.27.1-* gzip=1.6-* zip=3.0-* autoconf=2.69-* automake=1:1.14.1-* \
-       bzip2=1.0.6-* file=1:5.14-* g++=4:4.8.2-* gcc=4:4.8.2-* imagemagick=8:6.7.7.10-* \
-       libbz2-dev=1.0.6-* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.0-* libdb-dev=1:5.3.21~* \
-       libevent-dev=2.0.21-stable-* libffi-dev=3.1~rc1+r3.0.13-* libgeoip-dev=1.6.0-* libglib2.0-dev=2.40.2-* \
-       libjpeg-dev=8c-* libkrb5-dev=1.12+dfsg-* liblzma-dev=5.1.1alpha+20120614-* \
-       libmagickcore-dev=8:6.7.7.10-* libmagickwand-dev=8:6.7.7.10-* libmysqlclient-dev=5.5.60-* \
-       libncurses5-dev=5.9+20140118-* libpng12-dev=1.2.50-* libpq-dev=9.3.22-* libreadline-dev=6.3-* \
-       libsqlite3-dev=3.8.2-* libssl-dev=1.0.1f-* libtool=2.4.2-* libwebp-dev=0.4.0-* \
-       libxml2-dev=2.9.1+dfsg1-* libxslt1-dev=1.1.28-* libyaml-dev=0.1.4-* make=3.81-* \
-       patch=2.7.1-* xz-utils=5.1.1alpha+20120614-* zlib1g-dev=1:1.2.8.dfsg-* unzip=6.0-* curl=7.35.0-* \
-       e2fsprogs=1.42.9-* iptables=1.4.21-* xfsprogs=3.1.9ubuntu2 xz-utils=5.1.1alpha+20120614-* \
-       mono-mcs=3.2.8+dfsg-* \
-    && apt-get install -y -qq less=458-* groff=1.22.2-* \
-    && apt-get -qy build-dep git=1:1.9.1 \
-    && apt-get -qy install libcurl4-openssl-dev=7.35.0-* git-man=1:1.9.1-* liberror-perl=0.17-* \
-    && mkdir -p /usr/src/git-openssl \
-    && cd /usr/src/git-openssl \
-    && apt-get source git=1:1.9.1 \
-    && cd $(find -mindepth 1 -maxdepth 1 -type d -name "git-*") \
-    && sed -i -- 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/' ./debian/control \
-    && sed -i -- '/TEST\s*=\s*test/d' ./debian/rules \
-    && dpkg-buildpackage -rfakeroot -b \
-    && find .. -type f -name "git_*ubuntu*.deb" -exec dpkg -i \{\} \; \
-    && rm -rf /usr/src/git-openssl \
+       wget=1.15-* python=2.7.* python2.7-dev=2.7.* fakeroot=1.20-* ca-certificates \
+       tar=1.27.* gzip=1.6-* zip=3.0-* autoconf=2.69-* automake=1:1.14.* \
+       bzip2=1.0.* file=1:5.14-* g++=4:4.8.* gcc=4:4.8.* imagemagick=8:6.7.* \
+       libbz2-dev=1.0.* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.* libdb-dev=1:5.3.* \
+       libevent-dev=2.0.* libffi-dev=3.1~* libgeoip-dev=1.6.* libglib2.0-dev=2.40.* \
+       libjpeg-dev=8c-* libkrb5-dev=1.12+* liblzma-dev=5.1.* \
+       libmagickcore-dev=8:6.7.* libmagickwand-dev=8:6.7.* libmysqlclient-dev=5.5.* \
+       libncurses5-dev=5.9+* libpng12-dev=1.2.* libpq-dev=9.3.* libreadline-dev=6.3-* \
+       libsqlite3-dev=3.8.* libssl-dev=1.0.* libtool=2.4.* libwebp-dev=0.4.* \
+       libxml2-dev=2.9.* libxslt1-dev=1.1.* libyaml-dev=0.1.* make=3.81-* \
+       patch=2.7.* xz-utils=5.1.* zlib1g-dev=1:1.2.* unzip=6.0-* curl=7.35.* \
+       e2fsprogs=1.42.* iptables=1.4.* xfsprogs=3.1.* xz-utils=5.1.* \
+       mono-mcs=3.2.* less=458-* groff=1.22.* libcurl4-openssl-dev=7.35.* liberror-perl=0.17-*\
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
