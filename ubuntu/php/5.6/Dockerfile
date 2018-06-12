@@ -124,7 +124,7 @@ RUN set -xe; \
     set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
-    apt-get install -y --no-install-recommends libedit-dev=3.1-*; \
+    apt-get install -y --no-install-recommends libedit-dev=3.1-* dpkg-dev=1.17.*; \
     rm -rf /var/lib/apt/lists/*; \
     apt-get clean; \
 
