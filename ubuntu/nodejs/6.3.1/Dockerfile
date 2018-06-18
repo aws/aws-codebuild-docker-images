@@ -122,4 +122,6 @@ RUN set -ex \
     && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN npm set unsafe-perm true
+
 CMD [ "node" ]
