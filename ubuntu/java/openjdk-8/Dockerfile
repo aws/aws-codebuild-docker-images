@@ -26,7 +26,7 @@ RUN set -ex \
     && apt-get install software-properties-common -y --no-install-recommends\
     && apt-add-repository ppa:git-core/ppa \
     && apt-get update \
-    && apt-get install git=1:2.17.1* -y --no-install-recommends\
+    && apt-get install git=1:2.* -y --no-install-recommends\
     && git version
 
 RUN set -ex \
