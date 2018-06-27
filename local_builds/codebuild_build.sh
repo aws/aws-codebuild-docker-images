@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function allOSRealPath() {
     case $1 in
