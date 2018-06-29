@@ -13,6 +13,8 @@ phases:
       - docker build -t aws/codebuild/dot-net:core-1 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/dot-net/core-2
       - docker build -t aws/codebuild/dot-net:core-2 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/dot-net/core-2.1
+      - docker build -t aws/codebuild/dot-net:core-2.1 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.10
       - docker build -t aws/codebuild/golang:1.10 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-8
