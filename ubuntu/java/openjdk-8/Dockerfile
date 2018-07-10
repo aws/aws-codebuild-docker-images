@@ -107,13 +107,13 @@ ENV JAVA_VERSION=8 \
     MAVEN_HOME="/usr/share/maven" \
     MAVEN_CONFIG="/root/.m2" \
     GRADLE_VERSION=2.7 \
-    PROPERTIES_COMMON_VERSIION=0.92.37.8 \
+    PROPERTIES_COMMON_VERSION=0.92.37.8 \
     PYTHON_TOOL_VERSION="3.3-*"
 
 # Install Java
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSIION \
+    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSION \
     && add-apt-repository ppa:openjdk-r/ppa \
     && apt-get update \
     && apt-get -y install python-setuptools=$PYTHON_TOOL_VERSION \
