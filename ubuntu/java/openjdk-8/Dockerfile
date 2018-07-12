@@ -99,42 +99,56 @@ COPY dockerd-entrypoint.sh /usr/local/bin/
 
 ENV JAVA_VERSION=8 \
     JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JDK_VERSION="8u171-b11-2~14.04" \
     JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
-    JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
-    ANT_VERSION=1.9.6 \
-    MAVEN_VERSION=3.3.3 \
-    MAVEN_HOME="/usr/share/maven" \
+    JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
+    ANT_VERSION=1.10.3 \
+    MAVEN_HOME="/opt/maven" \
+    MAVEN_VERSION=3.5.3 \
     MAVEN_CONFIG="/root/.m2" \
-    GRADLE_VERSION=2.7 \
-    PROPERTIES_COMMON_VERSIION=0.92.37.8 \
-    PYTHON_TOOL_VERSION="3.3-*"
+    GRADLE_VERSION=4.2.1 \
+    PROPERTIES_COMMON_VERSION=0.92.37.8 \
+    PYTHON_TOOL_VERSION="3.3-*" \
+    JDK_VERSION="8u171-b11-2~14.04" \
+    ANT_DOWNLOAD_SHA512="73f2193700b1d1e32eedf25fab1009e2a98fb2f6425413f5c9fa1b0f2f9f49f59cb8ed3f04931c808ae022a64ecfa2619e5fb77643fea6dbc29721e489eb3a07" \
+    MAVEN_DOWNLOAD_SHA1="bbfa43a4ce4ef96732b896d057f8a613aa229801" \
+    GRADLE_DOWNLOAD_SHA256="b551cc04f2ca51c78dd14edb060621f0e5439bdfafa6fd167032a09ac708fbc0"
 
-# Install Java
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSIION \
+    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSION \
     && add-apt-repository ppa:openjdk-r/ppa \
     && apt-get update \
-    && apt-get -y install python-setuptools=$PYTHON_TOOL_VERSION \
-    && apt-get -y install openjdk-$JAVA_VERSION-jdk=$JDK_VERSION \
+    && apt-get install -y python-setuptools=$PYTHON_TOOL_VERSION \
+
+    # Install OpenJDK 8
+    && apt-get install -y openjdk-${JAVA_VERSION}-jdk=$JDK_VERSION \
+    && apt-get install -y --no-install-recommends ca-certificates-java \
     && apt-get clean \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
-    && mkdir -p /usr/src/ant \
-    && wget "http://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz" -O /usr/src/ant/apache-ant-$ANT_VERSION-bin.tar.gz \
-    && tar -xzf /usr/src/ant/apache-ant-$ANT_VERSION-bin.tar.gz -C /usr/local \
-    && ln -s /usr/local/apache-ant-$ANT_VERSION/bin/ant /usr/bin/ant \
-    && rm -rf /usr/src/ant \
-    && mkdir -p /usr/share/maven /usr/share/maven/ref $MAVEN_CONFIG \
-    && curl -fsSL "https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz" \
-        | tar -xzC /usr/share/maven --strip-components=1 \
-    && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn \
-    && mkdir -p /usr/src/gradle \
-    && wget "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" -O /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip \
-    && unzip /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip -d /usr/local \
-    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-    && rm -rf /usr/src/gradle \
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+    # Install Ant
+    && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
+    && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
+    && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
+
+    # Install Maven
+    && mkdir -p $MAVEN_HOME \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && echo "$MAVEN_DOWNLOAD_SHA1 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha1sum -c - \
+    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
+    && mkdir -p $MAVEN_CONFIG \
+
+    # Install Gradle
+    && curl -LSso /var/tmp/gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip \
+    && echo "$GRADLE_DOWNLOAD_SHA256 /var/tmp/gradle-$GRADLE_VERSION-bin.zip" | sha256sum -c - \
+    && unzip /var/tmp/gradle-$GRADLE_VERSION-bin.zip -d /opt \
+    && update-alternatives --install /usr/local/bin/gradle gradle /opt/gradle-$GRADLE_VERSION/bin/gradle 10000 \
+
+    # Cleanup
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && apt-get clean
 
 COPY m2-settings.xml $MAVEN_CONFIG/settings.xml
