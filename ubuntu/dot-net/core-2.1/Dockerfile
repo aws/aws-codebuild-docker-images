@@ -63,7 +63,7 @@ RUN set -ex \
     && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
     && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
     && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe /output json /showvariable \$1" >> /usr/local/bin/gitversion \
+    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
     && chmod +x /usr/local/bin/gitversion
 
 # Install Docker
@@ -118,9 +118,9 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK
-ENV DOTNET_SDK_VERSION 2.1.300
+ENV DOTNET_SDK_VERSION 2.1.302
 ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
-ENV DOTNET_SDK_DOWNLOAD_SHA 80a6bfb1db5862804e90f819c1adeebe3d624eae0d6147e5d6694333f0458afd7d34ce73623964752971495a310ff7fcc266030ce5aef82d5de7293d94d13770
+ENV DOTNET_SDK_DOWNLOAD_SHA 2166986e360f1c3456a33723edb80349e6ede115be04a6331bfbfd0f412494684d174a0cfb21d2feb00d509ce342030160a4b5b445e393ad83bedb613a64bc66
 
 RUN set -ex \
     && curl -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
@@ -139,3 +139,17 @@ RUN set -ex \
     && cd .. \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
+
+# Install Powershell Core
+# See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
+ENV POWERSHELL_VERSION 6.0.3
+ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v6.0.3/powershell-6.0.3-linux-x64.tar.gz
+ENV POWERSHELL_DOWNLOAD_SHA A43D3056688FABC442BFBE0FD7A096F7E28036759EFF9D6EBE8CB9155C9D9AAB
+
+RUN set -ex \
+    && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
+    && echo "$POWERSHELL_DOWNLOAD_SHA powershell.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
+    && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
+    && rm powershell.tar.gz \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh

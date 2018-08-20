@@ -38,6 +38,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [android-java-8 26.1.1](ubuntu/android-java-8/26.1.1)
 + [docker 17.09.0](ubuntu/docker/17.09.0)
 + [dot-net core-1](ubuntu/dot-net/core-1)
++ [dot-net core-2.1](ubuntu/dot-net/core-2.1)
 + [dot-net core-2](ubuntu/dot-net/core-2)
 + [golang 1.10](ubuntu/golang/1.10)
 + [java openjdk-8](ubuntu/java/openjdk-8)

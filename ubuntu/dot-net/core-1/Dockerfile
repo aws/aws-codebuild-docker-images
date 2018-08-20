@@ -63,7 +63,7 @@ RUN set -ex \
     && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
     && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
     && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe /output json /showvariable \$1" >> /usr/local/bin/gitversion \
+    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
     && chmod +x /usr/local/bin/gitversion
 
 # Install Docker
@@ -102,23 +102,23 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         libc6=2.19-* \
-        libcurl3=7.35.0-* \
-        libgcc1=1:4.9.3-* \
-        libgssapi-krb5-2=1.12+dfsg-* \
+        libcurl3=7.35.* \
+        libgcc1=1:4.9.* \
+        libgssapi-krb5-2=1.12* \
         libicu52=52.1-* \
-        liblttng-ust0=2.4.0-* \
-        libssl1.0.0=1.0.1f-* \
+        liblttng-ust0=2.4.* \
+        libssl1.0.0=1.0.* \
         libunwind8=1.1-* \
-        libuuid1=2.20.1-* \
-        zlib1g=1:1.2.8.dfsg-* \
-        software-properties-common=0.92.37.8 \
+        libuuid1=2.20.* \
+        zlib1g=1:1.2.* \
+        software-properties-common=0.92.* \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
     && apt-get update \
     && apt-get install -y libstdc++6=8*\
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK
-ENV DOTNET_SDK_VERSION 1.0.4
+ENV DOTNET_SDK_VERSION 1.1.10
 ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-dev-debian-x64.$DOTNET_SDK_VERSION.tar.gz
 
 RUN set -ex \
@@ -137,3 +137,17 @@ RUN set -ex \
     && cd .. \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
+
+# Install Powershell Core
+# See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
+ENV POWERSHELL_VERSION 6.0.3
+ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v6.0.3/powershell-6.0.3-linux-x64.tar.gz
+ENV POWERSHELL_DOWNLOAD_SHA A43D3056688FABC442BFBE0FD7A096F7E28036759EFF9D6EBE8CB9155C9D9AAB
+
+RUN set -ex \
+    && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
+    && echo "$POWERSHELL_DOWNLOAD_SHA powershell.tar.gz" | sha256sum -c - \
+    && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
+    && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
+    && rm powershell.tar.gz \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh

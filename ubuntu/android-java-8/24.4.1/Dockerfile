@@ -63,7 +63,7 @@ RUN set -ex \
     && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
     && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
     && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe /output json /showvariable \$1" >> /usr/local/bin/gitversion \
+    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
     && chmod +x /usr/local/bin/gitversion
 
 # Install Docker
@@ -144,7 +144,7 @@ RUN set -ex \
       && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
       && rm -rf /usr/src/gradle \
 # Install Android SDK
-      && wget "http://dl.google.com/android/android-sdk_r$ANDROID_TOOLS_VER-linux.tgz" -O /tmp/android-sdk.tgz \
+      && wget "https://dl.google.com/android/android-sdk_r$ANDROID_TOOLS_VER-linux.tgz" -O /tmp/android-sdk.tgz \
       && echo "${ANDROID_TOOLS_SHA1} /tmp/android-sdk.tgz" | sha1sum -c - \
       && tar -xzf /tmp/android-sdk.tgz -C /usr/local/ \
       && chown -R root.root $ANDROID_HOME \
