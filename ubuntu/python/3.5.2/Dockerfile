@@ -26,6 +26,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
+    && apt install -y apt-transport-https \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
+    && echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
+    && apt-get update \
     && apt-get install software-properties-common -y --no-install-recommends \
     && apt-add-repository ppa:git-core/ppa \
     && apt-get update \
@@ -50,7 +54,7 @@ RUN set -ex \
         libxslt1-dev=1.1.* libyaml-dev=0.1.* make=3.81-* patch=2.7.* xz-utils=5.1.* \
         zlib1g-dev=1:1.2.* tcl=8.6.* tk=8.6.* \
         e2fsprogs=1.42.* iptables=1.4.* xfsprogs=3.1.* xz-utils=5.1.* \
-        mono-mcs=3.2.* liberror-perl=0.17-* unzip=6.0-*\
+        mono-devel=5.14.* liberror-perl=0.17-* unzip=6.0-*\
         asciidoc=8.6.* build-essential=11.* bzr=2.6.* cvs=2:1.12.* cvsps=2.1-* docbook-xml=4.5-* docbook-xsl=1.78.* dpkg-dev=1.17.* \
         gettext=0.18.* gettext-base=0.18.* libapr1=1.5.* libaprutil1=1.5.* libasprintf0c2=0.18.*  \
         libdbd-sqlite3-perl=1.40-* libdbi-perl=1.630-* libdpkg-perl=1.17.* libhttp-date-perl=6.02-* \
