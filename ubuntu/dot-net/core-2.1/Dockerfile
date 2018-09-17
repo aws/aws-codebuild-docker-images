@@ -134,6 +134,9 @@ RUN set -ex \
     && rm dotnet.tar.gz \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
+# Add .NET Core Global Tools install folder to PATH
+ENV PATH "~/.dotnet/tools/:$PATH"
+
 # Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE skip
 RUN set -ex \
