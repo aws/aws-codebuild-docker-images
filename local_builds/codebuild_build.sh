@@ -79,7 +79,10 @@ fi
 
 if [ -n "$environment_variable_file" ]
 then
-    docker_command+=" -v $(dirname $(allOSRealPath $environment_variable_file)):/LocalBuild/envFile/ -e \"ENV_VAR_FILE=$(basename $environment_variable_file)\""
+    environment_variable_file_path=$(allOSRealPath "$environment_variable_file")
+    environment_variable_file_dir=$(dirname "$environment_variable_file_path")
+    environment_variable_file_basename=$(basename "$environment_variable_file")
+    docker_command+=" -v \"$environment_variable_file_dir:/LocalBuild/envFile/\" -e \"ENV_VAR_FILE=$environment_variable_file_basename\""
 fi
 
 if  $awsconfig_flag
