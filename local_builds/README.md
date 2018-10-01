@@ -16,7 +16,7 @@ You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/
 
 Download and use our codebuild_build.sh script to run your local builds.
 
-usage: codebuild_build.sh [-i image_name] [-a artifact_output_directory] [options]
+    usage: codebuild_build.sh [-i image_name] [-a artifact_output_directory] [options]
 
 **Required:**  
   -i        Used to specify the customer build container image.  
