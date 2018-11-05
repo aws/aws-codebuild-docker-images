@@ -21,6 +21,8 @@ phases:
       - docker build -t aws/codebuild/java:openjdk-8 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-9
       - docker build -t aws/codebuild/java:openjdk-9 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-11
+      - docker build -t aws/codebuild/java:openjdk-11 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/6.3.1
       - docker build -t aws/codebuild/nodejs:6.3.1 .
       - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/8.11.0
