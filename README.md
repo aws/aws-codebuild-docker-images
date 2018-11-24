@@ -14,6 +14,10 @@ Steps to build Ruby 2.3.1 image
 * Run `cd ubuntu/ruby/2.3.1` to change the directory in your local workspace. This is the location of the Ruby 2.3.1 Dockerfile with Ubuntu 14.04 base.
 * Run `docker build -t aws/codebuild/ruby:2.3.1 .` to build Docker image locally
 
+Alternatively, you may use GNU make to build the above image:
+
+* Run `make ruby/2.3.1`. This will build the Docker image locally, as above, from a computer with GNU make.
+
 To poke around in the image interactively, build it and run:
 `docker run -it --entrypoint sh aws/codebuild/ruby:2.3.1 -c bash`
 
