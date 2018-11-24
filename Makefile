@@ -1,4 +1,4 @@
-BUILDS=$(shell egrep -o 'ubuntu/[^ ]*' buildspec.yml | sed -r 's|^ubuntu/||')
+BUILDS=$(shell egrep -o 'ubuntu/[^ ]*' buildspec.yml | sed 's|^ubuntu/||')
 NAME=$(shell dirname $@)
 VERSION=$(shell basename $@)
 TAG=aws/codebuild/$(NAME):$(VERSION)
