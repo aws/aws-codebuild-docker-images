@@ -1,10 +1,31 @@
 #!/bin/bash
 
 function allOSRealPath() {
-    case $1 in
-        /* ) echo "$1"; exit;;
-        *  ) echo "$PWD/${1#./}"; exit;;
-    esac
+    if isOSWindows
+    then
+        path=""
+        case $1 in
+            .* ) path="$PWD/${1#./}" ;;
+            /* ) path="$1" ;;
+            *  ) path="/$1" ;;
+        esac
+
+        echo "/$path" | sed -e 's/\\/\//g' -e 's/://' -e 's/./\U&/3'
+    else
+        case $1 in
+            /* ) echo "$1"; exit;;
+            *  ) echo "$PWD/${1#./}"; exit;;
+        esac
+    fi
+}
+
+function isOSWindows() {
+    if [ $OSTYPE == "msys" ]
+    then
+        return 0
+    else
+        return 1
+    fi
 }
 
 function usage {
@@ -62,13 +83,20 @@ fi
 
 if [ -z "$source_dir" ]
 then
-    source_dir="$(pwd)"
+    source_dir=$(allOSRealPath $PWD)
 else
     source_dir=$(allOSRealPath $source_dir)
 fi
 
-docker_command="docker run -it -v /var/run/docker.sock:/var/run/docker.sock -e \
-    \"IMAGE_NAME=$image_name\" -e \
+docker_command="docker run -it "
+if isOSWindows
+then
+    docker_command+="-v //var/run/docker.sock:/var/run/docker.sock -e "
+else
+    docker_command+="-v /var/run/docker.sock:/var/run/docker.sock -e "
+fi
+
+docker_command+="\"IMAGE_NAME=$image_name\" -e \
     \"ARTIFACTS=$(allOSRealPath $artifact_dir)\" -e \
     \"SOURCE=$source_dir\""
 
@@ -89,7 +117,8 @@ if  $awsconfig_flag
 then
     if [ -d "$HOME/.aws" ]
     then
-        docker_command+=" -e \"AWS_CONFIGURATION=$HOME/.aws\""
+        configuration_file_path=$(allOSRealPath "$HOME/.aws")
+        docker_command+=" -e \"AWS_CONFIGURATION=$configuration_file_path\""
     else
         docker_command+=" -e \"AWS_CONFIGURATION=NONE\""
     fi
