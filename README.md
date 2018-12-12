@@ -14,10 +14,6 @@ Steps to build Ruby 2.3.1 image
 * Run `cd ubuntu/ruby/2.3.1` to change the directory in your local workspace. This is the location of the Ruby 2.3.1 Dockerfile with Ubuntu 14.04 base.
 * Run `docker build -t aws/codebuild/ruby:2.3.1 .` to build Docker image locally
 
-Alternatively, you may use GNU make to build the above image:
-
-* Run `make ruby/2.3.1`. This will build the Docker image locally, as above, from a computer with GNU make.
-
 To poke around in the image interactively, build it and run:
 `docker run -it --entrypoint sh aws/codebuild/ruby:2.3.1 -c bash`
 
@@ -38,27 +34,20 @@ Some of the images in this repository are no longer actively maintained by AWS C
 
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
-+ [android-java-8 24.4.1](ubuntu/android-java-8/24.4.1)
 + [android-java-8 26.1.1](ubuntu/android-java-8/26.1.1)
 + [docker 17.09.0](ubuntu/docker/17.09.0)
-+ [dot-net core-1](ubuntu/dot-net/core-1)
++ [docker 18.09.0](ubuntu/docker/18.09.0)
 + [dot-net core-2.1](ubuntu/dot-net/core-2.1)
-+ [dot-net core-2](ubuntu/dot-net/core-2)
 + [golang 1.10](ubuntu/golang/1.10)
++ [golang 1.11](ubuntu/golang/1.11)
++ [java openjdk-11](ubuntu/java/openjdk-11)
 + [java openjdk-8](ubuntu/java/openjdk-8)
 + [java openjdk-9](ubuntu/java/openjdk-9)
-+ [nodejs 10.1.0](ubuntu/nodejs/10.1.0)
-+ [nodejs 6.3.1](ubuntu/nodejs/6.3.1)
++ [nodejs 10.14.1](ubuntu/nodejs/10.14.1)
 + [nodejs 8.11.0](ubuntu/nodejs/8.11.0)
-+ [php 5.6](ubuntu/php/5.6)
-+ [php 7.0](ubuntu/php/7.0)
-+ [python 2.7.12](ubuntu/python/2.7.12)
-+ [python 3.3.6](ubuntu/python/3.3.6)
-+ [python 3.4.5](ubuntu/python/3.4.5)
-+ [python 3.5.2](ubuntu/python/3.5.2)
++ [php 7.1](ubuntu/php/7.1)
 + [python 3.6.5](ubuntu/python/3.6.5)
-+ [ruby 2.2.5](ubuntu/ruby/2.2.5)
-+ [ruby 2.3.1](ubuntu/ruby/2.3.1)
-+ [ruby 2.5.1](ubuntu/ruby/2.5.1)
++ [python 3.7.1](ubuntu/python/3.7.1)
++ [ruby 2.5.3](ubuntu/ruby/2.5.3)
 + [ubuntu-base 14.04](ubuntu/ubuntu-base/14.04)
 

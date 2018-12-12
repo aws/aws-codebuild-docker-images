@@ -103,50 +103,120 @@ COPY ssh_config /root/.ssh/config
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
  
- ENV RUBY_MAJOR="2.5" \
-     RUBY_VERSION="2.5.3" \
-     RUBY_DOWNLOAD_SHA256="9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" \
-     RUBYGEMS_VERSION="2.7.7" \
-     BUNDLER_VERSION="1.16.6" \
-     GEM_HOME="/usr/local/bundle"
+ ENV GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E 1729F83938DA44E27BA0F4D3DBDB397470D12172
+ ENV SRC_DIR="/usr/src" \
+     PHP_VERSION=7.1.16 \
+     PHP_DOWNLOAD_SHA="a5d67e477248a3911af7ef85c8400c1ba8cd632184186fd31070b96714e669f1" \
+     PHPPATH="/php" \
+     PHP_INI_DIR="/usr/local/etc/php" \
+     PHP_CFLAGS="-fstack-protector -fpic -fpie -O2" \
+     PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
  
- ENV BUNDLE_PATH="$GEM_HOME" \
-     BUNDLE_BIN="$GEM_HOME/bin" \
-     BUNDLE_SILENCE_ROOT_WARNING=1 \
-     BUNDLE_APP_CONFIG="$GEM_HOME"
+ ENV PHP_SRC_DIR="$SRC_DIR/php" \
+     PHP_CPPFLAGS="$PHP_CFLAGS" \
+     PHP_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz/from/this/mirror" \
+     PHP_ASC_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz.asc/from/this/mirror"
  
- ENV PATH $BUNDLE_BIN:$PATH
+ # Install PHP
+ RUN set -xe; \
+     mkdir -p $SRC_DIR; \
+     cd $SRC_DIR; \
+     wget -O php.tar.xz "$PHP_URL"; \
+     echo "$PHP_DOWNLOAD_SHA *php.tar.xz" | sha256sum -c -; \
+     wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
+     export GNUPGHOME="$(mktemp -d)"; \
+     for key in $GPG_KEYS; do \
+         ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
+           || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
+           || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
+     done; \
+     gpg --batch --verify php.tar.xz.asc php.tar.xz; \
+     rm -rf "$GNUPGHOME"; \
  
- RUN mkdir -p /usr/local/etc \
- 	&& { \
-         echo 'install: --no-document'; \
-         echo 'update: --no-document'; \
-     } >> /usr/local/etc/gemrc \
-     && apt-get update && apt-get install -y --no-install-recommends \
-        bison libgdbm-dev ruby \
-     && wget "https://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" -O /tmp/ruby.tar.gz \
-     && echo "$RUBY_DOWNLOAD_SHA256 /tmp/ruby.tar.gz" | sha256sum -c - \
-     && mkdir -p /usr/src/ruby \
-     && tar -xzf /tmp/ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
-     && cd /usr/src/ruby \
- 	&& { \
-              echo '#define ENABLE_PATH_CHECK 0'; \
-              echo; \
-              cat file.c; \
- 	   } > file.c.new \
-     && mv file.c.new file.c \
-     && autoconf \
-     && ./configure --disable-install-doc \
-     && make -j"$(nproc)" \
-     && make install \
-     && apt-get purge -y --auto-remove bison libgdbm-dev ruby \
-     && cd / \
-     && rm -r /usr/src/ruby \
-     && gem update --system "$RUBYGEMS_VERSION" \
- 	&& gem install bundler --version "$BUNDLER_VERSION" \
-     && mkdir -p "$GEM_HOME" "$BUNDLE_BIN" \
-     && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
-     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+     set -eux; \
+     savedAptMark="$(apt-mark showmanual)"; \
+     apt-get update; \
+     apt-get install -y --no-install-recommends libedit-dev=3.1-* dpkg-dev=1.17.*; \
+     rm -rf /var/lib/apt/lists/*; \
+     apt-get clean; \
  
- CMD [ "irb" ]
+     export \
+         CFLAGS="$PHP_CFLAGS" \
+         CPPFLAGS="$PHP_CPPFLAGS" \
+         LDFLAGS="$PHP_LDFLAGS" \
+     ; \
+     mkdir -p $PHP_SRC_DIR; \
+     tar -Jxf $SRC_DIR/php.tar.xz -C $PHP_SRC_DIR --strip-components=1; \
+     cd $SRC_DIR/php; \
+     gnuArch="$(dpkg-architecture -qDEB_BUILD_GNU_TYPE)"; \
+     debMultiarch="$(dpkg-architecture -qDEB_BUILD_MULTIARCH)"; \
+ 
+     # https://bugs.php.net/bug.php?id=74125
+     if [ ! -d /usr/include/curl ]; then \
+         ln -sT "/usr/include/$debMultiarch/curl" /usr/local/include/curl; \
+     fi; \
+     ./configure \
+         --build="$gnuArch" \
+         --with-config-file-path="$PHP_INI_DIR" \
+         --with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
+         --disable-cgi \
+     # --enable-ftp is included here because ftp_ssl_connect() needs ftp to be compiled statically (see https://github.com/docker-library/php/issues/236)
+         --enable-ftp \
+     # --enable-mbstring is included here because otherwise there's no way to get pecl to use it properly (see https://github.com/docker-library/php/issues/195)
+         --enable-mbstring \
+     # --enable-mysqlnd is included here because it's harder to compile after the fact than extensions are (since it's a plugin for several extensions, not an extension in itself)
+         --enable-mysqlnd \
+         --enable-sockets \
+         --enable-pcntl \
+     # https://wiki.php.net/rfc/argon2_password_hash (7.2+)
+         --with-password-argon2 \
+         --with-curl \
+         --with-pdo-pgsql \
+         --with-pdo-mysql \
+         --with-libedit \
+         --with-openssl \
+         --with-zlib \
+     # bundled pcre does not support JIT on s390x
+ 
+     # https://manpages.debian.org/stretch/libpcre3-dev/pcrejit.3.en.html#AVAILABILITY_OF_JIT_SUPPORT
+     $(test "$gnuArch" = 's390x-linux-gnu' && echo '--without-pcre-jit') \
+         --with-libdir="lib/$debMultiarch" \
+     ${PHP_EXTRA_CONFIGURE_ARGS:-} \
+     ; \
+     make -j "$(nproc)"; \
+     make test; \
+     make install; \
+     find /usr/local/bin /usr/local/sbin -type f -executable -exec strip --strip-all '{}' + || true; \
+     make clean; \
+     cd /; \
+     rm -rf $PHP_SRC_DIR; \
+ 
+     # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+     apt-mark auto '.*' > /dev/null; \
+     [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+     find /usr/local -type f -executable -exec ldd '{}' ';' \
+         | awk '/=>/ { print $(NF-1) }' \
+         | sort -u \
+         | xargs -r dpkg-query --search \
+         | cut -d: -f1 \
+         | sort -u \
+         | xargs -r apt-mark manual \
+     ; \
+     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+     php --version; \
+     pecl update-channels; \
+     rm -rf /tmp/pear ~/.pearrc; \
+ 
+     # Increase the memory size, default is 128M
+     mkdir "$PHP_INI_DIR"; \
+     mkdir "$PHP_INI_DIR/conf.d"; \
+     touch "$PHP_INI_DIR/conf.d/memory.ini" \
+     && echo "memory_limit = 1G;" >> "$PHP_INI_DIR/conf.d/memory.ini";
+ 
+ ENV PATH="$PHPPATH/bin:/usr/local/php/bin:$PATH"
+ 
+ # Install Composer globally
+ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+ 
+ WORKDIR $PHPPATH
  

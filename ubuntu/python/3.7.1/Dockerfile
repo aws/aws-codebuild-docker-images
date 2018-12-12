@@ -102,51 +102,82 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
- 
- ENV RUBY_MAJOR="2.5" \
-     RUBY_VERSION="2.5.3" \
-     RUBY_DOWNLOAD_SHA256="9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" \
-     RUBYGEMS_VERSION="2.7.7" \
-     BUNDLER_VERSION="1.16.6" \
-     GEM_HOME="/usr/local/bundle"
- 
- ENV BUNDLE_PATH="$GEM_HOME" \
-     BUNDLE_BIN="$GEM_HOME/bin" \
-     BUNDLE_SILENCE_ROOT_WARNING=1 \
-     BUNDLE_APP_CONFIG="$GEM_HOME"
- 
- ENV PATH $BUNDLE_BIN:$PATH
- 
- RUN mkdir -p /usr/local/etc \
- 	&& { \
-         echo 'install: --no-document'; \
-         echo 'update: --no-document'; \
-     } >> /usr/local/etc/gemrc \
-     && apt-get update && apt-get install -y --no-install-recommends \
-        bison libgdbm-dev ruby \
-     && wget "https://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" -O /tmp/ruby.tar.gz \
-     && echo "$RUBY_DOWNLOAD_SHA256 /tmp/ruby.tar.gz" | sha256sum -c - \
-     && mkdir -p /usr/src/ruby \
-     && tar -xzf /tmp/ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
-     && cd /usr/src/ruby \
- 	&& { \
-              echo '#define ENABLE_PATH_CHECK 0'; \
-              echo; \
-              cat file.c; \
- 	   } > file.c.new \
-     && mv file.c.new file.c \
-     && autoconf \
-     && ./configure --disable-install-doc \
-     && make -j"$(nproc)" \
-     && make install \
-     && apt-get purge -y --auto-remove bison libgdbm-dev ruby \
-     && cd / \
-     && rm -r /usr/src/ruby \
-     && gem update --system "$RUBYGEMS_VERSION" \
- 	&& gem install bundler --version "$BUNDLER_VERSION" \
-     && mkdir -p "$GEM_HOME" "$BUNDLE_BIN" \
-     && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
-     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
- 
- CMD [ "irb" ]
- 
+ENV PATH="/usr/local/bin:$PATH" \
+    GPG_KEY="0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D" \
+    PYTHON_VERSION="3.7.1" \
+    PYTHON_PIP_VERSION="18.1" \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    OPENSSL_DOWNLOAD_SHA256="2836875a0f89c03d0fdf483941512613a50cfb421d6fd94b9f41d7279d586a3d"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        tcl-dev tk-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    \
+    # install openssl
+    # https://help.dreamhost.com/hc/en-us/articles/360001435926-Installing-OpenSSL-locally-under-your-username
+    # https://github.com/openssl/openssl/issues/4833
+	&& wget -O openssl.tar.gz "https://www.openssl.org/source/openssl-1.1.1.tar.gz" \
+	&& echo "${OPENSSL_DOWNLOAD_SHA256} *openssl.tar.gz" | sha256sum -c - \
+	&& mkdir -p /usr/src/openssl \
+	&& tar -C /usr/src/openssl --strip-components=1 -xvzf openssl.tar.gz \
+	&& rm openssl.tar.gz \
+	&& cd /usr/src/openssl \
+	&& ./config \
+	&& make \
+	&& make install \
+	&& echo '/usr/local/lib' >> /etc/ld.so.conf \
+	&& ldconfig \
+	&& echo 'export LD_LIBRARY_PATH=/usr/local/lib' >> ~/.bash_profile && . ~/.bash_profile \	
+    && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
+	&& export GNUPGHOME="$(mktemp -d)" \
+	&& (gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY" \
+        || gpg --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
+        || gpg --keyserver keyserver.ubuntu.com --recv-keys "$GPG_KEY") \
+	&& gpg --batch --verify python.tar.xz.asc python.tar.xz \
+	&& rm -r "$GNUPGHOME" python.tar.xz.asc \
+	&& mkdir -p /usr/src/python \
+	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+	&& rm python.tar.xz \
+	\
+	&& cd /usr/src/python \
+	&& ./configure \
+		--enable-loadable-sqlite-extensions \
+		--enable-shared \
+	&& make -j$(nproc) \
+	&& make install \
+	&& ldconfig \
+	\
+# explicit path to "pip3" to ensure distribution-provided "pip3" cannot interfere
+	&& if [ ! -e /usr/local/bin/pip3 ]; then : \
+		&& wget -O /tmp/get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+		&& python3 /tmp/get-pip.py "pip==$PYTHON_PIP_VERSION" \
+		&& rm /tmp/get-pip.py \
+	; fi \
+# we use "--force-reinstall" for the case where the version of pip we're trying to install is the same as the version bundled with Python
+# ("Requirement already up-to-date: pip==8.1.2 in /usr/local/lib/python3.6/site-packages")
+# https://github.com/docker-library/python/pull/143#issuecomment-241032683
+	&& pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+        && pip install pipenv virtualenv --no-cache-dir \
+# then we use "pip list" to ensure we don't have more than one pip version installed
+# https://github.com/docker-library/python/pull/100
+	&& [ "$(pip list |tac|tac| awk -F '[ ()]+' '$1 == "pip" { print $2; exit }')" = "$PYTHON_PIP_VERSION" ] \
+	\
+	&& find /usr/local -depth \
+		\( \
+			\( -type d -a -name test -o -name tests \) \
+			-o \
+			\( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
+		\) -exec rm -rf '{}' + \
+	&& apt-get purge -y --auto-remove tcl-dev tk-dev \
+	&& rm -rf /usr/src/python /usr/src/openssl ~/.cache \
+	&& cd /usr/local/bin \
+	&& { [ -e easy_install ] || ln -s easy_install-* easy_install; } \
+	&& ln -s idle3 idle \
+	&& ln -s pydoc3 pydoc \
+	&& ln -s python3 python \
+	&& ln -s python3-config python-config \
+        && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+CMD ["python3"]

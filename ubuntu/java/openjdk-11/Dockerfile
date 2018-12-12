@@ -102,51 +102,78 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
- 
- ENV RUBY_MAJOR="2.5" \
-     RUBY_VERSION="2.5.3" \
-     RUBY_DOWNLOAD_SHA256="9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" \
-     RUBYGEMS_VERSION="2.7.7" \
-     BUNDLER_VERSION="1.16.6" \
-     GEM_HOME="/usr/local/bundle"
- 
- ENV BUNDLE_PATH="$GEM_HOME" \
-     BUNDLE_BIN="$GEM_HOME/bin" \
-     BUNDLE_SILENCE_ROOT_WARNING=1 \
-     BUNDLE_APP_CONFIG="$GEM_HOME"
- 
- ENV PATH $BUNDLE_BIN:$PATH
- 
- RUN mkdir -p /usr/local/etc \
- 	&& { \
-         echo 'install: --no-document'; \
-         echo 'update: --no-document'; \
-     } >> /usr/local/etc/gemrc \
-     && apt-get update && apt-get install -y --no-install-recommends \
-        bison libgdbm-dev ruby \
-     && wget "https://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" -O /tmp/ruby.tar.gz \
-     && echo "$RUBY_DOWNLOAD_SHA256 /tmp/ruby.tar.gz" | sha256sum -c - \
-     && mkdir -p /usr/src/ruby \
-     && tar -xzf /tmp/ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
-     && cd /usr/src/ruby \
- 	&& { \
-              echo '#define ENABLE_PATH_CHECK 0'; \
-              echo; \
-              cat file.c; \
- 	   } > file.c.new \
-     && mv file.c.new file.c \
-     && autoconf \
-     && ./configure --disable-install-doc \
-     && make -j"$(nproc)" \
-     && make install \
-     && apt-get purge -y --auto-remove bison libgdbm-dev ruby \
-     && cd / \
-     && rm -r /usr/src/ruby \
-     && gem update --system "$RUBYGEMS_VERSION" \
- 	&& gem install bundler --version "$BUNDLER_VERSION" \
-     && mkdir -p "$GEM_HOME" "$BUNDLE_BIN" \
-     && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
-     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
- 
- CMD [ "irb" ]
- 
+ENV JAVA_VERSION=11 \
+    JAVA_HOME="/opt/jvm/openjdk-11" \
+    JDK_HOME="/opt/jvm/openjdk-11" \
+    JRE_HOME="/opt/jvm/openjdk-11" \
+    ANT_VERSION=1.10.3 \
+    MAVEN_HOME="/opt/maven" \
+    MAVEN_VERSION=3.5.4 \
+    MAVEN_CONFIG="/root/.m2" \
+    GRADLE_VERSION=5.0 \
+    SBT_VERSION=1.2.6 \
+    PROPERTIES_COMMON_VERSION=0.92.37.8 \
+    PYTHON_TOOL_VERSION="3.3-*" \
+    JDK_VERSION=11.0.1 \
+    JDK_VERSION_TAG=13 \
+    JDK_DOWNLOAD_SHA256="7a6bb980b9c91c478421f865087ad2d69086a0583aeeb9e69204785e8e97dcfd" \
+    ANT_DOWNLOAD_SHA512="73f2193700b1d1e32eedf25fab1009e2a98fb2f6425413f5c9fa1b0f2f9f49f59cb8ed3f04931c808ae022a64ecfa2619e5fb77643fea6dbc29721e489eb3a07" \
+    MAVEN_DOWNLOAD_SHA1="22cac91b3557586bb1eba326f2f7727543ff15e3" \
+    GRADLE_DOWNLOAD_SHA256="6157ac9f3410bc63644625b3b3e9e96c963afd7910ae0697792db57813ee79a6"
+
+ENV JDK_DOWNLOAD_TAR="openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz"
+
+RUN set -ex \
+    && apt-get update \
+    && apt-get install -y software-properties-common=$PROPERTIES_COMMON_VERSION \
+    && apt-get install -y python-setuptools=$PYTHON_TOOL_VERSION \
+
+    # Install OpenJDK 11
+    # Note: Installing ca-certificates-java installs JDK7 because it's a depedency.
+    # We will use update-alternatives to make sure JDK11 has higher priority for all
+    # the tools
+    && apt-get install -y --no-install-recommends ca-certificates-java \
+    
+    && mkdir -p $JAVA_HOME \
+    && curl -LSso /var/tmp/$JDK_DOWNLOAD_TAR https://download.java.net/java/GA/jdk11/$JDK_VERSION_TAG/GPL/$JDK_DOWNLOAD_TAR \
+    && echo "$JDK_DOWNLOAD_SHA256 /var/tmp/$JDK_DOWNLOAD_TAR" | tee foo.txt | sha256sum -c - \
+    && tar xzvf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
+    && for tool_path in $JAVA_HOME/bin/*; do \
+          tool=`basename $tool_path`; \
+          update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
+          update-alternatives --set $tool $tool_path; \
+        done \
+     && rm $JAVA_HOME/lib/security/cacerts && ln -s /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts \
+    
+    # Install Ant
+    && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
+    && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
+    && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
+    
+    # Install Maven
+    && mkdir -p $MAVEN_HOME \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && echo "$MAVEN_DOWNLOAD_SHA1 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha1sum -c - \
+    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
+    && mkdir -p $MAVEN_CONFIG \
+    
+    # Install Gradle
+    && curl -LSso /var/tmp/gradle-$GRADLE_VERSION-bin.zip https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip \
+    && echo "$GRADLE_DOWNLOAD_SHA256 /var/tmp/gradle-$GRADLE_VERSION-bin.zip" | sha256sum -c - \
+    && unzip /var/tmp/gradle-$GRADLE_VERSION-bin.zip -d /opt \
+    && update-alternatives --install /usr/local/bin/gradle gradle /opt/gradle-$GRADLE_VERSION/bin/gradle 10000 \
+    
+    # Install SBT
+    && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
+    && apt-get install -y --no-install-recommends apt-transport-https \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \
+    
+    # Cleanup
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && apt-get clean
+
+COPY m2-settings.xml $MAVEN_CONFIG/settings.xml

@@ -102,51 +102,24 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
- 
- ENV RUBY_MAJOR="2.5" \
-     RUBY_VERSION="2.5.3" \
-     RUBY_DOWNLOAD_SHA256="9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" \
-     RUBYGEMS_VERSION="2.7.7" \
-     BUNDLER_VERSION="1.16.6" \
-     GEM_HOME="/usr/local/bundle"
- 
- ENV BUNDLE_PATH="$GEM_HOME" \
-     BUNDLE_BIN="$GEM_HOME/bin" \
-     BUNDLE_SILENCE_ROOT_WARNING=1 \
-     BUNDLE_APP_CONFIG="$GEM_HOME"
- 
- ENV PATH $BUNDLE_BIN:$PATH
- 
- RUN mkdir -p /usr/local/etc \
- 	&& { \
-         echo 'install: --no-document'; \
-         echo 'update: --no-document'; \
-     } >> /usr/local/etc/gemrc \
-     && apt-get update && apt-get install -y --no-install-recommends \
-        bison libgdbm-dev ruby \
-     && wget "https://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" -O /tmp/ruby.tar.gz \
-     && echo "$RUBY_DOWNLOAD_SHA256 /tmp/ruby.tar.gz" | sha256sum -c - \
-     && mkdir -p /usr/src/ruby \
-     && tar -xzf /tmp/ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
-     && cd /usr/src/ruby \
- 	&& { \
-              echo '#define ENABLE_PATH_CHECK 0'; \
-              echo; \
-              cat file.c; \
- 	   } > file.c.new \
-     && mv file.c.new file.c \
-     && autoconf \
-     && ./configure --disable-install-doc \
-     && make -j"$(nproc)" \
-     && make install \
-     && apt-get purge -y --auto-remove bison libgdbm-dev ruby \
-     && cd / \
-     && rm -r /usr/src/ruby \
-     && gem update --system "$RUBYGEMS_VERSION" \
- 	&& gem install bundler --version "$BUNDLER_VERSION" \
-     && mkdir -p "$GEM_HOME" "$BUNDLE_BIN" \
-     && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
-     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
- 
- CMD [ "irb" ]
- 
+ENV GOLANG_VERSION="1.11.2" \
+    GOLANG_DOWNLOAD_SHA256="1dfe664fa3d8ad714bbd15a36627992effd150ddabd7523931f077b3926d736d" \
+    GOPATH="/go" \
+    DEP_VERSION="0.5.0" \
+    DEP_BINARY="dep-linux-amd64"
+
+RUN set -ex \
+    && mkdir -p "$GOPATH/src" "$GOPATH/bin" \
+    && chmod -R 777 "$GOPATH" \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config=0.26-* \
+    && apt-get clean \
+    && wget "https://storage.googleapis.com/golang/go$GOLANG_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
+    && echo "$GOLANG_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/golang.tar.gz -C /usr/local \
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && wget "https://github.com/golang/dep/releases/download/v$DEP_VERSION/$DEP_BINARY" -O "$GOPATH/bin/dep" \
+    && chmod +x "$GOPATH/bin/dep"
+
+ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
+WORKDIR $GOPATH

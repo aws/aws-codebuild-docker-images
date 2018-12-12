@@ -102,51 +102,38 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
- 
- ENV RUBY_MAJOR="2.5" \
-     RUBY_VERSION="2.5.3" \
-     RUBY_DOWNLOAD_SHA256="9828d03852c37c20fa333a0264f2490f07338576734d910ee3fd538c9520846c" \
-     RUBYGEMS_VERSION="2.7.7" \
-     BUNDLER_VERSION="1.16.6" \
-     GEM_HOME="/usr/local/bundle"
- 
- ENV BUNDLE_PATH="$GEM_HOME" \
-     BUNDLE_BIN="$GEM_HOME/bin" \
-     BUNDLE_SILENCE_ROOT_WARNING=1 \
-     BUNDLE_APP_CONFIG="$GEM_HOME"
- 
- ENV PATH $BUNDLE_BIN:$PATH
- 
- RUN mkdir -p /usr/local/etc \
- 	&& { \
-         echo 'install: --no-document'; \
-         echo 'update: --no-document'; \
-     } >> /usr/local/etc/gemrc \
-     && apt-get update && apt-get install -y --no-install-recommends \
-        bison libgdbm-dev ruby \
-     && wget "https://cache.ruby-lang.org/pub/ruby/$RUBY_MAJOR/ruby-$RUBY_VERSION.tar.gz" -O /tmp/ruby.tar.gz \
-     && echo "$RUBY_DOWNLOAD_SHA256 /tmp/ruby.tar.gz" | sha256sum -c - \
-     && mkdir -p /usr/src/ruby \
-     && tar -xzf /tmp/ruby.tar.gz -C /usr/src/ruby --strip-components=1 \
-     && cd /usr/src/ruby \
- 	&& { \
-              echo '#define ENABLE_PATH_CHECK 0'; \
-              echo; \
-              cat file.c; \
- 	   } > file.c.new \
-     && mv file.c.new file.c \
-     && autoconf \
-     && ./configure --disable-install-doc \
-     && make -j"$(nproc)" \
-     && make install \
-     && apt-get purge -y --auto-remove bison libgdbm-dev ruby \
-     && cd / \
-     && rm -r /usr/src/ruby \
-     && gem update --system "$RUBYGEMS_VERSION" \
- 	&& gem install bundler --version "$BUNDLER_VERSION" \
-     && mkdir -p "$GEM_HOME" "$BUNDLE_BIN" \
-     && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
-     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
- 
- CMD [ "irb" ]
- 
+ENV NODE_VERSION="10.14.1"
+
+# gpg keys listed at https://github.com/nodejs/node#release-team
+RUN set -ex \
+    && for key in \
+      94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+      B9AE9905FFD7803F25714661B63B535A4C206CA9 \
+      77984A986EBC2AA786BC0F66B01FBB92821C587A \
+      56730D5401028683275BD23C23EFEFE93C4CFFFE \
+      71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
+      FD3A5288F042B6850C66B31F09FE44734EB7990E \
+      8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+      C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+      DD8F2338BAE7501E3DD5AC78C273792F7D83545D \
+      4ED778F539E3634C779C87C6D7062848A1AB005C \
+      A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
+    ; do \
+      gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
+      gpg --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
+      gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
+    done
+
+RUN set -ex \
+	&& wget "https://nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" -O node-v$NODE_VERSION-linux-x64.tar.gz \
+	&& wget "https://nodejs.org/download/release/v$NODE_VERSION/SHASUMS256.txt.asc" -O SHASUMS256.txt.asc \
+	&& gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+	&& grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt | sha256sum -c - \
+		&& tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
+		&& rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc SHASUMS256.txt \
+		&& ln -s /usr/local/bin/node /usr/local/bin/nodejs \
+		&& rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN npm set unsafe-perm true
+
+CMD [ "node" ]
