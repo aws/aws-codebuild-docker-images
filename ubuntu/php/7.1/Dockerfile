@@ -126,9 +126,7 @@ COPY dockerd-entrypoint.sh /usr/local/bin/
      wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
      export GNUPGHOME="$(mktemp -d)"; \
      for key in $GPG_KEYS; do \
-         ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
-           || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
-           || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
+        gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
      done; \
      gpg --batch --verify php.tar.xz.asc php.tar.xz; \
      rm -rf "$GNUPGHOME"; \
