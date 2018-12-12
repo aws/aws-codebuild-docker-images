@@ -3,35 +3,35 @@ version: 0.2
 phases:
   build:
     commands:
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/android-java-8/26.1.1
--e       - docker build -t aws/codebuild/android-java-8:26.1.1 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/docker/17.09.0
--e       - docker build -t aws/codebuild/docker:17.09.0 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/docker/18.09.0
--e       - docker build -t aws/codebuild/docker:18.09.0 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/dot-net/core-2.1
--e       - docker build -t aws/codebuild/dot-net:core-2.1 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.10
--e       - docker build -t aws/codebuild/golang:1.10 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.11
--e       - docker build -t aws/codebuild/golang:1.11 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-8
--e       - docker build -t aws/codebuild/java:openjdk-8 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-9
--e       - docker build -t aws/codebuild/java:openjdk-9 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-11
--e       - docker build -t aws/codebuild/java:openjdk-11 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/8.11.0
--e       - docker build -t aws/codebuild/nodejs:8.11.0 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/10.14.1
--e       - docker build -t aws/codebuild/nodejs:10.14.1 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.6.5
--e       - docker build -t aws/codebuild/python:3.6.5 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.7.1
--e       - docker build -t aws/codebuild/python:3.7.1 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/ruby/2.5.3
--e       - docker build -t aws/codebuild/ruby:2.5.3 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/php/7.1
--e       - docker build -t aws/codebuild/php:7.1 .
--e       - cd $CODEBUILD_SRC_DIR/ubuntu/ubuntu-base/14.04
--e       - docker build -t aws/codebuild/ubuntu-base:14.04 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/android-java-8/26.1.1
+      - docker build -t aws/codebuild/android-java-8:26.1.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/docker/17.09.0
+      - docker build -t aws/codebuild/docker:17.09.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/docker/18.09.0
+      - docker build -t aws/codebuild/docker:18.09.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/dot-net/core-2.1
+      - docker build -t aws/codebuild/dot-net:core-2.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.10
+      - docker build -t aws/codebuild/golang:1.10 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/golang/1.11
+      - docker build -t aws/codebuild/golang:1.11 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-8
+      - docker build -t aws/codebuild/java:openjdk-8 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-9
+      - docker build -t aws/codebuild/java:openjdk-9 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/java/openjdk-11
+      - docker build -t aws/codebuild/java:openjdk-11 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/8.11.0
+      - docker build -t aws/codebuild/nodejs:8.11.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/nodejs/10.14.1
+      - docker build -t aws/codebuild/nodejs:10.14.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.6.5
+      - docker build -t aws/codebuild/python:3.6.5 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/python/3.7.1
+      - docker build -t aws/codebuild/python:3.7.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/ruby/2.5.3
+      - docker build -t aws/codebuild/ruby:2.5.3 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/php/7.1
+      - docker build -t aws/codebuild/php:7.1 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/ubuntu-base/14.04
+      - docker build -t aws/codebuild/ubuntu-base:14.04 .
