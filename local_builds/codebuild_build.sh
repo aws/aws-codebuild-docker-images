@@ -34,6 +34,7 @@ function usage {
     echo "  -i        Used to specify the customer build container image."
     echo "  -a        Used to specify an artifact output directory."
     echo "Options:"
+    echo "  -l        Used to override the default local agent image."
     echo "  -s        Used to specify a source directory. Defaults to the current working directory."
     echo "  -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables."
     echo "  -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory."
@@ -51,7 +52,7 @@ image_flag=false
 artifact_flag=false
 awsconfig_flag=false
 
-while getopts "ci:a:s:b:e:h" opt; do
+while getopts "ci:a:s:b:e:l:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
@@ -59,6 +60,7 @@ while getopts "ci:a:s:b:e:h" opt; do
         c  ) awsconfig_flag=true;;
         s  ) source_dir=$OPTARG;;
         e  ) environment_variable_file=$OPTARG;;
+        l  ) local_agent_image=$OPTARG;;
         h  ) usage; exit;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -113,6 +115,11 @@ then
     docker_command+=" -v \"$environment_variable_file_dir:/LocalBuild/envFile/\" -e \"ENV_VAR_FILE=$environment_variable_file_basename\""
 fi
 
+if [ -n "$local_agent_image" ]
+then
+    docker_command+=" -e \"LOCAL_AGENT_IMAGE_NAME=$local_agent_image\""
+fi
+
 if  $awsconfig_flag
 then
     if [ -d "$HOME/.aws" ]
@@ -123,6 +130,13 @@ then
         docker_command+=" -e \"AWS_CONFIGURATION=NONE\""
     fi
     docker_command+="$(env | grep ^AWS_ | while read -r line; do echo " -e \"$line\""; done )"
+fi
+
+if isOSWindows
+then
+    docker_command+=" -e \"INITIATOR=$USERNAME\""
+else
+    docker_command+=" -e \"INITIATOR=$USER\""
 fi
 
 docker_command+=" amazon/aws-codebuild-local:latest"
