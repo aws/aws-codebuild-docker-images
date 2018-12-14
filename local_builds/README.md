@@ -23,6 +23,7 @@ Download and use our codebuild_build.sh script to run your local builds.
   -a        Used to specify an artifact output directory.  
 
 **Optional:**  
+  -l        Used to override the default local agent image.  
   -s        Used to specify a source directory. Defaults to the current working directory.  
   -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables.  
   -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory.  
