@@ -101,8 +101,8 @@ VOLUME /var/lib/docker
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENV GOLANG_VERSION="1.10" \
-    GOLANG_DOWNLOAD_SHA256="b5a64335f1490277b585832d1f6c7f8c6c11206cba5cd3f771dcb87b98ad1a33" \
+ENV GOLANG_VERSION="1.10.6" \
+    GOLANG_DOWNLOAD_SHA256="acbdedf28b55b38d2db6f06209a25a869a36d31bdcf09fd2ec3d40e1279e0592" \
     GOPATH="/go" \
     DEP_VERSION="0.4.1" \
     DEP_BINARY="dep-linux-amd64"
