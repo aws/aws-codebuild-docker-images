@@ -28,6 +28,7 @@ Download and use our codebuild_build.sh script to run your local builds.
   -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables.  
   -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory.  
   -e        Used to specify a file containing environment variables.  
+  -m        Used to mount the source directory to the customer build container directly.  
 
 **Environment variable file format:**
   * Expects each line to be in VAR=VAL format
