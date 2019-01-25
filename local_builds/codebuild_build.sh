@@ -39,6 +39,7 @@ function usage {
     echo "  -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables."
     echo "  -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory."
     echo "  -e        Used to specify a file containing environment variables."
+    echo "  -m        Used to mount the source directory to the customer build container directly."
     echo "            Environment variable file format:"
     echo "               * Expects each line to be in VAR=VAL format"
     echo "               * Lines beginning with # are processed as comments and ignored"
@@ -51,13 +52,15 @@ function usage {
 image_flag=false
 artifact_flag=false
 awsconfig_flag=false
+mount_src_dir_flag=false
 
-while getopts "ci:a:s:b:e:l:h" opt; do
+while getopts "cmi:a:s:b:e:l:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
         b  ) buildspec=$OPTARG;;
         c  ) awsconfig_flag=true;;
+        m  ) mount_src_dir_flag=true;;
         s  ) source_dir=$OPTARG;;
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
@@ -120,7 +123,7 @@ then
     docker_command+=" -e \"LOCAL_AGENT_IMAGE_NAME=$local_agent_image\""
 fi
 
-if  $awsconfig_flag
+if $awsconfig_flag
 then
     if [ -d "$HOME/.aws" ]
     then
@@ -130,6 +133,11 @@ then
         docker_command+=" -e \"AWS_CONFIGURATION=NONE\""
     fi
     docker_command+="$(env | grep ^AWS_ | while read -r line; do echo " -e \"$line\""; done )"
+fi
+
+if $mount_src_dir_flag
+then
+    docker_command+=" -e \"MOUNT_SOURCE_DIRECTORY=TRUE\""
 fi
 
 if isOSWindows
