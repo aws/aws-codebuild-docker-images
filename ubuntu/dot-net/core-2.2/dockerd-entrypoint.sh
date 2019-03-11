@@ -1,10 +1,11 @@
+
 #!/bin/sh
 set -e
 
 /usr/local/bin/dockerd \
 	--host=unix:///var/run/docker.sock \
 	--host=tcp://127.0.0.1:2375 \
-	--storage-driver=overlay &>/var/log/docker.log &
+	--storage-driver=overlay2 &>/var/log/docker.log &
 
 
 tries=0
