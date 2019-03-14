@@ -63,7 +63,7 @@ RUN set -ex \
        libxml2-dev libxslt1-dev libyaml-dev make \
        patch xz-utils zlib1g-dev unzip curl \
        e2fsprogs iptables xfsprogs \
-       mono-devel less groff liberror-perl \
+       mono-devel less groff liberror-perl parallel \
        asciidoc build-essential bzr cvs cvsps docbook-xml docbook-xsl dpkg-dev \
        libdbd-sqlite3-perl libdbi-perl libdpkg-perl libhttp-date-perl \
        libio-pty-perl libserf-1-1 libsvn-perl libsvn1 libtcl8.6 libtimedate-perl \
