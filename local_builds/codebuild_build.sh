@@ -35,7 +35,10 @@ function usage {
     echo "  -a        Used to specify an artifact output directory."
     echo "Options:"
     echo "  -l IMAGE  Used to override the default local agent image."
-    echo "  -s DIR    Used to specify a source directory. Defaults to the current working directory."
+    echo "  -s        Used to specify source information. Defaults to the current working directory for primary source."
+    echo "               * First (-s) is for primary source"
+    echo "               * Use additional (-s) in <sourceIdentifier>:<sourceLocation> format for secondary source"
+    echo "               * For sourceIdentifier, use a value that is fewer than 128 characters and contains only alphanumeric characters and underscores"
     echo "  -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables."
     echo "  -b FILE   Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory."
     echo "  -m        Used to mount the source directory to the customer build container directly."
@@ -61,7 +64,7 @@ while getopts "cmi:a:s:b:e:l:h" opt; do
         b  ) buildspec=$OPTARG;;
         c  ) awsconfig_flag=true;;
         m  ) mount_src_dir_flag=true;;
-        s  ) source_dir=$OPTARG;;
+        s  ) source_dirs+=("$OPTARG");;
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
         h  ) usage; exit;;
@@ -86,13 +89,6 @@ then
     exit 1
 fi
 
-if [ -z "$source_dir" ]
-then
-    source_dir=$(allOSRealPath $PWD)
-else
-    source_dir=$(allOSRealPath $source_dir)
-fi
-
 docker_command="docker run -it "
 if isOSWindows
 then
@@ -102,8 +98,24 @@ else
 fi
 
 docker_command+="\"IMAGE_NAME=$image_name\" -e \
-    \"ARTIFACTS=$(allOSRealPath $artifact_dir)\" -e \
-    \"SOURCE=$source_dir\""
+    \"ARTIFACTS=$(allOSRealPath $artifact_dir)\""
+
+if [ -z "$source_dirs" ]
+then
+    docker_command+=" -e \"SOURCE=$(allOSRealPath $PWD)\""
+else
+    for index in "${!source_dirs[@]}"; do
+        if [ $index -eq 0 ]
+        then
+            docker_command+=" -e \"SOURCE=$(allOSRealPath ${source_dirs[$index]})\""
+        else
+            identifier=${source_dirs[$index]%%:*}
+            src_dir=$(allOSRealPath ${source_dirs[$index]#*:})
+
+            docker_command+=" -e \"SECONDARY_SOURCE_$index=$identifier:$src_dir\""
+        fi
+    done
+fi
 
 if [ -n "$buildspec" ]
 then
