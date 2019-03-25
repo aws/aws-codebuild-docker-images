@@ -102,10 +102,10 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-ENV GOLANG_VERSION="1.11.6" \
-    GOLANG_DOWNLOAD_SHA256="4e1864282d8d20010d6385a12a1e35641783a380a7c57907bfb46a5499c5eb49" \
+ENV GOLANG_VERSION="1.11.3" \
+    GOLANG_DOWNLOAD_SHA256="d20a4869ffb13cee0f7ee777bf18c7b9b67ef0375f93fac1298519e0c227a07f" \
     GOPATH="/go" \
-    DEP_VERSION="0.5.1" \
+    DEP_VERSION="0.5.0" \
     DEP_BINARY="dep-linux-amd64"
 
 RUN set -ex \
