@@ -17,7 +17,7 @@ ENV RUBY_MAJOR="2.6" \
  NODE_VERSION="10.15.0" \
  NODE_8_VERSION="8.11.0" \
  NVM_VERSION="0.33.5" \
- GOLANG_VERSION="1.11.4" \
+ GOLANG_VERSION="1.11.6" \
  DOTNET_SDK_VERSION="2.2.102" \
  DOCKER_VERSION="18.09.1" \
  DOCKER_COMPOSE_VERSION="1.23.2"
@@ -442,9 +442,9 @@ RUN set -ex \
 #****************     END JAVA     ****************************************************
 
 #****************     GO     **********************************************************
-ENV GOLANG_DOWNLOAD_SHA256="fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b" \
+ENV GOLANG_DOWNLOAD_SHA256="d20a4869ffb13cee0f7ee777bf18c7b9b67ef0375f93fac1298519e0c227a07f" \
     GOPATH="/go" \
-    DEP_VERSION="0.5.0" \
+    DEP_VERSION="0.5.1" \
     DEP_BINARY="dep-linux-amd64"
 
 RUN set -ex \
