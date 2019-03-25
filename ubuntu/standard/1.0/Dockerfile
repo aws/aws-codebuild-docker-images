@@ -13,21 +13,21 @@ FROM ubuntu:18.04
 
 ENV RUBY_MAJOR="2.6" \
  PYTHON_VERSION="3.7.2" \
- PHP_VERSION=7.3.1 \ 
+ PHP_VERSION="7.3.1" \
  NODE_VERSION="10.15.0" \
  NODE_8_VERSION="8.11.0" \
  NVM_VERSION="0.33.5" \
- GOLANG_VERSION="1.11.4" \
+ GOLANG_VERSION="1.12.1" \
  DOTNET_SDK_VERSION="2.2.102" \
  DOCKER_VERSION="18.09.1" \
  DOCKER_COMPOSE_VERSION="1.23.2"
 
 
 #****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="c9959e42b637fb7362899ac1d1aeef2a966fa0ea85631da91f4c4a7a9ec29644" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \    
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
     GITVERSION_VERSION="4.0.0" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src"
@@ -365,7 +365,7 @@ ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     ANDROID_SDK_MANAGER_VER="4333796" \
     ANDROID_SDK_BUILD_TOOLS="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS="platforms;android-28" \
-    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \   
+    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
     JDK_DOWNLOAD_SHA256="99be79935354f5c0df1ad293620ea36d13f48ec3ea870c838f20c504c9668b57" \
     ANT_DOWNLOAD_SHA512="acfa34c4f820d882f26ec67cf885d7dd484d534a7e99b33b05779e03da61849610328d2dbb4bfaa201e1ae75a0f0901e9c2bb793ed7bd76d3e4497e6ca5de371" \
     MAVEN_DOWNLOAD_SHA512="fae9c12b570c3ba18116a4e26ea524b29f7279c17cbaadc3326ca72927368924d9131d11b9e851b8dc9162228b6fdea955446be41207a5cfc61283dd8a561d2f" \
