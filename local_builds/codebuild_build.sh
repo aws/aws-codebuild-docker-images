@@ -40,6 +40,7 @@ function usage {
     echo "               * Use additional (-s) in <sourceIdentifier>:<sourceLocation> format for secondary source"
     echo "               * For sourceIdentifier, use a value that is fewer than 128 characters and contains only alphanumeric characters and underscores"
     echo "  -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables."
+    echo "  -p        Used to specify the AWS CLI Profile."
     echo "  -b FILE   Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory."
     echo "  -m        Used to mount the source directory to the customer build container directly."
     echo "  -e FILE   Used to specify a file containing environment variables."
@@ -57,7 +58,7 @@ artifact_flag=false
 awsconfig_flag=false
 mount_src_dir_flag=false
 
-while getopts "cmi:a:s:b:e:l:h" opt; do
+while getopts "cmi:a:s:b:e:l:p:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
@@ -67,6 +68,7 @@ while getopts "cmi:a:s:b:e:l:h" opt; do
         s  ) source_dirs+=("$OPTARG");;
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
+        p  ) aws_profile=$OPTARG;;
         h  ) usage; exit;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -144,6 +146,12 @@ then
     else
         docker_command+=" -e \"AWS_CONFIGURATION=NONE\""
     fi
+
+    if [ -n "$aws_profile" ]
+    then
+        docker_command+=" -e \"AWS_PROFILE=$aws_profile\""
+    fi
+
     docker_command+="$(env | grep ^AWS_ | while read -r line; do echo " -e \"$line\""; done )"
 fi
 
