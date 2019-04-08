@@ -17,7 +17,7 @@ ENV RUBY_MAJOR="2.6" \
  NODE_VERSION="10.15.0" \
  NODE_8_VERSION="8.11.0" \
  NVM_VERSION="0.33.5" \
- GOLANG_VERSION="1.11.4" \
+ GOLANG_VERSION="1.12.2" \
  DOTNET_SDK_VERSION="2.2.102" \
  DOCKER_VERSION="18.09.1" \
  DOCKER_COMPOSE_VERSION="1.23.2"
@@ -442,9 +442,10 @@ RUN set -ex \
 #****************     END JAVA     ****************************************************
 
 #****************     GO     **********************************************************
-ENV GOLANG_DOWNLOAD_SHA256="fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b" \
+ENV GOLANG_DOWNLOAD_URL="https://dl.google.com/go/go" \
+    GOLANG_DOWNLOAD_SHA256="f28c1fde8f293cc5c83ae8de76373cf76ae9306909564f54e0edcf140ce8fe3f" \
     GOPATH="/go" \
-    DEP_VERSION="0.5.0" \
+    DEP_VERSION="0.5.1" \
     DEP_BINARY="dep-linux-amd64"
 
 RUN set -ex \
@@ -453,7 +454,7 @@ RUN set -ex \
     && apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
     && apt-get clean \
-    && wget "https://storage.googleapis.com/golang/go$GOLANG_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
+    && wget "$GOLANG_DOWNLOAD_URL$GOLANG_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
     && echo "$GOLANG_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/golang.tar.gz -C /usr/local \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
