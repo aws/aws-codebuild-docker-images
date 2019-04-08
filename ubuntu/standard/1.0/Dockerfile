@@ -13,7 +13,7 @@ FROM ubuntu:18.04
 
 ENV RUBY_MAJOR="2.6" \
  PYTHON_VERSION="3.7.2" \
- PHP_VERSION=7.3.1 \ 
+ PHP_VERSION=7.3.1 \
  NODE_VERSION="10.15.0" \
  NODE_8_VERSION="8.11.0" \
  NVM_VERSION="0.33.5" \
@@ -23,11 +23,11 @@ ENV RUBY_MAJOR="2.6" \
  DOCKER_COMPOSE_VERSION="1.23.2"
 
 
-#****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+#****************        Utilities     *********************************************
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="c9959e42b637fb7362899ac1d1aeef2a966fa0ea85631da91f4c4a7a9ec29644" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \    
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
     GITVERSION_VERSION="4.0.0" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src"
@@ -50,7 +50,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && apt-get install -y --no-install-recommends \
-       wget python3 python3-dev python3-pip python3-setuptools fakeroot ca-certificates jq \
+       rsync wget python3 python3-dev python3-pip python3-setuptools fakeroot ca-certificates jq \
        netbase gnupg dirmngr bzr mercurial procps \
        tar gzip zip autoconf automake \
        bzip2 file g++ gcc imagemagick \
@@ -71,7 +71,7 @@ RUN set -ex \
        sgml-base sgml-data subversion tcl tcl8.6 xml-core xmlto xsltproc \
        tk gettext gettext-base libapr1 libaprutil1 xvfb expect \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
-    && echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | tee /etc/apt/sources.list.d/mono-official-stable.list \    
+    && echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -108,7 +108,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-we
  && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
 
 RUN set -ex \
-&& pip3 install awscli boto3  
+&& pip3 install awscli boto3
 
 VOLUME /var/lib/docker
 
@@ -117,7 +117,7 @@ COPY ssh_config /root/.ssh/config
 
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
-#****************        RUBY     ********************************************* 
+#****************        RUBY     *********************************************
 ENV RUBY_VERSION="2.6.0" \
  RUBY_DOWNLOAD_SHA256="f3c35b924a11c88ff111f0956ded3cdc12c90c04b72b266ac61076d3697fc072" \
  RUBYGEMS_VERSION="3.0.1" \
@@ -162,10 +162,10 @@ RUN mkdir -p /usr/local/etc \
  && chmod 777 "$GEM_HOME" "$BUNDLE_BIN" \
  && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-#****************   END RUBY     ********************************************* 
+#****************   END RUBY     *********************************************
 
 
-#****************        PYTHON     ********************************************* 
+#****************        PYTHON     *********************************************
 ENV PATH="/usr/local/bin:$PATH" \
     GPG_KEY="0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D" \
     PYTHON_PIP_VERSION="18.1" \
@@ -226,7 +226,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -s python3 python \
     && ln -s python3-config python-config \
         && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#****************      END PYTHON     ********************************************* 
+#****************      END PYTHON     *********************************************
 
 #****************      PHP     ****************************************************
  ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
@@ -252,13 +252,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
            || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
      done; \
      gpg --batch --verify php.tar.xz.asc php.tar.xz; \
-     rm -rf "$GNUPGHOME"; \ 
+     rm -rf "$GNUPGHOME"; \
      set -eux; \
      savedAptMark="$(apt-mark showmanual)"; \
      apt-get update; \
      apt-get install -y --no-install-recommends libedit-dev dpkg-dev libargon2-0-dev; \
      rm -rf /var/lib/apt/lists/*; \
-     apt-get clean; \ 
+     apt-get clean; \
      export \
          CFLAGS="$PHP_CFLAGS" \
          CPPFLAGS="$PHP_CPPFLAGS" \
@@ -322,13 +322,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      mkdir "$PHP_INI_DIR/conf.d"; \
      touch "$PHP_INI_DIR/conf.d/memory.ini" \
      && echo "memory_limit = 1G;" >> "$PHP_INI_DIR/conf.d/memory.ini";
- 
+
  ENV PATH="$PHPPATH/bin:/usr/local/php/bin:$PATH"
- 
+
  # Install Composer globally
  RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 #****************      END PHP     ****************************************************
- 
+
 #****************      NODEJS     ****************************************************
 
  ENV N_SRC_DIR="$SRC_DIR/n"
@@ -340,7 +340,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
      && apt-get update && apt-get install -y --no-install-recommends yarn \
-     && cd / && rm -rf $N_SRC_DIR; 
+     && cd / && rm -rf $N_SRC_DIR;
 
 #****************      END NODEJS     ****************************************************
 
@@ -365,7 +365,7 @@ ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     ANDROID_SDK_MANAGER_VER="4333796" \
     ANDROID_SDK_BUILD_TOOLS="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS="platforms;android-28" \
-    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \   
+    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
     JDK_DOWNLOAD_SHA256="99be79935354f5c0df1ad293620ea36d13f48ec3ea870c838f20c504c9668b57" \
     ANT_DOWNLOAD_SHA512="acfa34c4f820d882f26ec67cf885d7dd484d534a7e99b33b05779e03da61849610328d2dbb4bfaa201e1ae75a0f0901e9c2bb793ed7bd76d3e4497e6ca5de371" \
     MAVEN_DOWNLOAD_SHA512="fae9c12b570c3ba18116a4e26ea524b29f7279c17cbaadc3326ca72927368924d9131d11b9e851b8dc9162228b6fdea955446be41207a5cfc61283dd8a561d2f" \
@@ -401,19 +401,19 @@ RUN set -ex \
     # Install Android SDK
     && android-accept-licenses.sh "sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS} ${ANDROID_SDK_PLATFORM_TOOLS} ${ANDROID_SDK_EXTRAS}" \
     && android-accept-licenses.sh "sdkmanager --licenses" \
-    && apt-get install -y python-setuptools \     
+    && apt-get install -y python-setuptools \
     # Install Ant
     && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
     && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
-    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \    
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
     && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
-    && mkdir -p $MAVEN_CONFIG \    
+    && mkdir -p $MAVEN_CONFIG \
     # Install Gradle
     && mkdir -p $GRADLE_PATH \
     && for version in $INSTALLED_GRADLE_VERSIONS; do { \
@@ -429,13 +429,13 @@ RUN set -ex \
      }; done \
     # Install default GRADLE_VERSION to path
       && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-      && rm -rf $GRADLE_PATH \   
+      && rm -rf $GRADLE_PATH \
     # Install SBT
     && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
     && apt-get install -y --no-install-recommends apt-transport-https \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \    
+    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \
     # Cleanup
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
@@ -475,7 +475,7 @@ RUN set -ex \
         zlib1g \
         software-properties-common \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
-    && apt-get update \   
+    && apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK
