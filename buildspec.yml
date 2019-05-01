@@ -3,5 +3,5 @@ version: 0.2
 phases:
   build:
     commands:
-      - cd $CODEBUILD_SRC_DIR/ubuntu/standard/1.0
-      - docker build -t aws/codebuild/standard:1.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/standard/2.0
+      - docker build -t aws/codebuild/standard:2.0 .

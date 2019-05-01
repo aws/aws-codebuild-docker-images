@@ -8,24 +8,24 @@ The master branch will sometimes have changes that are still in the process of b
 
 ### How to build Docker images
 
-Steps to build Ruby 2.3.1 image
+Steps to build Standard 2.0 image
 
 * Run `git clone https://github.com/aws/aws-codebuild-docker-images.git` to download this repository to your local machine
-* Run `cd ubuntu/ruby/2.3.1` to change the directory in your local workspace. This is the location of the Ruby 2.3.1 Dockerfile with Ubuntu 14.04 base.
-* Run `docker build -t aws/codebuild/ruby:2.3.1 .` to build Docker image locally
+* Run `cd ubuntu/standard/2.0` to change the directory in your local workspace. This is the location of the Standard 2.0 Dockerfile with Ubuntu base.
+* Run `docker build -t aws/codebuild/standard:2.0 .` to build Docker image locally
 
 To poke around in the image interactively, build it and run:
-`docker run -it --entrypoint sh aws/codebuild/ruby:2.3.1 -c bash`
+`docker run -it --entrypoint sh aws/codebuild/standard:2.0 -c bash`
 
 To let the Docker daemon start up in the container, build it and run:
-`docker run -it --privileged aws/codebuild/ruby:2.3.1 bash`
+`docker run -it --privileged aws/codebuild/standard:2.0 bash`
 
 ```
 $ git clone https://github.com/aws/aws-codebuild-docker-images.git
 $ cd aws-codebuild-docker-images
-$ cd ubuntu/ruby/2.3.1
-$ docker build -t aws/codebuild/ruby:2.3.1 .
-$ docker run -it --entrypoint sh aws/codebuild/ruby:2.3.1 -c bash
+$ cd ubuntu/standard/2.0
+$ docker build -t aws/codebuild/standard:2.0 .
+$ docker run -it --entrypoint sh aws/codebuild/standard:2.0 -c bash
 ```
 
 ### Image maintenance
@@ -34,5 +34,5 @@ Some of the images in this repository are no longer actively maintained by AWS C
 
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
-+ [standard 1.0](ubuntu/standard/1.0)
++ [standard 2.0](ubuntu/standard/2.0)
 
