@@ -29,7 +29,7 @@ RUN set -ex \
     && echo "deb https://download.mono-project.com/repo/ubuntu stable-trusty main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
     && apt-get update \
     && apt-get install software-properties-common -y --no-install-recommends \
-    && apt-add-repository ppa:git-core/ppa \
+    && apt-add-repository -y ppa:git-core/ppa \
     && apt-get update \
     && apt-get install git=1:2.* -y --no-install-recommends \
     && git version \
