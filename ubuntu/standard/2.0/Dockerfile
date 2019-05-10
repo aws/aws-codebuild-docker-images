@@ -217,7 +217,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
      export GNUPGHOME="$(mktemp -d)"; \
      for key in $GPG_KEYS; do \
-         ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
+         ( gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" \
            || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
            || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
      done; \
