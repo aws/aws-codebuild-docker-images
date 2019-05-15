@@ -505,6 +505,7 @@ RUN set -ex \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+    && unset POWERSHELL_VERSION
 #****************     END .NET-CORE     *******************************************************
 
 #****************    HEADLESS BROWSERS     *******************************************************
