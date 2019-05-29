@@ -68,7 +68,7 @@ runtimes:
       2.6:
         commands:
           - echo "Installing Ruby version 2.6 ..."
-          - rbenv global 2.6.2
+          - rbenv global 2.6.3
   nodejs:
     versions:
       10:
