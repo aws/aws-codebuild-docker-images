@@ -14,7 +14,7 @@ FROM ubuntu:18.04
 ENV RUBY_VERSION="2.6.3" \
  PYTHON_VERSION="3.7.3" \
  PHP_VERSION=7.3.5 \
- JAVA_VERSION=11 \ 
+ JAVA_VERSION=11 \
  NODE_VERSION="10.15.3" \
  NODE_8_VERSION="8.15.1" \
  GOLANG_VERSION="1.12.5" \
@@ -22,14 +22,18 @@ ENV RUBY_VERSION="2.6.3" \
  DOCKER_VERSION="18.09.6" \
  DOCKER_COMPOSE_VERSION="1.24.0"
 
-#****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+#****************        Utilities     *********************************************
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="1f3f6774117765279fce64ee7f76abbb5f260264548cf80631d68fb2d795bb09" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \    
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
     GITVERSION_VERSION="4.0.0" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src"
+
+# Use gnupg2
+RUN apt-get update
+RUN apt-get install -y gnupg2
 
 # Install git, SSH, and other utilities
 RUN set -ex \
@@ -71,7 +75,7 @@ RUN set -ex \
        tk gettext gettext-base libapr1 libaprutil1 xvfb expect parallel \
        locales rsync \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
-    && echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list \    
+    && echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -108,7 +112,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-we
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
 
 RUN set -ex \
-    && pip3 install awscli boto3  
+    && pip3 install awscli boto3
 
 VOLUME /var/lib/docker
 
@@ -135,7 +139,7 @@ RUN set -ex \
 
 #**************** END RUBY *****************************************************
 
-#****************        PYTHON     ********************************************* 
+#****************        PYTHON     *********************************************
 ENV PATH="/usr/local/bin:$PATH" \
     GPG_KEY="0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D" \
     PYTHON_PIP_VERSION="19.0.3" \
@@ -149,10 +153,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
     && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
-    && (gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
-        || gpg --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
-        || gpg --keyserver keyserver.ubuntu.com --recv-keys "$GPG_KEY") \
-    && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+    && (gpg2 --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
+        || gpg2 --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
+        || gpg2 --keyserver keyserver.ubuntu.com --recv-keys "$GPG_KEY") \
+    && gpg2 --batch --verify python.tar.xz.asc python.tar.xz \
     && rm -r "$GNUPGHOME" python.tar.xz.asc \
     && mkdir -p /usr/src/python \
     && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
@@ -196,7 +200,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -s python3 python \
     && ln -s python3-config python-config \
         && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#****************      END PYTHON     ********************************************* 
+#****************      END PYTHON     *********************************************
 
 #****************      PHP     ****************************************************
  ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
@@ -217,18 +221,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
      export GNUPGHOME="$(mktemp -d)"; \
      for key in $GPG_KEYS; do \
-         ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
-           || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
-           || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
+         ( gpg2 --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
+           || gpg2 --keyserver pgp.mit.edu --recv-keys "$key" \
+           || gpg2 --keyserver keyserver.pgp.com --recv-keys "$key" ); \
      done; \
-     gpg --batch --verify php.tar.xz.asc php.tar.xz; \
+     gpg2 --batch --verify php.tar.xz.asc php.tar.xz; \
      rm -rf "$GNUPGHOME"; \
      set -eux; \
      savedAptMark="$(apt-mark showmanual)"; \
      apt-get update; \
      apt-get install -y --no-install-recommends libedit-dev dpkg-dev libargon2-0-dev; \
      rm -rf /var/lib/apt/lists/*; \
-     apt-get clean; \ 
+     apt-get clean; \
      export \
          CFLAGS="$PHP_CFLAGS" \
          CPPFLAGS="$PHP_CPPFLAGS" \
@@ -292,9 +296,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      mkdir "$PHP_INI_DIR/conf.d"; \
      touch "$PHP_INI_DIR/conf.d/memory.ini" \
      && echo "memory_limit = 1G;" >> "$PHP_INI_DIR/conf.d/memory.ini";
- 
+
  ENV PATH="$PHPPATH/bin:/usr/local/php/bin:$PATH"
- 
+
  # Install Composer globally
  RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 #****************      END PHP     ****************************************************
@@ -310,7 +314,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
      && apt-get update && apt-get install -y --no-install-recommends yarn \
-     && cd / && rm -rf $N_SRC_DIR; 
+     && cd / && rm -rf $N_SRC_DIR;
 
 #****************      END NODEJS     ****************************************************
 
@@ -338,7 +342,7 @@ ENV JAVA_11_HOME="/opt/jvm/openjdk-11" \
     ANDROID_SDK_MANAGER_VER="4333796" \
     ANDROID_SDK_BUILD_TOOLS="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS="platforms;android-28" \
-    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \   
+    ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
     JDK_DOWNLOAD_SHA256="99be79935354f5c0df1ad293620ea36d13f48ec3ea870c838f20c504c9668b57" \
     ANT_DOWNLOAD_SHA512="acfa34c4f820d882f26ec67cf885d7dd484d534a7e99b33b05779e03da61849610328d2dbb4bfaa201e1ae75a0f0901e9c2bb793ed7bd76d3e4497e6ca5de371" \
     MAVEN_DOWNLOAD_SHA512="fae9c12b570c3ba18116a4e26ea524b29f7279c17cbaadc3326ca72927368924d9131d11b9e851b8dc9162228b6fdea955446be41207a5cfc61283dd8a561d2f" \
@@ -389,19 +393,19 @@ RUN set -ex \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
           update-alternatives --set $tool $tool_path; \
         done \
-     && rm $JAVA_HOME/lib/security/cacerts && ln -s /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts \     
+     && rm $JAVA_HOME/lib/security/cacerts && ln -s /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts \
     # Install Ant
     && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
     && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
-    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \    
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
     && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
-    && mkdir -p $MAVEN_CONFIG \    
+    && mkdir -p $MAVEN_CONFIG \
     # Install Gradle
     && mkdir -p $GRADLE_PATH \
     && for version in $INSTALLED_GRADLE_VERSIONS; do { \
@@ -418,13 +422,13 @@ RUN set -ex \
      }; done \
     # Install default GRADLE_VERSION to path
       && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-      && rm -rf $GRADLE_PATH \   
+      && rm -rf $GRADLE_PATH \
     # Install SBT
     && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
     && apt-get install -y --no-install-recommends apt-transport-https \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
     && apt-get update \
-    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \    
+    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \
     # Cleanup
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
@@ -464,7 +468,7 @@ RUN set -ex \
         zlib1g \
         software-properties-common \
     && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
-    && apt-get update \   
+    && apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install .NET Core SDK
