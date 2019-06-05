@@ -494,9 +494,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 6.1.3
+ENV POWERSHELL_VERSION 6.2.1
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA E728B51487288FB395C2BA41CE978DE265049C5BD995AFF0B06F1573DB831C8B
+ENV POWERSHELL_DOWNLOAD_SHA E8287687C99162BF70FEFCC2E492F3B54F80BE880D86B9A0EC92C71B05C40013
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
