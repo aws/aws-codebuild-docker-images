@@ -162,6 +162,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ./configure \
         --enable-loadable-sqlite-extensions \
         --enable-shared \
+        --enable-optimizations \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
