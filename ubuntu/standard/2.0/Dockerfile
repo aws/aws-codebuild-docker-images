@@ -1,4 +1,4 @@
-# Copyright 2017-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -13,12 +13,12 @@ FROM ubuntu:18.04
 
 ENV RUBY_VERSION="2.6.3" \
  PYTHON_VERSION="3.7.3" \
- PHP_VERSION=7.3.5 \
+ PHP_VERSION=7.3.6 \
  JAVA_VERSION=11 \ 
- NODE_VERSION="10.15.3" \
- NODE_8_VERSION="8.15.1" \
+ NODE_VERSION="10.16.0" \
+ NODE_8_VERSION="8.16.0" \
  GOLANG_VERSION="1.12.5" \
- DOTNET_SDK_VERSION="2.2.203" \
+ DOTNET_SDK_VERSION="2.2.300" \
  DOCKER_VERSION="18.09.6" \
  DOCKER_COMPOSE_VERSION="1.24.0"
 
@@ -145,9 +145,8 @@ ENV PATH="/usr/local/bin:$PATH" \
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tcl-dev tk-dev \
     && rm -rf /var/lib/apt/lists/* \
-    \
-    && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
-    && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
+    && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" && \
+    wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
     && (gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
         || gpg --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
@@ -165,7 +164,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && make -j$(nproc) \
     && make install \
     && ldconfig \
-    \
 # explicit path to "pip3" to ensure distribution-provided "pip3" cannot interfere
     && if [ ! -e /usr/local/bin/pip3 ]; then : \
         && wget -O /tmp/get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
@@ -200,7 +198,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 #****************      PHP     ****************************************************
  ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
- ENV PHP_DOWNLOAD_SHA="e1011838a46fd4a195c8453b333916622d7ff5bce4aca2d9d99afac142db2472" \
+ ENV PHP_DOWNLOAD_SHA="fefc8967daa30ebc375b2ab2857f97da94ca81921b722ddac86b29e15c54a164" \
      PHPPATH="/php" \
      PHP_INI_DIR="/usr/local/etc/php" \
      PHP_CFLAGS="-fstack-protector -fpic -fpie -O2" \
@@ -324,12 +322,12 @@ ENV JAVA_11_HOME="/opt/jvm/openjdk-11" \
     JAVA_8_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     JDK_8_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     JRE_8_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
-    ANT_VERSION=1.10.5 \
+    ANT_VERSION=1.10.6 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.6.0 \
+    MAVEN_VERSION=3.6.1 \
     MAVEN_CONFIG="/root/.m2" \
-    INSTALLED_GRADLE_VERSIONS="4.10.3 5.3" \
-    GRADLE_VERSION=5.3 \
+    INSTALLED_GRADLE_VERSIONS="4.10.3 5.4.1" \
+    GRADLE_VERSION=5.4.1 \
     SBT_VERSION=1.2.8 \
     JDK_VERSION=11.0.2 \
     JDK_VERSION_TAG=9 \
@@ -340,9 +338,9 @@ ENV JAVA_11_HOME="/opt/jvm/openjdk-11" \
     ANDROID_SDK_PLATFORM_TOOLS="platforms;android-28" \
     ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \   
     JDK_DOWNLOAD_SHA256="99be79935354f5c0df1ad293620ea36d13f48ec3ea870c838f20c504c9668b57" \
-    ANT_DOWNLOAD_SHA512="acfa34c4f820d882f26ec67cf885d7dd484d534a7e99b33b05779e03da61849610328d2dbb4bfaa201e1ae75a0f0901e9c2bb793ed7bd76d3e4497e6ca5de371" \
-    MAVEN_DOWNLOAD_SHA512="fae9c12b570c3ba18116a4e26ea524b29f7279c17cbaadc3326ca72927368924d9131d11b9e851b8dc9162228b6fdea955446be41207a5cfc61283dd8a561d2f" \
-    GRADLE_DOWNLOADS_SHA256="f4d820c2a9685710eba5b92f10e0e4fb20e0d6c0dd1f46971e658160f25e7147 5.3\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
+    ANT_DOWNLOAD_SHA512="c1a9694c3018e248000ff6f46d48af85f537ef3935e0d5256543c58a240084c0aff5289fd9e94cbc40d5442f3cc43592398047f2548fded40d9882be2b40750d" \
+    MAVEN_DOWNLOAD_SHA512="b4880fb7a3d81edd190a029440cdf17f308621af68475a4fe976296e71ff4a4b546dd6d8a58aaafba334d309cc11e638c52808a4b0e818fc0fd544226d952544" \
+    GRADLE_DOWNLOADS_SHA256="14cd15fc8cc8705bd69dcfa3c8fefb27eb7027f5de4b47a8b279218f76895a91 5.4.1\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
     ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
 
 ENV JDK_DOWNLOAD_TAR="openjdk-${JDK_VERSION}_linux-x64_bin.tar.gz" \
@@ -469,7 +467,7 @@ RUN set -ex \
 
 # Install .NET Core SDK
 ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
-ENV DOTNET_SDK_DOWNLOAD_SHA 8DA955FA0AEEBB6513A6E8C4C23472286ED78BD5533AF37D79A4F2C42060E736FDA5FD48B61BF5AEC10BBA96EB2610FACC0F8A458823D374E1D437B26BA61A5C
+ENV DOTNET_SDK_DOWNLOAD_SHA 1D660A323180DF3DA8C6E0EA3F439D6BBEC29670D498AC884F38BF3CDFFBB041C7AFFF66171CDFD24C82394B845B135B057404DEF1FCE9F206853726382BC42B
 
 RUN set -ex \
     && curl -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
@@ -494,9 +492,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 6.1.3
+ARG POWERSHELL_VERSION=6.2.1
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA E728B51487288FB395C2BA41CE978DE265049C5BD995AFF0B06F1573DB831C8B
+ENV POWERSHELL_DOWNLOAD_SHA E8287687C99162BF70FEFCC2E492F3B54F80BE880D86B9A0EC92C71B05C40013
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -539,3 +537,5 @@ RUN set -ex \
     && chmod 755 /opt/chromedriver-$CHROME_DRIVER_VERSION \
     && ln -s /opt/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
     && chromedriver --version
+
+ENTRYPOINT ["dockerd-entrypoint.sh"]
