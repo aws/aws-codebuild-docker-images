@@ -14,7 +14,7 @@ FROM ubuntu:18.04
 ENV RUBY_VERSION="2.6.3" \
  PYTHON_VERSION="3.7.3" \
  PHP_VERSION=7.3.6 \
- JAVA_VERSION=11 \ 
+ JAVA_VERSION=11 \
  NODE_VERSION="10.16.0" \
  NODE_8_VERSION="8.16.0" \
  GOLANG_VERSION="1.12.5" \
@@ -138,7 +138,7 @@ RUN set -ex \
 #****************        PYTHON     ********************************************* 
 ENV PATH="/usr/local/bin:$PATH" \
     GPG_KEY="0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D" \
-    PYTHON_PIP_VERSION="19.0.3" \
+    PYTHON_PIP_VERSION="19.1.1" \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
 
@@ -175,6 +175,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # https://github.com/docker-library/python/pull/143#issuecomment-241032683
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
         && pip install pipenv virtualenv --no-cache-dir \
+        && pip3 install --no-cache-dir --upgrade setuptools wheel \
 # then we use "pip list" to ensure we don't have more than one pip version installed
 # https://github.com/docker-library/python/pull/100
     && [ "$(pip list |tac|tac| awk -F '[ ()]+' '$1 == "pip" { print $2; exit }')" = "$PYTHON_PIP_VERSION" ] \
