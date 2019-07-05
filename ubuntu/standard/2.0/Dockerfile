@@ -108,7 +108,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-we
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
 
 RUN set -ex \
-    && pip3 install --upgrade setuptools wheel
+    && pip3 install --upgrade setuptools wheel \
     && pip3 install awscli boto3  
 
 VOLUME /var/lib/docker
