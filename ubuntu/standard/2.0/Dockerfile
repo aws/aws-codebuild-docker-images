@@ -38,7 +38,7 @@ RUN set -ex \
     && apt install -y apt-transport-https \
     && apt-get update \
     && apt-get install software-properties-common -y --no-install-recommends \
-    && apt-add-repository ppa:git-core/ppa \
+    && apt-add-repository -y ppa:git-core/ppa \
     && apt-get update \
     && apt-get install git=1:2.* -y --no-install-recommends \
     && git version \
@@ -509,8 +509,8 @@ RUN set -ex \
 
 #****************    HEADLESS BROWSERS     *******************************************************
 RUN set -ex \
-    && apt-add-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
-    && apt-add-repository ppa:malteworld/ppa && apt-get update \
+    && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
+    && apt-add-repository -y ppa:malteworld/ppa && apt-get update \
     && apt-get install -y libgtk-3-0 libglib2.0-0 libdbus-glib-1-2 libdbus-1-3 libasound2 \
     && wget -O ~/FirefoxSetup.tar.bz2 "https://download.mozilla.org/?product=firefox-latest&os=linux64" \
     && tar xjf ~/FirefoxSetup.tar.bz2 -C /opt/ \
