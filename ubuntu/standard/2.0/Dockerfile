@@ -508,6 +508,8 @@ RUN set -ex \
 #****************     END .NET-CORE     *******************************************************
 
 #****************    HEADLESS BROWSERS     *******************************************************
+# Install Firefox
+
 RUN set -ex \
     && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
     && apt-add-repository -y ppa:malteworld/ppa && apt-get update \
@@ -517,6 +519,15 @@ RUN set -ex \
     && ln -s /opt/firefox/firefox /usr/local/bin/firefox \
     && rm ~/FirefoxSetup.tar.bz2 \
     && firefox --version
+
+# Install geckodriver
+
+RUN set -ex \
+    && curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep browser_download_url | grep linux64.tar.gz | cut -d : -f 2,3 | tr -d ' "' | wget -O /tmp/geckodriver-latest-linux64.tar.gz -qi - \
+    && tar -C /opt -zxvf /tmp/geckodriver-latest-linux64.tar.gz \
+    && rm -f /tmp/geckodriver-latest-linux64.tar.gz \
+    && ln -s /opt/geckodriver /usr/bin/geckodriver \
+    && geckodriver --version
 
 # Install Chrome
 
