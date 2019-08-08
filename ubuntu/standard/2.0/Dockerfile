@@ -148,12 +148,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" && \
     wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && (gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
-        || gpg --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
-        || gpg --keyserver keyserver.ubuntu.com --recv-keys "$GPG_KEY") \
-    && gpg --batch --verify python.tar.xz.asc python.tar.xz \
-    && rm -r "$GNUPGHOME" python.tar.xz.asc \
+    # && export GNUPGHOME="$(mktemp -d)" \
+    # && (gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
+    #    || gpg --keyserver pgp.mit.edu --recv-keys "$GPG_KEY" \
+    #    || gpg --keyserver keyserver.ubuntu.com --recv-keys "$GPG_KEY") \
+    # && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+    # && rm -r "$GNUPGHOME" python.tar.xz.asc \
     && mkdir -p /usr/src/python \
     && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
     && rm python.tar.xz \
@@ -215,14 +215,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
      wget -O php.tar.xz "$PHP_URL"; \
      echo "$PHP_DOWNLOAD_SHA *php.tar.xz" | sha256sum -c -; \
      wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
-     export GNUPGHOME="$(mktemp -d)"; \
-     for key in $GPG_KEYS; do \
-         ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
-           || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
-           || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
-     done; \
-     gpg --batch --verify php.tar.xz.asc php.tar.xz; \
-     rm -rf "$GNUPGHOME"; \
+     # export GNUPGHOME="$(mktemp -d)"; \
+     # for key in $GPG_KEYS; do \
+     #    ( gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" \
+     #      || gpg --keyserver pgp.mit.edu --recv-keys "$key" \
+     #      || gpg --keyserver keyserver.pgp.com --recv-keys "$key" ); \
+     # done; \
+     # gpg --batch --verify php.tar.xz.asc php.tar.xz; \
+     # rm -rf "$GNUPGHOME"; \
      set -eux; \
      savedAptMark="$(apt-mark showmanual)"; \
      apt-get update; \
