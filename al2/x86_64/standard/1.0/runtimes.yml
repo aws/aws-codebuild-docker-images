@@ -8,11 +8,16 @@ runtimes:
           java: ["corretto8"]
         commands:
           - echo "Installing Android version 28 ..."
+      29:
+        requires:
+          java: ["corretto8"]
+        commands:
+          - echo "Installing Android version 29 ..."
   java:
     versions:
       corretto11:
         commands:
-          - echo "Installing Java version 11 ..."
+          - echo "Installing corretto(OpenJDK) version 11 ..."
 
           - export JAVA_HOME="$JAVA_11_HOME"
 
@@ -21,17 +26,17 @@ runtimes:
           - export JDK_HOME="$JDK_11_HOME"
 
           - |-
-            for tool_path in "$JAVA_HOME"/bin/*; 
+            for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
-              if [ $tool != 'java-rmi.cgi' ]; 
-              then 
+              if [ $tool != 'java-rmi.cgi' ];
+              then
                rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-              fi; 
+              fi;
             done
       corretto8:
         commands:
-          - echo "Installing Java version 8 ..."
+          - echo "Installing corretto(OpenJDK) version 8 ..."
 
           - export JAVA_HOME="$JAVA_8_HOME"
 
@@ -53,6 +58,11 @@ runtimes:
       1.12:
         commands:
           - echo "Installing Go version 1.12 ..."
+          - rm -rf /usr/local/go
+          - ln -s /usr/local/go12 /usr/local/go
+      1.13:
+        commands:
+          - echo "Installing Go version 1.13 ..."
   python:
     versions:
       3.7:
@@ -68,13 +78,13 @@ runtimes:
       2.6:
         commands:
           - echo "Installing Ruby version 2.6 ..."
-          - rbenv global 2.6.3
+          - rbenv global 2.6.4
   nodejs:
     versions:
       10:
         commands:
           - echo "Installing Node.js version 10 ..."
-          - n 10.16.0
+          - n 10.16.3
       8:
         commands:
           - echo "Installing Node.js version 8 ..."
@@ -89,3 +99,5 @@ runtimes:
       2.2:
         commands:
           - echo "Installing .NET version 2.2 ..."
+
+

@@ -11,24 +11,25 @@
 
 FROM amazonlinux:2
 
-ENV RUBY_VERSION="2.6.3" \
- PYTHON_VERSION="3.7.3" \
- PHP_VERSION=7.3.6 \
- JAVA_VERSION=11 \ 
- NODE_VERSION="10.16.0" \
+ENV RUBY_VERSION="2.6.4" \
+ PYTHON_VERSION="3.7.4" \
+ PHP_VERSION=7.3.9 \
+ JAVA_VERSION=11 \
+ NODE_VERSION="10.16.3" \
  NODE_8_VERSION="8.16.0" \
- GOLANG_VERSION="1.12.5" \
- DOTNET_SDK_VERSION="2.2.300" \
+ GOLANG_VERSION="1.13" \
+ GOLANG_12_VERSION="1.12.9" \
+ DOTNET_SDK_VERSION="2.2.402" \
  DOCKER_VERSION="18.09.6" \
  DOCKER_COMPOSE_VERSION="1.24.0"
 
 ARG CHINA_REGION
 
-#****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+#****************        Utilities     *********************************************
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="1f3f6774117765279fce64ee7f76abbb5f260264548cf80631d68fb2d795bb09" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \    
+    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
     GITVERSION_VERSION="4.0.0" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src" \
@@ -185,7 +186,7 @@ RUN set -ex \
 
 #****************      PHP     ****************************************************
  ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
- ENV PHP_DOWNLOAD_SHA="fefc8967daa30ebc375b2ab2857f97da94ca81921b722ddac86b29e15c54a164" \
+ ENV PHP_DOWNLOAD_SHA="4007f24a39822bef2805b75c625551d30be9eeed329d52eb0838fa5c1b91c1fd" \
      PHPPATH="/php" \
      PHP_INI_DIR="/usr/local/etc/php" \
      PHP_CFLAGS="-fstack-protector -fpic -fpie -O2" \
@@ -303,14 +304,16 @@ ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
     INSTALLED_GRADLE_VERSIONS="4.10.3 5.4.1" \
     GRADLE_VERSION=5.4.1 \
     SBT_VERSION=1.2.8 \
-    JDK_VERSION=11.0.3.7.1 \
+    JDK_VERSION=11.0.4.11.1 \
     ANDROID_HOME="/usr/local/android-sdk-linux" \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANDROID_SDK_MANAGER_VER="4333796" \
-    ANDROID_SDK_BUILD_TOOLS="build-tools;28.0.3" \
-    ANDROID_SDK_PLATFORM_TOOLS="platforms;android-28" \
+    ANDROID_SDK_BUILD_TOOLS="build-tools;29.0.2" \
+    ANDROID_SDK_PLATFORM_TOOLS="platforms;android-29" \
+    ANDROID_SDK_BUILD_TOOLS_28="build-tools;28.0.3" \
+    ANDROID_SDK_PLATFORM_TOOLS_28="platforms;android-28" \
     ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
-    JDK_DOWNLOAD_SHA256="810e6a70a8170e72f9d0fd9a380ba1e36bff9e44435175ef509f3c8b3be93d4c" \
+    JDK_DOWNLOAD_SHA256="aaf35f707ea12f5942c72ba70192444de19c4e1c7f5546ce2a0725093dde6fba" \
     ANT_DOWNLOAD_SHA512="c1a9694c3018e248000ff6f46d48af85f537ef3935e0d5256543c58a240084c0aff5289fd9e94cbc40d5442f3cc43592398047f2548fded40d9882be2b40750d" \
     MAVEN_DOWNLOAD_SHA512="b4880fb7a3d81edd190a029440cdf17f308621af68475a4fe976296e71ff4a4b546dd6d8a58aaafba334d309cc11e638c52808a4b0e818fc0fd544226d952544" \
     GRADLE_DOWNLOADS_SHA256="14cd15fc8cc8705bd69dcfa3c8fefb27eb7027f5de4b47a8b279218f76895a91 5.4.1\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
@@ -338,6 +341,7 @@ RUN set -ex \
     && ln -s ${ANDROID_HOME}/tools/android /usr/bin/android \
     # Install Android
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS} ${ANDROID_SDK_PLATFORM_TOOLS} ${ANDROID_SDK_EXTRAS} ${ANDROID_SDK_NDK_TOOLS}" \
+    && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS_28} ${ANDROID_SDK_PLATFORM_TOOLS_28}" \
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --licenses" \
     # Install Amazon Corretto 11
     # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
@@ -388,8 +392,8 @@ RUN set -ex \
     && rm -fr /tmp/* /var/tmp/*
 #****************     END JAVA     ****************************************************
 
-#****************     GO     **********************************************************
-ENV GOLANG_DOWNLOAD_SHA256="aea86e3c73495f205929cfebba0d63f1382c8ac59be081b6351681415f4063cf" \
+#****************     GO (latest 1.13)   **********************************************************
+ENV GOLANG_DOWNLOAD_SHA256="68a2297eb099d1a76097905a2ce334e3155004ec08cdea85f24527be3c48e856" \
     GOPATH="/go" \
     DEP_VERSION="0.5.1" \
     DEP_BINARY="dep-linux-amd64"
@@ -399,18 +403,33 @@ RUN set -ex \
     && chmod -R 777 "$GOPATH" \
     && wget "https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
     && echo "$GOLANG_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
-    && tar -xzf /tmp/golang.tar.gz -C /usr/local \
+    && tar -xzf /tmp/golang.tar.gz -C /tmp \
+    && mv /tmp/go /usr/local/go13  \
     && rm -fr /tmp/* /var/tmp/* \
     && wget "https://github.com/golang/dep/releases/download/v$DEP_VERSION/$DEP_BINARY" -O "$GOPATH/bin/dep" \
     && chmod +x "$GOPATH/bin/dep"
 
+RUN ln -s /usr/local/go13 /usr/local/go
+
 ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
+
+#***************    GO 1.12   *************************************************
+
+ENV GOLANG_12_DOWNLOAD_SHA256="ac2a6efcc1f5ec8bdc0db0a988bb1d301d64b6d61b7e8d9e42f662fbb75a2b9b"
+
+RUN set -ex \
+    && wget "https://dl.google.com/go/go$GOLANG_12_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
+    && echo "$GOLANG_12_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/golang.tar.gz -C /tmp \
+    && mv /tmp/go /usr/local/go12  \
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 #****************     END GO     **********************************************************
 
 #****************     .NET-CORE     *******************************************************
 # Install .NET Core SDK
 ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
-ENV DOTNET_SDK_DOWNLOAD_SHA 1D660A323180DF3DA8C6E0EA3F439D6BBEC29670D498AC884F38BF3CDFFBB041C7AFFF66171CDFD24C82394B845B135B057404DEF1FCE9F206853726382BC42B
+ENV DOTNET_SDK_DOWNLOAD_SHA 81937de0874ee837e3b42e36d1cf9e04bd9deff6ba60d0162ae7ca9336a78f733e624136d27f559728df3f681a72a669869bf91d02db47c5331398c0cfda9b44
 
 RUN set -ex \
     && curl -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
@@ -449,7 +468,7 @@ RUN set -ex \
 #****************     END .NET-CORE     *******************************************************
 
 # Download and set up GitVersion
-ENV LIBGIT2_PKG="https://rpmfind.net/linux/centos/7.6.1810/extras/x86_64/Packages/libgit2-0.26.6-1.el7.x86_64.rpm"
+ENV LIBGIT2_PKG="https://rpmfind.net/linux/centos/7/extras/x86_64/Packages/libgit2-0.26.6-1.el7.x86_64.rpm"
 
 RUN set -ex \
     && yum install -y $LIBGIT2_PKG \
@@ -482,19 +501,14 @@ RUN set -ex \
     && ln -s /opt/geckodriver /usr/bin/geckodriver \
     && geckodriver --version
 
-# Install Chrome
-
+# Install Chromium
 RUN set -ex \
-    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm -O /tmp/google-chrome.rpm \
-    && yum localinstall -y /tmp/google-chrome.rpm \
-    && rm /tmp/google-chrome.rpm \
-    && sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' "/opt/google/chrome/google-chrome" \
-    && google-chrome --version
+    && yum install -y chromium
 
 # Install ChromeDriver
 
 RUN set -ex \
-    && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5}'` \
+    && CHROME_VERSION=`chromium-browser --version | awk -F '[ .]' '{print $2"."$3"."$4}'` \
     && CHROME_DRIVER_VERSION=`wget -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION` \
     && wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
     && unzip /tmp/chromedriver_linux64.zip -d /opt \
@@ -509,3 +523,4 @@ RUN set -ex \
     && yum clean all
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
+
