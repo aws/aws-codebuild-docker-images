@@ -66,7 +66,7 @@ RUN set -ex \
        libncurses5-dev libpq-dev libreadline-dev \
        libsqlite3-dev libssl-dev libtool libwebp-dev \
        libxml2-dev libxslt1-dev libyaml-dev make \
-       patch xz-utils zlib1g-dev unzip curl \
+       pwgen patch xz-utils zlib1g-dev unzip curl \
        e2fsprogs iptables xfsprogs \
        mono-devel less groff liberror-perl \
        asciidoc build-essential bzr cvs cvsps docbook-xml docbook-xsl dpkg-dev \
