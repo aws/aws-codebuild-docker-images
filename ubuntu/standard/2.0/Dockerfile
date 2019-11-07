@@ -30,7 +30,7 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="1f3f6774117765279fce64ee7f76abbb5f260264548cf80631d68fb2d795bb09" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    GITVERSION_VERSION="4.0.0" \
+    GITVERSION_VERSION="5.1.1" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src"
 
@@ -81,11 +81,11 @@ RUN set -ex \
 
 # Download and set up GitVersion
 RUN set -ex \
-    && wget "https://github.com/GitTools/GitVersion/releases/download/v${GITVERSION_VERSION}/GitVersion-bin-net40-v${GITVERSION_VERSION}.zip" -O /tmp/GitVersion_${GITVERSION_VERSION}.zip \
+    && wget "https://github.com/GitTools/GitVersion/releases/download/${GITVERSION_VERSION}/gitversion-linux-${GITVERSION_VERSION}.tar.gz" -O /tmp/GitVersion_${GITVERSION_VERSION}.tar.gz \
     && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
+    && tar xf /tmp/GitVersion_${GITVERSION_VERSION}.tar.gz -C /usr/local/GitVersion_${GITVERSION_VERSION} \
+    && rm /tmp/GitVersion_${GITVERSION_VERSION}.tar.gz \
+    && echo "/usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion \$@" >> /usr/local/bin/gitversion \
     && chmod +x /usr/local/bin/gitversion
 
 # Install Docker
