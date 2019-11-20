@@ -1,0 +1,126 @@
+version: 0.1
+
+runtimes:
+  java:
+    versions:
+      corretto11:
+        commands:
+          - echo "Installing corretto (OpenJDK) version 11 ..."
+
+          - export JAVA_HOME="$JAVA_11_HOME"
+
+          - export JRE_HOME="$JRE_11_HOME"
+
+          - export JDK_HOME="$JDK_11_HOME"
+
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*; 
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ]; 
+              then 
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi; 
+            done
+      corretto8:
+        commands:
+          - echo "Installing corretto (OpenJDK) version 8 ..."
+
+          - export JAVA_HOME="$JAVA_8_HOME"
+
+          - export JRE_HOME="$JRE_8_HOME"
+
+          - export JDK_HOME="$JDK_8_HOME"
+
+          - |-
+            for tool_path in "$JAVA_8_HOME"/bin/* "$JRE_8_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+  golang:
+    versions:
+      1.12:
+        commands:
+          - echo "Installing Go version 1.12 ..."
+          - rm -rf /usr/local/go
+          - ln -s /usr/local/go12 /usr/local/go
+      1.13:
+        commands:
+          - echo "Installing Go version 1.13 ..."
+  python:
+    versions:
+      3.7:
+        commands:
+          - echo "Installing Python version 3.7 ..."
+          - |-
+            for tool_path in /usr/local/python37/bin/*;
+             do tool=`basename $tool_path`;
+             update-alternatives --set $tool $tool_path;
+            done
+      3.8:
+        commands:
+          - echo "Installing Python version 3.8 ..."
+  php:
+    versions:
+      7.3:
+        commands:
+          - echo "Installing PHP version 7.3 ..."
+  ruby:
+    versions:
+      2.6:
+        commands:
+          - echo "Installing Ruby version 2.6 ..."
+          - rbenv global 2.6.5
+  nodejs:
+    versions:
+      12:
+        commands:
+          - echo "Installing Node.js version 12 ..."
+          - n 12.13.0
+      10:
+        commands:
+          - echo "Installing Node.js version 10 ..."
+          - n 10.16.3
+      8:
+        commands:
+          - echo "Installing Node.js version 8 ..."
+          - n 8.16.0
+  docker:
+    versions:
+      18:
+        commands:
+          - |-
+            if [ -f /var/run/docker.pid ]; then
+             echo "Installing Docker version 18 ..."
+             kill $(cat /var/run/docker.pid) >/dev/null 2>&1
+             rm /var/run/docker.pid
+
+             for tool_path in $DOCKER_18_PATH/*; do
+              tool=`basename $tool_path`;
+              update-alternatives --set $tool $tool_path;
+             done
+
+             /usr/local/bin/dockerd \
+              --host=unix:///var/run/docker.sock \
+              --host=tcp://127.0.0.1:2375 \
+              --storage-driver=overlay2 &>/var/log/docker.log &
+
+             docker_start_retry_count=0
+             docker_start_max_retry=60
+
+             until docker info >/dev/null 2>&1;do
+             if [ "$docker_start_retry_count" -gt "$docker_start_max_retry" ]; then
+              cat /var/log/docker.log
+              echo 'Timed out trying to connect to internal docker host.' >&2
+              exit 1
+             fi
+             docker_start_retry_count=$(( $docker_start_retry_count + 1 ))
+             sleep 1
+             done
+            else
+             echo "Not installing Docker version 18, please enable privileged mode for your project if you want to use Docker."
+            fi
