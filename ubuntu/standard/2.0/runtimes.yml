@@ -82,6 +82,10 @@ runtimes:
           - rbenv global 2.6.4
   nodejs:
     versions:
+      12:
+        commands:
+          - echo "Installing Node.js version 12 ..."
+          - n 12.13.1
       10:
         commands:
           - echo "Installing Node.js version 10 ..."
