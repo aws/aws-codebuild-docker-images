@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 
 ENV RUBY_VERSION="2.6.4" \
+ RUBY_25_VERSION="2.5.6" \
  PYTHON_VERSION="3.8.0" \
  PHP_VERSION=7.3.9 \
  JAVA_VERSION=11 \
@@ -125,7 +126,9 @@ RUN set -ex \
     && mkdir -p $RBENV_SRC_DIR/plugins \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh \
-    && rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION
+    && rbenv install $RUBY_25_VERSION \
+    && rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION \
+    && ruby -v
 
 #**************** END RUBY *****************************************************
 
