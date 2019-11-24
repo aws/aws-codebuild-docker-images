@@ -1,10 +1,11 @@
 FROM amazonlinux:2
 
 ENV RUBY_VERSION="2.6.5" \
+ RUBY_25_VERSION="2.5.6" \
  PYTHON_37_VERSION="3.7.4" \
  PYTHON_VERSION="3.8.0" \
  PHP_VERSION=7.3.10 \
- JAVA_VERSION=11 \ 
+ JAVA_VERSION=11 \
  NODE_VERSION="12.13.0" \
  NODE_10_VERSION="10.16.3" \
  NODE_8_VERSION="8.16.0" \
@@ -16,8 +17,8 @@ ENV RUBY_VERSION="2.6.5" \
 
 ARG CHINA_REGION
 
-#****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+#****************        Utilities     *********************************************
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_18_SHA256="c4857639514471e2d1aa6d567880b7fc226437ede462021ed44157d4dcd11dc8" \
     DOCKER_SHA256="44158b9fe44e8b5d3c1226a5d880425850d6f8ec383e4cf053f401e1a8fc269d" \
@@ -90,8 +91,8 @@ RUN set -ex \
     && useradd -g dockremap dockremap \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind 
-# TODO there is no existing docker compose executable for ARM. 
+    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind
+# TODO there is no existing docker compose executable for ARM.
 #   && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
 #   && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose
 #   && docker-compose version
@@ -123,6 +124,7 @@ RUN set -ex \
     && mkdir -p $RBENV_SRC_DIR/plugins \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh \
+    && rbenv install $RUBY_25_VERSION \
     && rbenv install $RUBY_VERSION && rbenv global $RUBY_VERSION \
     && ruby -v
 

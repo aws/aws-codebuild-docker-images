@@ -14,13 +14,13 @@ runtimes:
           - export JDK_HOME="$JDK_11_HOME"
 
           - |-
-            for tool_path in "$JAVA_HOME"/bin/*; 
+            for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
-              if [ $tool != 'java-rmi.cgi' ]; 
-              then 
+              if [ $tool != 'java-rmi.cgi' ];
+              then
                rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-              fi; 
+              fi;
             done
       corretto8:
         commands:
@@ -71,6 +71,10 @@ runtimes:
           - echo "Installing PHP version 7.3 ..."
   ruby:
     versions:
+      2.5:
+        commands:
+          - echo "Installing Ruby version 2.5 ..."
+          - rbenv global 2.5.6
       2.6:
         commands:
           - echo "Installing Ruby version 2.6 ..."
