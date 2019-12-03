@@ -35,4 +35,7 @@ Some of the images in this repository are no longer actively maintained by AWS C
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
 + [standard 2.0](ubuntu/standard/2.0)
++ [standard 3.0](ubuntu/standard/3.0)
 + [amazonlinux2-x86_64-standard:1.0](al2/x86_64/standard/1.0)
++ [amazonlinux2-x86_64-standard:2.0](al2/x86_64/standard/2.0)
++ [amazonlinux2-aarch64-standard:1.0](al2/aarch64/standard/1.0)
