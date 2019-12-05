@@ -97,6 +97,6 @@ runtimes:
           - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION ."
   dotnet:
     versions:
-      3.0:
+      3.1:
         commands:
-          - echo "Installing .NET version 3.0 ..."
+          - echo "Installing .NET version 3.1 ..."
