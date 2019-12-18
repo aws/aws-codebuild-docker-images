@@ -68,6 +68,9 @@ runtimes:
       3.7:
         commands:
           - echo "Installing Python version 3.7 ..."
+      3:
+        commands:
+          - echo "Installing Python version 3.7 ..."
   php:
     versions:
       7.3:
@@ -99,5 +102,3 @@ runtimes:
       2.2:
         commands:
           - echo "Installing .NET version 2.2 ..."
-
-

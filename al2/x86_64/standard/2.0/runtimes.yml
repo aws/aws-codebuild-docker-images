@@ -68,6 +68,9 @@ runtimes:
       3.8:
         commands:
           - echo "Installing Python version 3.8 ..."
+      3:
+        commands:
+          - echo "Installing Python version 3.8 ..."
   php:
     versions:
       7.3:
