@@ -100,19 +100,19 @@ else
 fi
 
 docker_command+="\"IMAGE_NAME=$image_name\" -e \
-    \"ARTIFACTS=$(allOSRealPath $artifact_dir)\""
+    \"ARTIFACTS=$(allOSRealPath "$artifact_dir")\""
 
 if [ -z "$source_dirs" ]
 then
-    docker_command+=" -e \"SOURCE=$(allOSRealPath $PWD)\""
+    docker_command+=" -e \"SOURCE=$(allOSRealPath "$PWD")\""
 else
     for index in "${!source_dirs[@]}"; do
         if [ $index -eq 0 ]
         then
-            docker_command+=" -e \"SOURCE=$(allOSRealPath ${source_dirs[$index]})\""
+            docker_command+=" -e \"SOURCE=$(allOSRealPath "${source_dirs[$index]}")\""
         else
             identifier=${source_dirs[$index]%%:*}
-            src_dir=$(allOSRealPath ${source_dirs[$index]#*:})
+            src_dir=$(allOSRealPath "${source_dirs[$index]#*:}")
 
             docker_command+=" -e \"SECONDARY_SOURCE_$index=$identifier:$src_dir\""
         fi
@@ -121,7 +121,7 @@ fi
 
 if [ -n "$buildspec" ]
 then
-    docker_command+=" -e \"BUILDSPEC=$(allOSRealPath $buildspec)\""
+    docker_command+=" -e \"BUILDSPEC=$(allOSRealPath "$buildspec")\""
 fi
 
 if [ -n "$environment_variable_file" ]
