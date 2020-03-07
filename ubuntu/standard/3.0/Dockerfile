@@ -565,16 +565,16 @@ RUN set -ex \
 
 RUN set -ex \
    && apt-get install -y openssl \
-   && curl -o stunnel-5.55.tar.gz https://www.stunnel.org/downloads/stunnel-5.55.tar.gz \
-   && tar xvfz stunnel-5.55.tar.gz \
-   && cd stunnel-5.55 \
+   && curl -o stunnel-5.56.tar.gz https://www.stunnel.org/downloads/stunnel-5.56.tar.gz \
+   && tar xvfz stunnel-5.56.tar.gz \
+   && cd stunnel-5.56 \
    && ./configure \
    && make \
    && make install \
    && openssl genrsa -out key.pem 2048 \
    && openssl req -new -x509 -key key.pem -out cert.pem -days 1095 -subj "/C=US/ST=Washington/L=Seattle/O=Amazon/OU=Codebuild/CN=codebuild.amazon.com" \
    && cat key.pem cert.pem >> /usr/local/etc/stunnel/stunnel.pem \
-   && cd .. ; rm -rf stunnel-5.55* \
+   && cd .. ; rm -rf stunnel-5.56* \
    && apt-get clean
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
