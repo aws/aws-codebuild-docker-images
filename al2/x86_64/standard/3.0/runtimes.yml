@@ -1,0 +1,122 @@
+version: 0.1
+
+runtimes:
+  android:
+    versions:
+      28:
+        requires:
+          java: ["corretto8"]
+        commands:
+          - echo "Installing Android version 28 ..."
+      29:
+        requires:
+          java: ["corretto8"]
+        commands:
+          - echo "Installing Android version 29 ..."
+  java:
+    versions:
+      corretto11:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 11 ..."
+
+          - export JAVA_HOME="$JAVA_11_HOME"
+
+          - export JRE_HOME="$JRE_11_HOME"
+
+          - export JDK_HOME="$JDK_11_HOME"
+
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+      corretto8:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 8 ..."
+
+          - export JAVA_HOME="$JAVA_8_HOME"
+
+          - export JRE_HOME="$JRE_8_HOME"
+
+          - export JDK_HOME="$JDK_8_HOME"
+
+          - |-
+            for tool_path in "$JAVA_8_HOME"/bin/* "$JRE_8_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+  golang:
+    versions:
+      1.12:
+        commands:
+          - echo "Installing Go version 1.12 ..."
+          - goenv global  $GOLANG_12_VERSION
+      1.13:
+        commands:
+          - echo "Installing Go version 1.13 ..."
+          - goenv global  $GOLANG_13_VERSION
+      1.14:
+        commands:
+          - echo "Installing Go version 1.14 ..."
+          - goenv global  $GOLANG_14_VERSION
+  python:
+    versions:
+      3.8:
+        commands:
+          - echo "Installing Python version 3.8 ..."
+          - pyenv global  $PYTHON_38_VERSION
+      3.7:
+        commands:
+          - echo "Installing Python version 3.7 ..."
+          - pyenv global  $PYTHON_37_VERSION
+  php:
+    versions:
+      7.4:
+        commands:
+          - echo "Installing PHP version 7.4 ..."
+          - phpenv global $PHP_74_VERSION
+      7.3:
+        commands:
+          - echo "Installing PHP version 7.3 ..."
+          - phpenv global $PHP_73_VERSION
+  ruby:
+    versions:
+      2.6:
+        commands:
+          - echo "Installing Ruby version 2.6 ..."
+          - rbenv global $RUBY_26_VERSION
+      2.7:
+        commands:
+          - echo "Installing Ruby version 2.7 ..."
+          - rbenv global $RUBY_27_VERSION
+  nodejs:
+    versions:
+      10:
+        commands:
+          - echo "Installing Node.js version 10 ..."
+          - n $NODE_10_VERSION
+      12:
+        commands:
+          - echo "Installing Node.js version 12 ..."
+          - n $NODE_12_VERSION
+  docker:
+    versions:
+      18:
+        commands:
+          - echo "Using Docker 19"
+      19:
+        commands:
+          - echo "Using Docker 19"
+  dotnet:
+    versions:
+      3.1:
+        commands:
+          - echo "Installing .NET version 3.1 ..."
