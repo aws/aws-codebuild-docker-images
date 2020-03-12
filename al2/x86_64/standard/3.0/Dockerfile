@@ -18,7 +18,7 @@ RUN set -ex \
     && yum install -y \
            GeoIP-devel ImageMagick asciidoc bzip2-devel bzr bzrtools cvs cvsps \
            docbook-dtds docbook-style-xsl dpkg-dev e2fsprogs expat-devel expect fakeroot \
-           glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
+           glib2-devel groff gzip icu iproute iptables jq krb5-server libargon2-devel \
            libcurl-devel libdb-devel libedit-devel libevent-devel libffi-devel \
            libicu-devel libjpeg-devel libpng-devel libserf libsqlite3x-devel \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
