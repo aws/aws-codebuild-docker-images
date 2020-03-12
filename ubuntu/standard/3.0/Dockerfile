@@ -64,7 +64,7 @@ RUN set -ex \
        libxml2-utils libyaml-perl python-bzrlib python-configobj \
        sgml-base sgml-data subversion tcl tcl8.6 xml-core xmlto xsltproc \
        tk gettext gettext-base libapr1 libaprutil1 xvfb expect parallel \
-       locales rsync \
+       locales rsync iproute2 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
