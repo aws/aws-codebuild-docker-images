@@ -24,8 +24,8 @@ RUN set -ex \
           apt-utils asciidoc autoconf automake build-essential bzip2 \
           bzr curl cvs cvsps dirmngr docbook-xml docbook-xsl dpkg-dev \
           e2fsprogs expect fakeroot file g++ gcc gettext gettext-base \
-          git groff gzip imagemagick iptables jq less libapr1 libaprutil1 \
-          libargon2-0-dev libbz2-dev libc6-dev libcurl4-openssl-dev \
+          git groff gzip imagemagick iproute2 iptables jq less libapr1 \
+          libaprutil1 libargon2-0-dev libbz2-dev libc6-dev libcurl4-openssl-dev \
           libdb-dev libdbd-sqlite3-perl libdbi-perl libdpkg-perl \
           libedit-dev liberror-perl libevent-dev libffi-dev libgeoip-dev \
           libglib2.0-dev libhttp-date-perl libio-pty-perl libjpeg-dev \
