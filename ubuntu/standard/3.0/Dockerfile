@@ -427,7 +427,7 @@ RUN set -ex \
 #****************     END JAVA     ****************************************************
 
 #****************     GO (latest 1.13)    **********************************************************
-ENV GOLANG_DOWNLOAD_SHA256="692d17071736f74be04a72a06dab9cac1cd759377bd85316e52b2227604c004c" \
+ENV GOLANG_DOWNLOAD_SHA256="f4ad8180dd0aaf7d7cda7e2b0a2bf27e84131320896d376549a7d849ecf237d7" \
     GOPATH="/go" \
     DEP_VERSION="0.5.1" \
     DEP_BINARY="dep-linux-amd64"
@@ -452,7 +452,7 @@ ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 
 #***************    GO 1.12   *************************************************
 
-ENV GOLANG_12_DOWNLOAD_SHA256="da036454cb3353f9f507f0ceed4048feac611065e4e1818b434365eb32ac9bdc"
+ENV GOLANG_12_DOWNLOAD_SHA256="a53dd476129d496047487bfd53d021dd17e0c96895865a0e7d0469ce3db8c8d2"
 
 RUN set -ex \
     && wget "https://dl.google.com/go/go$GOLANG_12_VERSION.linux-amd64.tar.gz" -O /tmp/golang.tar.gz \
