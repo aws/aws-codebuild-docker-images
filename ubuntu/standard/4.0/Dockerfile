@@ -277,7 +277,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_13_VERSION="1.13.8" \
+ENV GOLANG_13_VERSION="1.13.9" \
     GOLANG_12_VERSION="1.12.17"
 
 RUN goenv install $GOLANG_12_VERSION; rm -rf /tmp/*
@@ -459,7 +459,7 @@ VOLUME /var/lib/docker
 FROM runtimes_n_corretto AS std_v4
 
 # GoLang 14
-ENV GOLANG_14_VERSION="1.14.0"
+ENV GOLANG_14_VERSION="1.14.1"
 RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
     goenv global  $GOLANG_14_VERSION
 
