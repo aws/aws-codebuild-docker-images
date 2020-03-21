@@ -239,7 +239,7 @@ ENV PYTHON_38_VERSION="3.8.1" \
 ENV PYTHON_PIP_VERSION=19.3.1
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
-RUN   CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
+RUN   pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -248,7 +248,7 @@ RUN set -ex \
 
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
-RUN   CONFIGURE_OPTS=--enable-shared pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
+RUN   pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
