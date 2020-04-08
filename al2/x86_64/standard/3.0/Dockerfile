@@ -1,3 +1,14 @@
+# Copyright 2020-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+#    http://aws.amazon.com/asl/
+#
+# or in the "license" file accompanying this file.
+# This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
+# See the License for the specific language governing permissions and limitations under the License.
+
 FROM amazonlinux:2 AS core
 
 ENV EPEL_REPO="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
@@ -328,7 +339,7 @@ ENV PYTHON_37_VERSION="3.7.6"
 ENV PYTHON_PIP_VERSION=19.3.1
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
-RUN   pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -397,7 +408,7 @@ RUN set -ex \
 ENV PYTHON_38_VERSION="3.8.1"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
-RUN   pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
