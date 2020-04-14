@@ -29,6 +29,7 @@ Download and use our codebuild_build.sh script to run your local builds.
   -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory.  
   -e        Used to specify a file containing environment variables.  
   -m        Used to mount the source directory to the customer build container directly.  
+  -d        Used to run the build container in docker privileged mode.  
   -s        Used to specify a source directory. Defaults to the current working directory.  
   * First (-s) is for primary source
   * Use additional (-s) in `<sourceIdentifier>:<sourceLocation>` format for secondary source

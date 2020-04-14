@@ -43,6 +43,7 @@ function usage {
     echo "  -p        Used to specify the AWS CLI Profile."
     echo "  -b FILE   Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory."
     echo "  -m        Used to mount the source directory to the customer build container directly."
+    echo "  -d        Used to run the build container in docker privileged mode."
     echo "  -e FILE   Used to specify a file containing environment variables."
     echo "            (-e) File format expectations:"
     echo "               * Each line is in VAR=VAL format"
@@ -57,14 +58,16 @@ image_flag=false
 artifact_flag=false
 awsconfig_flag=false
 mount_src_dir_flag=false
+docker_privileged_mode_flag=false
 
-while getopts "cmi:a:s:b:e:l:p:h" opt; do
+while getopts "cmdi:a:s:b:e:l:p:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
         b  ) buildspec=$OPTARG;;
         c  ) awsconfig_flag=true;;
         m  ) mount_src_dir_flag=true;;
+        d  ) docker_privileged_mode_flag=true;;
         s  ) source_dirs+=("$OPTARG");;
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
@@ -158,6 +161,11 @@ fi
 if $mount_src_dir_flag
 then
     docker_command+=" -e \"MOUNT_SOURCE_DIRECTORY=TRUE\""
+fi
+
+if $docker_privileged_mode_flag
+then
+    docker_command+=" -e \"DOCKER_PRIVILEGED_MODE=TRUE\""
 fi
 
 if isOSWindows
