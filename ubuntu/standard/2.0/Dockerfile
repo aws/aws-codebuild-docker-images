@@ -545,7 +545,7 @@ RUN set -ex \
 # Install GeckoDriver
 
 RUN set -ex \
-    && curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep browser_download_url | grep linux64.tar.gz | cut -d : -f 2,3 | tr -d ' "' | wget -O /tmp/geckodriver-latest-linux64.tar.gz -qi - \
+    && curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.assets[] | select(.browser_download_url | contains("linux64")).browser_download_url' | wget -O /tmp/geckodriver-latest-linux64.tar.gz -qi - \
     && tar -xzf /tmp/geckodriver-latest-linux64.tar.gz -C /opt \
     && rm /tmp/geckodriver-latest-linux64.tar.gz \
     && chmod 755 /opt/geckodriver \
