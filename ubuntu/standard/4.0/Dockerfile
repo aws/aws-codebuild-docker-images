@@ -59,17 +59,6 @@ RUN useradd codebuild-user
 
 FROM core AS tools
 
-# Install GitVersion
-ENV GITVERSION_VERSION="5.1.2"
-RUN set -ex \
-    && wget -nv https://github.com/GitTools/GitVersion/archive/${GITVERSION_VERSION}.zip -O /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
-    && chmod +x /usr/local/bin/gitversion \
-    && rm -rf /tmp/*
-
 # Install Firefox
 RUN set -ex \
     && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
@@ -83,7 +72,7 @@ RUN set -ex \
 
 # Install GeckoDriver
 RUN set -ex \
-    && curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep browser_download_url | grep linux64.tar.gz | cut -d : -f 2,3 | tr -d ' "' | wget -nv -O /tmp/geckodriver-latest-linux64.tar.gz -qi - \
+    && curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.assets[] | select(.browser_download_url | contains("linux64")).browser_download_url' | wget -O /tmp/geckodriver-latest-linux64.tar.gz -qi - \
     && tar -xzf /tmp/geckodriver-latest-linux64.tar.gz -C /opt \
     && rm /tmp/geckodriver-latest-linux64.tar.gz \
     && chmod 755 /opt/geckodriver \
@@ -129,16 +118,17 @@ RUN set -ex \
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.14.6/2019-08-22/bin/linux/amd64/kubectl \
-    && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest \
-    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/kubectl \
+    && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest \
+    && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
+    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
 
 # Configure SSM
 RUN set -ex \
     && mkdir /tmp/ssm \
     && cd /tmp/ssm \
-    && wget https://ec2-downloads-windows.s3.amazonaws.com/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb \
+    && wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb \
     && dpkg -i amazon-ssm-agent.deb
 
 # Install env tools for runtimes
@@ -185,7 +175,8 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_31_SDK_VERSION="3.1.102"
+ENV DOTNET_31_SDK_VERSION="3.1.103"
+ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_31_SDK_VERSION \
@@ -202,11 +193,17 @@ RUN set -ex \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
 
+# Install GitVersion
+ENV GITVERSION_VERSION="5.2.4"
+RUN set -ex \
+    && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
+    && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
+
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 6.2.1
+ENV POWERSHELL_VERSION 6.2.4
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA E8287687C99162BF70FEFCC2E492F3B54F80BE880D86B9A0EC92C71B05C40013
+ENV POWERSHELL_DOWNLOAD_SHA be349b9a2244ac06bc6a6e694434cae13af696ea42eb47e8ad1ad39354a2d039
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -220,8 +217,8 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_12_VERSION="12.16.1" \
-    NODE_10_VERSION="10.19.0"
+ENV NODE_12_VERSION="12.16.3" \
+    NODE_10_VERSION="10.20.1"
 
 RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
@@ -235,8 +232,8 @@ RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install 
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_26_VERSION="2.6.5" \
-    RUBY_27_VERSION="2.7.0"
+ENV RUBY_26_VERSION="2.6.6" \
+    RUBY_27_VERSION="2.7.1"
 
 RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*
 RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION;ruby -v
@@ -244,8 +241,8 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_38_VERSION="3.8.1" \
-    PYTHON_37_VERSION="3.7.6"
+ENV PYTHON_38_VERSION="3.8.2" \
+    PYTHON_37_VERSION="3.7.7"
 
 ENV PYTHON_PIP_VERSION=19.3.1
 
@@ -254,7 +251,7 @@ RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSI
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==5.1.2" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==5.3.1" \
     && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 
@@ -263,14 +260,14 @@ RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSI
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==5.1.2" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==5.3.1" \
     && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_74_VERSION="7.4.1" \
-    PHP_73_VERSION="7.3.13"
+ENV PHP_74_VERSION="7.4.5" \
+    PHP_73_VERSION="7.3.17"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
@@ -288,7 +285,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_13_VERSION="1.13.8" \
+ENV GOLANG_13_VERSION="1.13.10" \
     GOLANG_12_VERSION="1.12.17"
 
 RUN goenv install $GOLANG_12_VERSION; rm -rf /tmp/*
@@ -312,37 +309,36 @@ ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto/jre" \
-    ANT_VERSION=1.10.6 \
+    ANT_VERSION=1.10.7 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.6.3 \
-    INSTALLED_GRADLE_VERSIONS="4.10.3 5.4.1" \
-    GRADLE_VERSION=5.4.1 \
+    INSTALLED_GRADLE_VERSIONS="4.10.3 5.6.4" \
+    GRADLE_VERSION=5.6.4 \
     SBT_VERSION=1.2.8 \
     ANDROID_HOME="/usr/local/android-sdk-linux" \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANDROID_SDK_MANAGER_VER="4333796" \
-    ANDROID_SDK_BUILD_TOOLS="build-tools;29.0.2" \
+    ANDROID_SDK_BUILD_TOOLS="build-tools;29.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS="platforms;android-29" \
     ANDROID_SDK_BUILD_TOOLS_28="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS_28="platforms;android-28" \
     ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
-    JDK_DOWNLOAD_SHA256="4cc9e65e6e3d036b18cfd5fd6c7843d48244e44a60350f7e45036f4825bd3812" \
-    ANT_DOWNLOAD_SHA512="c1a9694c3018e248000ff6f46d48af85f537ef3935e0d5256543c58a240084c0aff5289fd9e94cbc40d5442f3cc43592398047f2548fded40d9882be2b40750d" \
+    ANT_DOWNLOAD_SHA512="838ce70c7dbd2b53068ce17b169c0b3fbed5e0ab7be5c707f052418fb6a4a1620f2d4017ceca1379cd25edce3e46d70bb2b5de4e1c5c52e2e1275deec1228084" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
-    GRADLE_DOWNLOADS_SHA256="14cd15fc8cc8705bd69dcfa3c8fefb27eb7027f5de4b47a8b279218f76895a91 5.4.1\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
+    GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
     ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
 
-ENV JDK_DOWNLOAD_TAR="java-11-amazon-corretto-jdk.tar" \
+ENV JDK_DOWNLOAD_TAR="amazon-corretto-11.tar.gz" \
     JAVA_HOME="$JAVA_11_HOME" \
     JDK_HOME="$JDK_11_HOME" \
-     JRE_HOME="$JRE_11_HOME"
+    JRE_HOME="$JRE_11_HOME"
 
 ENV PATH="${PATH}:/opt/tools:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools"
 
-ARG  CORRETTO8_URL="https://d3pxv6yz143wms.cloudfront.net/8.232.09.1/java-1.8.0-amazon-corretto-jdk_8.232.09-1_amd64.deb"
-ARG CORRETTO11_URL="https://d3pxv6yz143wms.cloudfront.net/11.0.5.10.1/amazon-corretto-11.0.5.10.1-linux-x64.tar.gz"
+ARG CORRETTO8_URL="https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.deb"
+ARG CORRETTO11_URL="https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.tar.gz"
 
 
 RUN set -ex \
@@ -381,7 +377,6 @@ RUN set -ex \
 RUN set -ex \
     && mkdir -p $JAVA_HOME \
     && curl -LSso /var/tmp/$JDK_DOWNLOAD_TAR $CORRETTO11_URL \
-    && echo "$JDK_DOWNLOAD_SHA256 /var/tmp/$JDK_DOWNLOAD_TAR" | sha256sum -c - \
     && tar xzvf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
     && rm /var/tmp/$JDK_DOWNLOAD_TAR \
     && for tool_path in $JAVA_HOME/bin/*; do \
@@ -439,11 +434,11 @@ RUN set -ex \
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.24.0" \
+    DOCKER_COMPOSE_VERSION="1.25.5" \
     SRC_DIR="/usr/src"
 
-ENV DOCKER_SHA256="c3c8833e227b61fe6ce0bc5c17f97fa547035bef4ef17cf6601f30b0f20f4ce5"
-ENV DOCKER_VERSION="19.03.3"
+ENV DOCKER_SHA256="7f4115dc6a3c19c917f8b9664d7b51c904def1c984e082c4600097433323cf6f"
+ENV DOCKER_VERSION="19.03.8"
 
 # Install Docker
 RUN set -ex \
@@ -470,7 +465,7 @@ VOLUME /var/lib/docker
 FROM runtimes_n_corretto AS std_v4
 
 # GoLang 14
-ENV GOLANG_14_VERSION="1.14.0"
+ENV GOLANG_14_VERSION="1.14.2"
 RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
     goenv global  $GOLANG_14_VERSION
 
@@ -484,6 +479,8 @@ RUN rbenv  global $RUBY_27_VERSION
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY dockerd-entrypoint.sh /usr/local/bin/
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
+COPY legal/bill_of_material.txt     /usr/share/doc
 COPY amazon-ssm-agent.json          /etc/amazon/ssm/
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
