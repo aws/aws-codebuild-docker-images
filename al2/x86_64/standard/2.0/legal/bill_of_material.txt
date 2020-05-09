@@ -1,0 +1,184 @@
+The Amazon CodeBuild Product includes the following third-party software/licensing:
+
+----------------
+GeoIP-devel : LGPLv2+ and GPLv2+ and CC-BY-SA
+----------------
+ImageMagick : ImageMagick
+----------------
+asciidoc : GPL+ and GPLv2+
+----------------
+bzip2-devel : BSD
+----------------
+bzr : GPLv2+
+----------------
+bzrtools : GPLv2+
+----------------
+chromium : BSD and LGPLv2+ and ASL 2.0 and IJG and MIT and GPLv2+ and ISC and OpenSSL and (MPLv1.1 or GPLv2 or LGPLv2)
+----------------
+cvs : BSD and GPL+ and GPLv2+ and LGPLv2+ and zlib and Public Domain
+----------------
+cvsps : GPL+
+----------------
+dbus-glib-devel : AFL and GPLv2+
+----------------
+docbook-dtds : Copyright only
+----------------
+docbook-style-xsl : DMIT
+----------------
+dpkg-dev : GPLv2 and GPLv2+ and LGPLv2+ and Public Domain and BSD
+----------------
+e2fsprogs : GPLv2
+----------------
+expat-devel : MIT
+----------------
+expect : Public Domain
+----------------
+fakeroot : GPLv3+ and LGPLv2+ and (GPL+ or Artistic)
+----------------
+glib2-devel : LGPLv2+
+----------------
+groff : GPLv3+ and GFDL and BSD and MIT
+----------------
+gtk3-devel : LGPLv2+
+----------------
+gzip : GPLv3+ and GFDL
+----------------
+icu : MIT and UCD and Public Domain
+----------------
+iptables : GPLv2
+----------------
+java-1.8.0-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.
+----------------
+java-1.11.0-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib.
+----------------
+jq : MIT and ASL 2.0 and CC-BY and GPLv3
+----------------
+krb5-server : MIT
+----------------
+libargon2-devel : Public Domain or ASL 2.0
+----------------
+libcurl-devel : MIT
+----------------
+libdb-devel : BSD and LGPLv2 and Sleepycat
+----------------
+libedit-devel : BSD
+----------------
+libevent-devel : BSD
+----------------
+libffi-devel : MIT and Public Domain
+----------------
+libgit2 : GPLv2 with exceptions
+----------------
+libicu-devel : MIT and UCD and Public Domain
+----------------
+libpng-devel : zlib
+----------------
+libserf : ASL 2.0
+----------------
+libsqlite3x-devel : zlib
+----------------
+libtidy-devel : W3C
+----------------
+libunwind : BSD
+----------------
+libwebp-devel : BSD
+----------------
+libxml2-devel : MIT
+----------------
+libxslt : MIT
+----------------
+libxslt-devel : MIT
+----------------
+libyaml-devel : MIT
+----------------
+libzip-devel : BSD
+----------------
+mariadb-devel : GPLv2 with exceptions and LGPLv2 and BSD
+----------------
+mercurial : GPLv2+
+----------------
+mlocate : GPLv2
+----------------
+mono-devel : LGPL-2.1
+----------------
+ncurses-devel : MIT
+----------------
+oniguruma-devel : BSD
+----------------
+openssh-clients : BSD
+----------------
+openssl : OpenSSL
+----------------
+openssl-devel : OpenSSL
+----------------
+perl-DBD-SQLite : GPL+ or Artistic
+----------------
+perl-DBI : GPL+ or Artistic
+----------------
+perl-HTTP-Date : GPL+ or Artistic
+----------------
+perl-IO-Pty-Easy : GPL+ or Artistic
+----------------
+perl-TimeDate : GPL+ or Artistic
+----------------
+perl-YAML-LibYAML : GPL+ or Artistic
+----------------
+postgresql-devel : PostgreSQL
+----------------
+procps-ng : GPL+ and GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+
+----------------
+python-configobj : BSD
+----------------
+readline-devel : GPLv3+
+----------------
+rsync : GPLv3+
+----------------
+sbt : BSD
+----------------
+sgml-common : GPL+
+----------------
+subversion-perl : ASL 2.0
+----------------
+tar : GPLv3+
+----------------
+tcl : TCL
+----------------
+tk : TCL
+----------------
+wget : GPLv3+
+----------------
+which : GPLv3
+----------------
+xfsprogs : GPL+ and LGPLv2+
+----------------
+xmlto : GPLv2+
+----------------
+xorg-x11-server-Xvfb : MIT and GPLv2
+----------------
+xz-devel : LGPLv2+
+----------------
+yarn : BSD
+----------------
+ruby	:https://www.ruby-lang.org/en/about/license.txt
+----------------
+python	:https://docs.python.org/3/license.html
+----------------
+php	:https://www.php.net/license/index.php
+----------------
+nodejs	:https://github.com/nodejs/node/blob/master/LICENSE
+----------------
+golang	:https://golang.org/LICENSE
+----------------
+dotnet	:https://github.com/dotnet/core/blob/master/LICENSE.TXT
+----------------
+Firefox	:https://www.mozilla.org/en-US/MPL/
+----------------
+Chrome  :https://www.google.com/intl/en_pk/chrome/privacy/eula_text.html
+----------------
+stunnel	:https://www.stunnel.org/gpl.html
+----------------
+gitversion :https://github.com/GitTools/GitVersion/blob/master/LICENSE
+----------------
+docker	:https://www.docker.com/legal/components-licenses
+----------------
+
