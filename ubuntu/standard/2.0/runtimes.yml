@@ -59,37 +59,39 @@ runtimes:
       1.12:
         commands:
           - echo "Installing Go version 1.12 ..."
-          - rm -rf /usr/local/go
-          - ln -s /usr/local/go12 /usr/local/go
+          - goenv global  $GOLANG_12_VERSION
       1.13:
         commands:
           - echo "Installing Go version 1.13 ..."
+          - goenv global  $GOLANG_13_VERSION
   python:
     versions:
       3.7:
         commands:
           - echo "Installing Python version 3.7 ..."
+          - pyenv global  $PYTHON_37_VERSION
   php:
     versions:
       7.3:
         commands:
           - echo "Installing PHP version 7.3 ..."
+          - phpenv global $PHP_73_VERSION
   ruby:
     versions:
       2.6:
         commands:
           - echo "Installing Ruby version 2.6 ..."
-          - rbenv global 2.6.4
+          - rbenv global $RUBY_26_VERSION
   nodejs:
     versions:
       10:
         commands:
           - echo "Installing Node.js version 10 ..."
-          - n 10.16.3
+          - n $NODE_10_VERSION
       8:
         commands:
           - echo "Installing Node.js version 8 ..."
-          - n 8.16.0
+          - n $NODE_8_VERSION
   docker:
     versions:
       18:
@@ -100,5 +102,4 @@ runtimes:
       2.2:
         commands:
           - echo "Installing .NET version 2.2 ..."
-
 
