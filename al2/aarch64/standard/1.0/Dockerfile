@@ -1,3 +1,14 @@
+# Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+#    http://aws.amazon.com/asl/
+#
+# or in the "license" file accompanying this file.
+# This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
+# See the License for the specific language governing permissions and limitations under the License.
+
 FROM amazonlinux:2
 
 ENV RUBY_VERSION="2.6.5" \
@@ -11,8 +22,8 @@ ENV RUBY_VERSION="2.6.5" \
  GOLANG_VERSION="1.13.1" \
  GOLANG_12_VERSION="1.12.9" \
  DOCKER_18_VERSION="18.09.6" \
- DOCKER_VERSION="19.03.1" \
- DOCKER_COMPOSE_VERSION="1.24.0"
+ DOCKER_VERSION="19.03.11" \
+ DOCKER_COMPOSE_VERSION="1.26.0"
 
 ARG CHINA_REGION
 
@@ -20,9 +31,8 @@ ARG CHINA_REGION
 ENV DOCKER_BUCKET="download.docker.com" \    
     DOCKER_CHANNEL="stable" \
     DOCKER_18_SHA256="c4857639514471e2d1aa6d567880b7fc226437ede462021ed44157d4dcd11dc8" \
-    DOCKER_SHA256="44158b9fe44e8b5d3c1226a5d880425850d6f8ec383e4cf053f401e1a8fc269d" \
+    DOCKER_SHA256="9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    GITVERSION_VERSION="4.0.0" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src" \
     EPEL_REPO="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
@@ -57,8 +67,21 @@ RUN set -ex \
        perl-IO-Pty-Easy libserf subversion-perl tcl perl-TimeDate \
        perl-YAML-LibYAML bzrtools python-configobj \
        sgml-common xmlto libxslt \
-       tk xorg-x11-server-Xvfb expect parallel rsync \
+       tk xorg-x11-server-Xvfb expect rsync \
     && yum clean all
+
+# Install Git
+RUN set -ex \
+   && GIT_VERSION=2.27.0 \
+   && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
+   && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
+   && curl -L -o $GIT_TAR_FILE $GIT_SRC \
+   && tar zxvf $GIT_TAR_FILE \
+   && cd git-$GIT_VERSION \
+   && make -j4 prefix=/usr \
+   && make install prefix=/usr \
+   && cd .. ; rm -rf git-$GIT_VERSION \
+   && rm -rf $GIT_TAR_FILE /tmp/*
 
 # Install Docker
 ENV DOCKER_18_PATH=/usr/local/bin/docker18
@@ -90,22 +113,24 @@ RUN set -ex \
     && useradd -g dockremap dockremap \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind 
-# TODO there is no existing docker compose executable for ARM. 
-#   && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
-#   && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose
-#   && docker-compose version
+    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && chmod +x /usr/local/bin/dind
 
-# https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/aws-iam-authenticator \
- && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.11.5/2018-12-06/bin/linux/amd64/kubectl \
- && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest \
- && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
+# AWS Tools
+# https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/arm64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/arm64/kubectl \
+    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator
 
 VOLUME /var/lib/docker
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config
+
+# Configure SSM
+RUN set -ex \
+    && yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm
+COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 
@@ -283,7 +308,7 @@ ENV PATH="/root/.local/bin:$PATH"
 RUN set -ex \
     && /usr/local/python38/bin/pip3 install --user aws-sam-cli \
     && sam --version \
-    && /usr/local/python38/bin/pip3 install awscli boto3
+    && /usr/local/python38/bin/pip3 install awscli boto3 "docker-compose==$DOCKER_COMPOSE_VERSION"
 
 RUN cd /usr/local/python38/bin \
     &&  { [ -e easy_install ] || ln -s easy_install-* easy_install; } \
@@ -484,7 +509,7 @@ RUN set -ex \
     && yum clean all
 #****************     END JAVA     ****************************************************
 
-#****************     GO (latest 1.13)   **********************************************************
+#****************     GO 1.13   **********************************************************
 ENV GOLANG_DOWNLOAD_SHA256="8af8787b7c2a3c0eb3f20f872577fcb6c36098bf725c59c4923921443084c807" \
     GOPATH="/go" \
     DEP_VERSION="0.5.1" \
@@ -517,16 +542,6 @@ RUN set -ex \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #****************     END GO     **********************************************************
-
-# TODO Download libgit2 (no aarch version at rpmfind.net/linux/centos/7/extras)
-
-RUN set -ex \
-    && wget "https://github.com/GitTools/GitVersion/releases/download/v${GITVERSION_VERSION}/GitVersion-bin-net40-v${GITVERSION_VERSION}.zip" -O /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && mkdir -p /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && unzip /tmp/GitVersion_${GITVERSION_VERSION}.zip -d /usr/local/GitVersion_${GITVERSION_VERSION} \
-    && rm /tmp/GitVersion_${GITVERSION_VERSION}.zip \
-    && echo "mono /usr/local/GitVersion_${GITVERSION_VERSION}/GitVersion.exe \$@" >> /usr/local/bin/gitversion \
-    && chmod +x /usr/local/bin/gitversion
 
 RUN set -ex \
    && yum install -y openssl \

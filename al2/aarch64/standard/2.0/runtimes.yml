@@ -51,79 +51,58 @@ runtimes:
       1.13:
         commands:
           - echo "Installing Go version 1.13 ..."
+          - rm -rf /usr/local/go
+          - ln -s /usr/local/go13 /usr/local/go
+      1.14:
+        commands:
+          - echo "Installing Go version 1.14 ..."
   python:
     versions:
-      3.7:
-        commands:
-          - echo "Installing Python version 3.7 ..."
-          - |-
-            for tool_path in /usr/local/python37/bin/*;
-             do tool=`basename $tool_path`;
-             update-alternatives --set $tool $tool_path;
-            done
       3.8:
         commands:
           - echo "Installing Python version 3.8 ..."
+          - pyenv global  $PYTHON_38_VERSION
+      3.7:
+        commands:
+          - echo "Installing Python version 3.7 ..."
+          - pyenv global  $PYTHON_37_VERSION
   php:
     versions:
+      7.4:
+        commands:
+          - echo "Installing PHP version 7.4 ..."
+          - phpenv global $PHP_74_VERSION
       7.3:
         commands:
           - echo "Installing PHP version 7.3 ..."
+          - phpenv global $PHP_73_VERSION
   ruby:
     versions:
       2.6:
         commands:
           - echo "Installing Ruby version 2.6 ..."
-          - rbenv global 2.6.5
+          - rbenv global $RUBY_26_VERSION
+      2.7:
+        commands:
+          - echo "Installing Ruby version 2.7 ..."
+          - rbenv global $RUBY_27_VERSION
   nodejs:
     versions:
-      12:
-        commands:
-          - echo "Installing Node.js version 12 ..."
-          - n 12.13.0
       10:
         commands:
           - echo "Installing Node.js version 10 ..."
-          - n 10.16.3
-      8:
+          - n $NODE_10_VERSION
+      12:
         commands:
-          - echo "Installing Node.js version 8 ..."
-          - n 8.16.0
+          - echo "Installing Node.js version 12 ..."
+          - n $NODE_12_VERSION
   docker:
     versions:
-      18:
-        commands:
-          - |-
-            if [ -f /var/run/docker.pid ]; then
-             echo "Installing Docker version 18 ..."
-             kill $(cat /var/run/docker.pid) >/dev/null 2>&1
-             rm /var/run/docker.pid
-
-             for tool_path in $DOCKER_18_PATH/*; do
-              tool=`basename $tool_path`;
-              update-alternatives --set $tool $tool_path;
-             done
-
-             /usr/local/bin/dockerd \
-              --host=unix:///var/run/docker.sock \
-              --host=tcp://127.0.0.1:2375 \
-              --storage-driver=overlay2 &>/var/log/docker.log &
-
-             docker_start_retry_count=0
-             docker_start_max_retry=60
-
-             until docker info >/dev/null 2>&1;do
-             if [ "$docker_start_retry_count" -gt "$docker_start_max_retry" ]; then
-              cat /var/log/docker.log
-              echo 'Timed out trying to connect to internal docker host.' >&2
-              exit 1
-             fi
-             docker_start_retry_count=$(( $docker_start_retry_count + 1 ))
-             sleep 1
-             done
-            else
-             echo "Not installing Docker version 18, please enable privileged mode for your project if you want to use Docker."
-            fi
       19:
         commands:
           - echo "Using Docker 19"
+  dotnet:
+    versions:
+      3.1:
+        commands:
+          - echo "Installing .NET version 3.1 ..."

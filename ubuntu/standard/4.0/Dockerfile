@@ -35,7 +35,7 @@ RUN set -ex \
           apt-utils asciidoc autoconf automake build-essential bzip2 \
           bzr curl cvs cvsps dirmngr docbook-xml docbook-xsl dpkg-dev \
           e2fsprogs expect fakeroot file g++ gcc gettext gettext-base \
-          git groff gzip imagemagick iptables jq less libapr1 libaprutil1 \
+          groff gzip imagemagick iptables jq less libapr1 libaprutil1 \
           libargon2-0-dev libbz2-dev libc6-dev libcurl4-openssl-dev \
           libdb-dev libdbd-sqlite3-perl libdbi-perl libdpkg-perl \
           libedit-dev liberror-perl libevent-dev libffi-dev libgeoip-dev \
@@ -118,8 +118,8 @@ RUN set -ex \
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/kubectl \
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl \
     && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest \
     && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
@@ -175,7 +175,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_31_SDK_VERSION="3.1.103"
+ENV DOTNET_31_SDK_VERSION="3.1.301"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core Global Tools install folder to PATH
@@ -194,16 +194,16 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 # Install GitVersion
-ENV GITVERSION_VERSION="5.2.4"
+ENV GITVERSION_VERSION="5.3.5"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 6.2.4
+ENV POWERSHELL_VERSION 6.2.6
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA be349b9a2244ac06bc6a6e694434cae13af696ea42eb47e8ad1ad39354a2d039
+ENV POWERSHELL_DOWNLOAD_SHA ee5512d869ab9bd59bf17f417ff93013e0a169db91cf848ba2570d4818e05e17
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -217,8 +217,8 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_12_VERSION="12.16.3" \
-    NODE_10_VERSION="10.20.1"
+ENV NODE_12_VERSION="12.18.0" \
+    NODE_10_VERSION="10.21.0"
 
 RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
@@ -241,7 +241,7 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_38_VERSION="3.8.2" \
+ENV PYTHON_38_VERSION="3.8.3" \
     PYTHON_37_VERSION="3.7.7"
 
 ENV PYTHON_PIP_VERSION=19.3.1
@@ -266,8 +266,8 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_74_VERSION="7.4.5" \
-    PHP_73_VERSION="7.3.17"
+ENV PHP_74_VERSION="7.4.7" \
+    PHP_73_VERSION="7.3.19"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
@@ -285,7 +285,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_13_VERSION="1.13.10" \
+ENV GOLANG_13_VERSION="1.13.12" \
     GOLANG_12_VERSION="1.12.17"
 
 RUN goenv install $GOLANG_12_VERSION; rm -rf /tmp/*
@@ -303,13 +303,13 @@ FROM runtimes AS runtimes_n_corretto
 #****************      JAVA     ****************************************************
 COPY tools/android-accept-licenses.sh /opt/tools/android-accept-licenses.sh
 
-ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
-    JDK_11_HOME="/opt/jvm/amazon-corretto-11" \
-    JRE_11_HOME="/opt/jvm/amazon-corretto-11" \
+ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
+    JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
+    JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto/jre" \
-    ANT_VERSION=1.10.7 \
+    ANT_VERSION=1.10.8 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.6.3 \
     INSTALLED_GRADLE_VERSIONS="4.10.3 5.6.4" \
@@ -323,31 +323,27 @@ ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
     ANDROID_SDK_BUILD_TOOLS_28="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS_28="platforms;android-28" \
     ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
-    ANT_DOWNLOAD_SHA512="838ce70c7dbd2b53068ce17b169c0b3fbed5e0ab7be5c707f052418fb6a4a1620f2d4017ceca1379cd25edce3e46d70bb2b5de4e1c5c52e2e1275deec1228084" \
+    ANT_DOWNLOAD_SHA512="4d80dc6ba23eeec7769085ddb00261b7480b596b56c6e69aa221391acbfb7338eb5855179c88222c8021095ef1f64f43caf2b4f90e8305d7c3128026d4258d06" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
     ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
 
-ENV JDK_DOWNLOAD_TAR="amazon-corretto-11.tar.gz" \
-    JAVA_HOME="$JAVA_11_HOME" \
+ENV JAVA_HOME="$JAVA_11_HOME" \
     JDK_HOME="$JDK_11_HOME" \
     JRE_HOME="$JRE_11_HOME"
 
 ENV PATH="${PATH}:/opt/tools:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools"
 
-ARG CORRETTO8_URL="https://corretto.aws/downloads/latest/amazon-corretto-8-x64-linux-jdk.deb"
-ARG CORRETTO11_URL="https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.tar.gz"
-
-
 RUN set -ex \
     && apt-get update \
     && apt-get install -y software-properties-common apt-utils \
     # Install Corretto 8
-    && wget -nv -O corretto8.deb $CORRETTO8_URL \
-    && apt-get install -y  ./corretto8.deb \
-    && rm ./corretto8.deb \
+    && wget -O- https://apt.corretto.aws/corretto.key | apt-key add - \
+    && add-apt-repository 'deb https://apt.corretto.aws stable main' \
+    && apt-get update \
+    && apt-get install -y java-1.8.0-amazon-corretto-jdk \
     && apt-get install -y --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
@@ -372,13 +368,10 @@ RUN set -ex \
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --licenses" \
     && apt-get install -y python-setuptools 
 
-    # Install OpenJDK 11
-    # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
 RUN set -ex \
-    && mkdir -p $JAVA_HOME \
-    && curl -LSso /var/tmp/$JDK_DOWNLOAD_TAR $CORRETTO11_URL \
-    && tar xzvf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
-    && rm /var/tmp/$JDK_DOWNLOAD_TAR \
+    # Install Corretto 11
+    # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
+    && apt-get install -y java-11-amazon-corretto-jdk \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
@@ -392,8 +385,8 @@ RUN set -ex \
     && rm /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz \
     && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 
 
-    # Install Maven
 RUN set -ex \
+    # Install Maven
     && mkdir -p $MAVEN_HOME \
     && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
@@ -417,8 +410,8 @@ RUN set -ex \
        && if [ "$version" != "$GRADLE_VERSION" ]; then rm -rf "/usr/local/gradle-$version"; fi; \
      }; done \
     # Install default GRADLE_VERSION to path
-      && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-      && rm -rf $GRADLE_PATH \
+    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
+    && rm -rf $GRADLE_PATH \
     # Install SBT
     && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
     && apt-get install -y --no-install-recommends apt-transport-https \
@@ -434,11 +427,11 @@ RUN set -ex \
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.25.5" \
+    DOCKER_COMPOSE_VERSION="1.26.0" \
     SRC_DIR="/usr/src"
 
-ENV DOCKER_SHA256="7f4115dc6a3c19c917f8b9664d7b51c904def1c984e082c4600097433323cf6f"
-ENV DOCKER_VERSION="19.03.8"
+ENV DOCKER_SHA256="0f4336378f61ed73ed55a356ac19e46699a995f2aff34323ba5874d131548b9e"
+ENV DOCKER_VERSION="19.03.11"
 
 # Install Docker
 RUN set -ex \
@@ -447,7 +440,7 @@ RUN set -ex \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
-# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && addgroup dockremap \
     && useradd -g dockremap dockremap \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
@@ -455,7 +448,7 @@ RUN set -ex \
     && wget -nv "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
-# Ensure docker-compose works
+    # Ensure docker-compose works
     && docker-compose version
 
 VOLUME /var/lib/docker
@@ -465,7 +458,7 @@ VOLUME /var/lib/docker
 FROM runtimes_n_corretto AS std_v4
 
 # GoLang 14
-ENV GOLANG_14_VERSION="1.14.2"
+ENV GOLANG_14_VERSION="1.14.4"
 RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
     goenv global  $GOLANG_14_VERSION
 
