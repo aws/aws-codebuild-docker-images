@@ -449,7 +449,12 @@ RUN set -ex \
     && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     # Ensure docker-compose works
-    && docker-compose version
+    && docker-compose version \
+    && DOCKER_BUILDKIT=1 docker build --platform=local -o . git://github.com/docker/buildx \
+    && mkdir -p ~/.docker/cli-plugins \
+    && mv buildx ~/.docker/cli-plugins/docker-buildx \
+    # Ensure buildx works
+    && docker buildx version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
