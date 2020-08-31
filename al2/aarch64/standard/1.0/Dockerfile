@@ -19,7 +19,7 @@ ENV RUBY_VERSION="2.6.5" \
  NODE_VERSION="12.13.0" \
  NODE_10_VERSION="10.16.3" \
  NODE_8_VERSION="8.16.0" \
- GOLANG_VERSION="1.13.1" \
+ GOLANG_VERSION="1.13.15" \
  GOLANG_12_VERSION="1.12.9" \
  DOCKER_18_VERSION="18.09.6" \
  DOCKER_VERSION="19.03.11" \
@@ -129,7 +129,7 @@ COPY ssh_config /root/.ssh/config
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_arm64/amazon-ssm-agent.rpm
 COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
@@ -510,7 +510,7 @@ RUN set -ex \
 #****************     END JAVA     ****************************************************
 
 #****************     GO 1.13   **********************************************************
-ENV GOLANG_DOWNLOAD_SHA256="8af8787b7c2a3c0eb3f20f872577fcb6c36098bf725c59c4923921443084c807" \
+ENV GOLANG_DOWNLOAD_SHA256="a5c59e3f0aeaf6e939790152a8bfabb91d70c9787afb7aee06aef9bd4411c551" \
     GOPATH="/go" \
     DEP_VERSION="0.5.1" \
     DEP_BINARY="dep-linux-arm64"

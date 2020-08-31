@@ -118,7 +118,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-we
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_amd64/amazon-ssm-agent.rpm
 
 # Install env tools for runtimes
 ## Dotnet
@@ -346,7 +346,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_13_VERSION="1.13.8" \
+ENV GOLANG_13_VERSION="1.13.15" \
     GOLANG_12_VERSION="1.12.17"
 
 ENV GOENV_DISABLE_GOPATH=1

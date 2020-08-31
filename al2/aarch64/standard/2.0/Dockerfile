@@ -83,7 +83,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-we
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_arm64/amazon-ssm-agent.rpm
 
 # Install env tools for runtimes
 ## Dotnet
@@ -275,8 +275,8 @@ ENV GOPATH="/go" \
     DEP_VERSION="0.5.4" \
     DEP_BINARY="dep-linux-arm64"
 
-ENV GOLANG_14_VERSION="1.14.4"
-ENV GOLANG_14_DOWNLOAD_SHA256="05dc46ada4e23a1f58e72349f7c366aae2e9c7a7f1e7653095538bc5bba5e077"
+ENV GOLANG_14_VERSION="1.14.7"
+ENV GOLANG_14_DOWNLOAD_SHA256="fe5b6f6e441f3cb7b53ebf1a010bbebcb720ac98124984cfe2e51d72b8a58c71"
 
 RUN set -ex \
     && mkdir -p "$GOPATH/src" "$GOPATH/bin" \
@@ -294,8 +294,8 @@ ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 
 #****************     GO 1.13   **********************************************************
 
-ENV GOLANG_13_VERSION="1.13.12"
-ENV GOLANG_13_DOWNLOAD_SHA256="7a8b4e7841d978c95dae8ef53e19811ee2d5c595a1c5ec7afed74bb8f71588b8"
+ENV GOLANG_13_VERSION="1.13.15"
+ENV GOLANG_13_DOWNLOAD_SHA256="a5c59e3f0aeaf6e939790152a8bfabb91d70c9787afb7aee06aef9bd4411c551"
 
 RUN set -ex \
     && wget -nv "https://dl.google.com/go/go$GOLANG_13_VERSION.linux-arm64.tar.gz" -O /tmp/golang.tar.gz \
