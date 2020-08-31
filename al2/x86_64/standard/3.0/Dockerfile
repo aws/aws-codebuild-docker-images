@@ -339,7 +339,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_13_VERSION="1.13.12" \
+ENV GOLANG_15_VERSION="1.15" \
+    GOLANG_14_VERSION="1.14.7" \
+    GOLANG_13_VERSION="1.13.12" \
     GOLANG_12_VERSION="1.12.17"
 
 ENV GOENV_DISABLE_GOPATH=1
@@ -349,6 +351,12 @@ RUN goenv install $GOLANG_12_VERSION; rm -rf /tmp/*
 
 RUN goenv install $GOLANG_13_VERSION; rm -rf /tmp/*; \
     goenv global  $GOLANG_13_VERSION
+
+RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
+    goenv global  $GOLANG_14_VERSION
+
+RUN goenv install $GOLANG_15_VERSION; rm -rf /tmp/*; \
+    goenv global  $GOLANG_15_VERSION
 
 RUN go get -u github.com/golang/dep/cmd/dep
 #****************      END GOLANG     ****************************************************
@@ -430,11 +438,6 @@ RUN set -ex \
 #Ruby 2.7
 ENV RUBY_27_VERSION="2.7.1"
 RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION;ruby -v
-
-#Golang 14
-ENV GOLANG_14_VERSION="1.14.4"
-RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
-    goenv global  $GOLANG_14_VERSION
 
 #Php 7.4
 ENV PHP_74_VERSION="7.4.7"

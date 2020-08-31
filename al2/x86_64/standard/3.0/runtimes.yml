@@ -67,6 +67,10 @@ runtimes:
         commands:
           - echo "Installing Go version 1.14 ..."
           - goenv global  $GOLANG_14_VERSION
+      1.15:
+        commands:
+          - echo "Installing Go version 1.15 ..."
+          - goenv global  $GOLANG_15_VERSION
   python:
     versions:
       3.8:
