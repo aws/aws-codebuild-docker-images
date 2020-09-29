@@ -1,9 +1,30 @@
 version: 0.2
 
 phases:
-  build:
+version: 0.2
+env:
+    variables:
+    CONTAINER_REPOSITORY_URL: 738712266740.dkr.ecr.us-east-1.amazonaws.com/amazon_linux_codebuild_image
+    TAG_NAME: latest
+
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+
+pre_build:
+  commands:
+    - $(aws ecr get-login --no-include-email)
+    - docker pull $CONTAINER_REPOSITORY_URL:$TAG_NAME || true
+
+build:
+  commands:
+    - cd ./al2/x86_64/standard/1.0
+    - docker build --cache-from $CONTAINER_REPOSITORY_URL:$TAG_NAME --tag $CONTAINER_REPOSITORY_URL:$TAG_NAME 
+
+post_build:
     commands:
-      - cd $CODEBUILD_SRC_DIR/ubuntu/standard/2.0
-      - docker build -t aws/codebuild/standard:2.0 .
-      - cd $CODEBUILD_SRC_DIR/al2/x86_64/standard/1.0
-      - docker build -t aws/codebuild/amazonlinux2-x86_64-standard:1.0 .
+      - docker push $CONTAINER_REPOSITORY_URL
+
+
+ 
