@@ -446,6 +446,10 @@ RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/con
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 #****************      END PHP     ****************************************************
 
+# Install and configure amazon-ecr-credential-helper
+RUN PYTHON=python2 /usr/bin/amazon-linux-extras enable docker
+RUN yum install -y amazon-ecr-credential-helper
+
 #===================END of runtimes_3 ==============
 FROM runtimes_3 AS al2_v3
 
