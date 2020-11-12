@@ -449,6 +449,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 # Install and configure amazon-ecr-credential-helper
 RUN PYTHON=python2 /usr/bin/amazon-linux-extras enable docker
 RUN yum install -y amazon-ecr-credential-helper
+RUN mkdir -p /root/.docker && echo '{"credsStore": "ecr-login"}' > /root/.docker/config.json
 
 #===================END of runtimes_3 ==============
 FROM runtimes_3 AS al2_v3
