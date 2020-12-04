@@ -24,6 +24,7 @@ Download and use our codebuild_build.sh script to run your local builds.
 
 **Optional:**  
   -l        Used to override the default local agent image.  
+  -r        Used to specify a report output directory.  
   -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables.  
   -p        Used to specify the AWS CLI Profile.  
   -b        Used to specify a buildspec override file. Defaults to buildspec.yml in the source directory.  
