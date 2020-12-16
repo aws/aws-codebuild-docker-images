@@ -215,8 +215,8 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_10_VERSION="10.19.0" \
-    NODE_12_VERSION="12.16.1"
+ENV NODE_12_VERSION="12.16.1" \
+    NODE_10_VERSION="10.19.0"
 
 RUN     nodenv install $NODE_10_VERSION && env NODENV_VERSION=$NODE_10_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
      && nodenv install $NODE_12_VERSION && env NODENV_VERSION=$NODE_12_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
