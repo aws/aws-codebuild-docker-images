@@ -138,10 +138,16 @@ RUN set -ex  \
 && chmod +x /usr/local/bin/dotnet-install.sh 
 
 #nodejs
-ENV SRC_DIR="/usr/src"
-ENV N_SRC_DIR="$SRC_DIR/n"
-RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install 
+ENV NODENV_SRC_DIR="/usr/local/nodenv"
+
+ENV PATH="/root/.nodenv/shims:$NODENV_SRC_DIR/bin:$NODENV_SRC_DIR/shims:$PATH" \
+    NODE_BUILD_SRC_DIR="$NODENV_SRC_DIR/plugins/node-build"
+
+RUN set -ex \
+    && git clone https://github.com/nodenv/nodenv.git $NODENV_SRC_DIR \
+    && mkdir -p $NODENV_SRC_DIR/plugins \
+    && git clone https://github.com/nodenv/node-build.git $NODE_BUILD_SRC_DIR \
+    && sh $NODE_BUILD_SRC_DIR/install.sh
 
 #ruby
 ENV RBENV_SRC_DIR="/usr/local/rbenv"
@@ -212,13 +218,13 @@ RUN set -ex \
 ENV NODE_12_VERSION="12.16.1" \
     NODE_10_VERSION="10.19.0"
 
-RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
-     && n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+RUN     nodenv install $NODE_10_VERSION && env NODENV_VERSION=$NODE_10_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
+     && nodenv install $NODE_12_VERSION && env NODENV_VERSION=$NODE_12_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
      && apt-get update && apt-get install -y --no-install-recommends yarn \
      && yarn --version \
-     && cd / && rm -rf $N_SRC_DIR;rm -rf /tmp/*
+     && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
 
@@ -427,7 +433,7 @@ FROM runtimes_n_openjdk AS std_v2
 
 #Prune nonactive runtimes.
 RUN rm  -rf /root/.dotnet/sdk/*
-RUN n rm $NODE_12_VERSION
+RUN nodenv uninstall -f $NODE_12_VERSION
 RUN phpenv uninstall -f $PHP_74_VERSION
 RUN pyenv  uninstall -f $PYTHON_38_VERSION
 RUN rbenv  uninstall -f $RUBY_27_VERSION
@@ -487,10 +493,10 @@ RUN set -ex \
 
 #Node 8
 ENV NODE_8_VERSION=8.16.0
-RUN n $NODE_8_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack
+RUN nodenv install $NODE_8_VERSION && env NODENV_VERSION=$NODE_8_VERSION npm install --save-dev -g -f grunt grunt-cli webpack
 
 #Activate the desired runtime versions.
-RUN n $NODE_10_VERSION
+RUN nodenv global $NODE_10_VERSION
 RUN pyenv  global $PYTHON_37_VERSION
 RUN phpenv global $PHP_73_VERSION
 RUN rbenv  global $RUBY_26_VERSION
