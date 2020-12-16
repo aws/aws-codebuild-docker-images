@@ -411,19 +411,25 @@ RUN cd /usr/local/python38/bin \
 
 #****************      NODEJS     ****************************************************
 
- ENV N_SRC_DIR="$SRC_DIR/n"
+ ENV NODENV_SRC_DIR="/usr/local/nodenv"
 
- RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install \
-     && n $NODE_8_VERSION && npm install --save-dev -g grunt && npm install --save-dev -g grunt-cli && npm install --save-dev -g webpack \
-     && n $NODE_10_VERSION && npm install --save-dev -g grunt && npm install --save-dev -g grunt-cli && npm install --save-dev -g webpack \
-     && n $NODE_VERSION && npm install --save-dev -g grunt && npm install --save-dev -g grunt-cli && npm install --save-dev -g webpack \
+ ENV PATH="/root/.nodenv/shims:$NODENV_SRC_DIR/bin:$NODENV_SRC_DIR/shims:$PATH" \
+     NODE_BUILD_SRC_DIR="$NODENV_SRC_DIR/plugins/node-build"
+
+ RUN set -ex \
+     && git clone https://github.com/nodenv/nodenv.git $NODENV_SRC_DIR \
+     && mkdir -p $NODENV_SRC_DIR/plugins \
+     && git clone https://github.com/nodenv/node-build.git $NODE_BUILD_SRC_DIR \
+     && sh $NODE_BUILD_SRC_DIR/install.sh \
+     && nodenv install $NODE_8_VERSION && env NODENV_VERSION=$NODE_8_VERSION npm install --save-dev -g grunt grunt-cli webpack \
+     && nodenv install $NODE_10_VERSION && env NODENV_VERSION=$NODE_10_VERSION npm install --save-dev -g grunt grunt-cli webpack \
+     && nodenv install $NODE_VERSION && env NODENV_VERSION=$NODE_VERSION npm install --save-dev -g grunt grunt-cli webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
      && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
      && yum install -y yarn \
      && yarn --version \
-     && cd / && rm -rf $N_SRC_DIR \
-     && yum clean all
+     && yum clean all \
+     && nodenv global $NODE_VERSION
 
 #****************      END NODEJS     ****************************************************
 

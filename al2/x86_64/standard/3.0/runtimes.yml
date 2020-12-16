@@ -102,11 +102,11 @@ runtimes:
       10:
         commands:
           - echo "Installing Node.js version 10 ..."
-          - n $NODE_10_VERSION
+          - nodenv global $NODE_10_VERSION
       12:
         commands:
           - echo "Installing Node.js version 12 ..."
-          - n $NODE_12_VERSION
+          - nodenv global $NODE_12_VERSION
   docker:
     versions:
       18:

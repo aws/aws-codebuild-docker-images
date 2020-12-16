@@ -129,9 +129,16 @@ RUN set -ex  \
 && chmod +x /usr/local/bin/dotnet-install.sh 
 
 ##nodejs
-ENV N_SRC_DIR="$SRC_DIR/n"
-RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install
+ENV NODENV_SRC_DIR="/usr/local/nodenv"
+
+ENV PATH="/root/.nodenv/shims:$NODENV_SRC_DIR/bin:$NODENV_SRC_DIR/shims:$PATH" \
+    NODE_BUILD_SRC_DIR="$NODENV_SRC_DIR/plugins/node-build"
+
+RUN set -ex \
+    && git clone https://github.com/nodenv/nodenv.git $NODENV_SRC_DIR \
+    && mkdir -p $NODENV_SRC_DIR/plugins \
+    && git clone https://github.com/nodenv/node-build.git $NODE_BUILD_SRC_DIR \
+    && sh $NODE_BUILD_SRC_DIR/install.sh
 
 ##ruby
 ENV RBENV_SRC_DIR="/usr/local/rbenv"
@@ -296,12 +303,12 @@ RUN set -ex \
 
 ENV NODE_10_VERSION="10.21.0"
 
-RUN  n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+RUN  nodenv install $NODE_10_VERSION && env NODENV_VERSION=$NODE_10_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
      && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
      && yum install -y yarn \
      && yarn --version \
-     && cd / && rm -rf $N_SRC_DIR; rm -rf /tmp/*
+     && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
 
@@ -397,7 +404,8 @@ RUN set -ex \
 # Node 12
 ENV NODE_12_VERSION="12.18.0"
 
-RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+RUN  nodenv install $NODE_12_VERSION && env NODENV_VERSION=$NODE_12_VERSION npm install --save-dev -g -f grunt grunt-cli webpack \
+     && nodenv global $NODE_12_VERSION \
      && rm -rf /tmp/*
 
 #=======================End of layer: runtimes_2  =================
