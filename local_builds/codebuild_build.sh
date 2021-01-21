@@ -29,7 +29,7 @@ function isOSWindows() {
 }
 
 function usage {
-    echo "usage: codebuild_build.sh [-i image_name] [-a artifact_output_directory] [options]"
+    echo "usage: codebuild_build.sh [-i image_name] [-a artifact_output_directory] [options] [-- docker_options]"
     echo "Required:"
     echo "  -i        Used to specify the customer build container image."
     echo "  -a        Used to specify an artifact output directory."
@@ -55,11 +55,34 @@ function usage {
     exit 1
 }
 
+
+docker_options=()
+args=()
+
+while [ $# -gt 0 ]; do
+    key="$1"
+    case $key in
+        --)
+        shift
+        docker_options=("$@")
+        set --
+        ;;
+        *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+done
+
+set -- "${args[@]}"
+
+
 image_flag=false
 artifact_flag=false
 awsconfig_flag=false
 mount_src_dir_flag=false
 docker_privileged_mode_flag=false
+
 
 while getopts "cmdi:a:r:s:b:e:l:p:h" opt; do
     case $opt in
@@ -183,6 +206,7 @@ else
 fi
 
 docker_command+=" amazon/aws-codebuild-local:latest"
+docker_command+=" ${docker_options[*]}"
 
 # Note we do not expose the AWS_SECRET_ACCESS_KEY or the AWS_SESSION_TOKEN
 exposed_command=$docker_command
