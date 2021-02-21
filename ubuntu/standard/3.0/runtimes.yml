@@ -13,6 +13,11 @@ runtimes:
           java: ["openjdk8"]
         commands:
           - echo "Installing Android version 29 ..."
+      30:
+        requires:
+          java: ["openjdk8"]
+        commands:
+          - echo "Installing Android version 30 ..."
 
   java:
     versions:
@@ -92,11 +97,6 @@ runtimes:
         commands:
           - echo "Installing Node.js version 12 ..."
           - n $NODE_12_VERSION
-  docker:
-    versions:
-      18:
-        commands:
-          - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION ."
   dotnet:
     versions:
       3.0:
