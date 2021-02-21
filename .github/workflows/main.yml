@@ -1,0 +1,36 @@
+name: Docker build and push
+ 
+on:
+  push:
+    branches:
+    - master 
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron:  '0 0 * * 2'
+
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+    - name: "Build"
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+      run: |
+        cd ubuntu/standard/5.0 && \
+        docker build -t poad/aws/codebuild/standard:3.0 .
+
+  docker_push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name != 'pull_request'
+    - name: Build and push
+      if: github.event_name != 'pull_request'
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u poad --password-stdin && \
+        cd ubuntu/standard/5.0 && \
+        IMAGRE_NAME=poad/aws/codebuild/standard:3.0 && \
+        docker build -t ${IMAGRE_NAME} .
