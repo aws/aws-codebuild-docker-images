@@ -217,7 +217,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_12_VERSION="12.19.1" \
+ENV NODE_12_VERSION="12.20.1" \
     NODE_10_VERSION="10.23.0"
 
 RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \

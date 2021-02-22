@@ -395,7 +395,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 # Node 12
-ENV NODE_12_VERSION="12.18.0"
+ENV NODE_12_VERSION="12.20.1"
 
 RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && rm -rf /tmp/*
