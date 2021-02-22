@@ -25,6 +25,7 @@ RUN set -ex \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && amazon-linux-extras enable corretto8 \
+    && amazon-linux-extras enable docker \
     && yum groupinstall -y "Development tools" \
     && yum install -y \
            GeoIP-devel ImageMagick asciidoc bzip2-devel bzr bzrtools cvs cvsps \
@@ -37,7 +38,8 @@ RUN set -ex \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
-           subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel 
+           subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
+	   amazon-ecr-credential-helper
 
 RUN useradd codebuild-user
 
