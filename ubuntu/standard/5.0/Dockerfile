@@ -158,7 +158,7 @@ FROM tools AS runtimes
 #****************     .NET-CORE     *******************************************************
 
 ENV DOTNET_31_SDK_VERSION="3.1.404"
-ENV DOTNET_5_SDK_VERSION="5.0.101"
+ENV DOTNET_5_SDK_VERSION="5.0.200"
 ARG DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 3.1 Global Tools install folder to PATH
