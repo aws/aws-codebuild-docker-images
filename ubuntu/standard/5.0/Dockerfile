@@ -124,7 +124,7 @@ RUN set -ex  \
 ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install 
+     && cd $N_SRC_DIR && make install
 
 #ruby
 ARG RBENV_SRC_DIR="/usr/local/rbenv"
@@ -159,7 +159,7 @@ FROM tools AS runtimes
 
 ENV DOTNET_31_SDK_VERSION="3.1.404"
 ENV DOTNET_5_SDK_VERSION="5.0.101"
-ARG DOTNET_ROOT="/root/.dotnet"
+ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 3.1 Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_31_SDK_VERSION \
@@ -223,9 +223,9 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.9"
-ENV PYTHON_38_VERSION="3.8.7"
-ENV PYTHON_39_VERSION="3.9.1"
+ENV PYTHON_37_VERSION="3.7.10"
+ENV PYTHON_38_VERSION="3.8.8"
+ENV PYTHON_39_VERSION="3.9.2"
 
 ARG PYTHON_PIP_VERSION=20.3.3
 
