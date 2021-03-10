@@ -100,8 +100,8 @@ runtimes:
       3.1:
         commands:
           - echo "Installing .NET version 3.1 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_31_SDK_VERSION
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_31_SDK_VERSION
       5.0:
         commands:
           - echo "Installing .NET version 5.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_5_SDK_VERSION
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_5_SDK_VERSION
