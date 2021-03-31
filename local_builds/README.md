@@ -15,7 +15,7 @@ For x86_64:
 For ARM:
     docker pull amazon/aws-codebuild-local:aarch64 --disable-content-trust=false
 
-You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/codebuild/latest/userguide/samples.html). Please allow at least an hour after a new version has been pushed for the updated SHA to be reflected in our documentation. 
+You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/codebuild/latest/userguide/use-codebuild-agent.html#codebuild-agent-sha). Please allow at least an hour after a new version has been pushed for the updated SHA to be reflected in our documentation. 
 
 Download and use our codebuild_build.sh script to run your local builds.
 
