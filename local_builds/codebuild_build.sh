@@ -182,7 +182,7 @@ else
     docker_command+=" -e \"INITIATOR=$USER\""
 fi
 
-if [ -n $local_agent_image ]
+if [ -n "$local_agent_image" ]
 then
     docker_command+=" $local_agent_image"
 else
