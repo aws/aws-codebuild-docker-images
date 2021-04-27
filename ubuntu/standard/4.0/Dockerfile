@@ -1,4 +1,4 @@
-# Copyright 2020-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2019-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -326,7 +326,8 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     ANT_DOWNLOAD_SHA512="4d80dc6ba23eeec7769085ddb00261b7480b596b56c6e69aa221391acbfb7338eb5855179c88222c8021095ef1f64f43caf2b4f90e8305d7c3128026d4258d06" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
-    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
+    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9" \
+    SBT_DOWNLOAD_SHA256="9bb9212541176d6fcce7bd12e4cf8a9c9649f5b63f88b3aff474e0b02c7cfe58"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
 
@@ -413,13 +414,14 @@ RUN set -ex \
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
     # Install SBT
-    && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
-    && apt-get install -y --no-install-recommends apt-transport-https \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \
-    # Cleanup
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
+    && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
+    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && rm sbt.tgz
+ENV PATH "/usr/local/bin/sbt/bin:$PATH"
+RUN sbt version
+# Cleanup
+RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
 #****************     END JAVA     ****************************************************
 

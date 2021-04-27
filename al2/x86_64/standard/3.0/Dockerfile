@@ -1,4 +1,4 @@
-# Copyright 2020-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -118,7 +118,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-we
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_amd64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/2.3.1644.0/linux_amd64/amazon-ssm-agent.rpm
 
 # Install env tools for runtimes
 ## Dotnet
@@ -188,7 +188,8 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     ANT_DOWNLOAD_SHA512="4d80dc6ba23eeec7769085ddb00261b7480b596b56c6e69aa221391acbfb7338eb5855179c88222c8021095ef1f64f43caf2b4f90e8305d7c3128026d4258d06" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
-    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
+    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9" \
+    SBT_DOWNLOAD_SHA256="9bb9212541176d6fcce7bd12e4cf8a9c9649f5b63f88b3aff474e0b02c7cfe58"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_11_HOME" \
@@ -264,11 +265,14 @@ RUN set -ex \
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
     # Install SBT
-    && wget -nv https://dl.bintray.com/sbt/rpm/sbt-$SBT_VERSION.rpm \
-    && yum install -y sbt-$SBT_VERSION.rpm \
-    && rm -fr sbt-$SBT_VERSION.rpm \
-    # Cleanup
-    && rm -fr /tmp/* /var/tmp/*
+    && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
+    && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
+    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && rm sbt.tgz
+ENV PATH "/usr/local/bin/sbt/bin:$PATH"
+RUN sbt version
+# Cleanup
+RUN rm -fr /tmp/* /var/tmp/*
 #****************     END JAVA     ****************************************************
 
 
