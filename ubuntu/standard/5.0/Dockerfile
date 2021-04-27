@@ -1,4 +1,4 @@
-# Copyright 2020-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -49,7 +49,9 @@ RUN set -ex \
           python-openssl rsync sgml-base sgml-data stunnel \
           tar tcl tcl8.6 tk tk-dev unzip wget xfsprogs xml-core xmlto xsltproc \
           libzip5 libzip-dev vim xvfb xz-utils zip zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LC_CTYPE="C.UTF-8"
 
 RUN useradd codebuild-user
 
@@ -158,7 +160,7 @@ FROM tools AS runtimes
 #****************     .NET-CORE     *******************************************************
 
 ENV DOTNET_31_SDK_VERSION="3.1.404"
-ENV DOTNET_5_SDK_VERSION="5.0.101"
+ENV DOTNET_5_SDK_VERSION="5.0.202"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 3.1 Global Tools install folder to PATH
@@ -309,6 +311,7 @@ ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="ed73febff2803079d13117e18a22697eecdac64c9c52fc5259ac880d7b07f527d8ce3779851af0cda5798a368ebc979d43dd7085a0a62af57df23ff3d105dd6f"
 ARG MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0"
 ARG GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n0080de8491f0918e4f529a6db6820fa0b9e818ee2386117f4394f95feb1d5583 6.7"
+ARG SBT_DOWNLOAD_SHA256="5cf648f18ee9573cd26970999ae4e76ac034721a671bb45e7311c6d1375f9d33"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
 
@@ -380,13 +383,14 @@ RUN set -ex \
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
     # Install SBT
-    && echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
-    && apt-get install -y --no-install-recommends apt-transport-https \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends sbt=$SBT_VERSION \
-    # Cleanup
-    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
+    && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
+    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && rm sbt.tgz
+ENV PATH "/usr/local/bin/sbt/bin:$PATH"
+RUN sbt version -Dsbt.rootdir=true
+# Cleanup
+RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
 #****************     END JAVA     ****************************************************
 
