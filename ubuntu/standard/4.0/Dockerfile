@@ -244,7 +244,7 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 ENV PYTHON_38_VERSION="3.8.10" \
     PYTHON_37_VERSION="3.7.10"
 
-ENV PYTHON_PIP_VERSION=20.2.4
+ENV PYTHON_PIP_VERSION=21.1.2
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*

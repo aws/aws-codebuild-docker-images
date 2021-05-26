@@ -229,7 +229,7 @@ ENV PYTHON_37_VERSION="3.7.10"
 ENV PYTHON_38_VERSION="3.8.10"
 ENV PYTHON_39_VERSION="3.9.2"
 
-ARG PYTHON_PIP_VERSION=20.3.3
+ARG PYTHON_PIP_VERSION=21.1.2
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
