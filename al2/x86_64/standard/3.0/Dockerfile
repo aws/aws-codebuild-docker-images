@@ -387,6 +387,17 @@ RUN set -ex \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     && docker-compose version
 
+#Python 3.9
+ENV PYTHON_39_VERSION="3.9.5"
+
+COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
+RUN   pyenv global  $PYTHON_39_VERSION
+RUN set -ex \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
+
 #Python 3.8
 ENV PYTHON_38_VERSION="3.8.10"
 
