@@ -226,7 +226,7 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 
 #**************** PYTHON *****************************************************
 ENV PYTHON_37_VERSION="3.7.10"
-ENV PYTHON_38_VERSION="3.8.8"
+ENV PYTHON_38_VERSION="3.8.10"
 ENV PYTHON_39_VERSION="3.9.2"
 
 ARG PYTHON_PIP_VERSION=20.3.3

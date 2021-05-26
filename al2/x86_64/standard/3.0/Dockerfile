@@ -387,7 +387,7 @@ RUN set -ex \
     && docker-compose version
 
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.8"
+ENV PYTHON_38_VERSION="3.8.10"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
