@@ -41,7 +41,7 @@ RUN set -ex \
           libglib2.0-dev libhttp-date-perl libio-pty-perl libjpeg-dev \
           libkrb5-dev liblzma-dev libmagickcore-dev libmagickwand-dev \
           libmysqlclient-dev libncurses5-dev libncursesw5-dev libonig-dev \
-          libpq-dev libreadline-dev libserf-1-1 libsqlite3-dev libssl-dev \
+          libpq-dev libreadline-dev libserf-1-1 libsodium-dev libsqlite3-dev libssl-dev \
           libsvn1 libsvn-perl libtcl8.6 libtidy-dev libtimedate-perl \
           libtool libwebp-dev libxml2-dev libxml2-utils libxslt1-dev \
           libyaml-dev libyaml-perl llvm locales make mlocate \
