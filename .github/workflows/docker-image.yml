@@ -15,4 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: echo Hello World!
+      run: echo Hello World! Foo is $FOO. Bar is $BAR
+      env:
+          FOO: foo
+          BAR: bar
