@@ -182,7 +182,12 @@ else
     docker_command+=" -e \"INITIATOR=$USER\""
 fi
 
-docker_command+=" amazon/aws-codebuild-local:latest"
+if [ -n "$local_agent_image" ]
+then
+    docker_command+=" $local_agent_image"
+else
+    docker_command+=" amazon/aws-codebuild-local:latest"
+fi
 
 # Note we do not expose the AWS_SECRET_ACCESS_KEY or the AWS_SESSION_TOKEN
 exposed_command=$docker_command

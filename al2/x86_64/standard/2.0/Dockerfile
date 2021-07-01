@@ -1,4 +1,4 @@
-# Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2019-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -11,8 +11,6 @@
 
 FROM amazonlinux:2 AS core
 
-ENV EPEL_REPO="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-
 # Install git, SSH, and other utilities
 RUN set -ex \
     && yum install -y openssh-clients \
@@ -21,7 +19,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && yum install -y $EPEL_REPO \
+    && amazon-linux-extras install epel -y \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && amazon-linux-extras enable corretto8 \
@@ -37,7 +35,8 @@ RUN set -ex \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
-           subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel 
+           subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
+    && rm /etc/yum.repos.d/mono-centos7-stable.repo
 
 RUN useradd codebuild-user
 
@@ -118,14 +117,14 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3-us-we
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_amd64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/2.3.1644.0/linux_amd64/amazon-ssm-agent.rpm
 
 # Install env tools for runtimes
 ## Dotnet
 ENV PATH="/root/.dotnet/:/root/.dotnet/tools/:$PATH"
 RUN set -ex  \
 && wget -nv -O /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
-&& chmod +x /usr/local/bin/dotnet-install.sh 
+&& chmod +x /usr/local/bin/dotnet-install.sh
 
 ##nodejs
 ENV N_SRC_DIR="$SRC_DIR/n"
@@ -190,7 +189,8 @@ ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
     ANT_DOWNLOAD_SHA512="c1a9694c3018e248000ff6f46d48af85f537ef3935e0d5256543c58a240084c0aff5289fd9e94cbc40d5442f3cc43592398047f2548fded40d9882be2b40750d" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="14cd15fc8cc8705bd69dcfa3c8fefb27eb7027f5de4b47a8b279218f76895a91 5.4.1\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
-    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9"
+    ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9" \
+    SBT_DOWNLOAD_SHA256="9bb9212541176d6fcce7bd12e4cf8a9c9649f5b63f88b3aff474e0b02c7cfe58"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JDK_DOWNLOAD_TAR="amazon-corretto-${JDK_VERSION}-linux-x64.tar.gz" \
@@ -242,7 +242,7 @@ RUN set -x \
     && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
     && rm /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz \
-    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000
 
 # Install Maven
 RUN set -ex \
@@ -272,11 +272,14 @@ RUN set -ex \
       && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
       && rm -rf $GRADLE_PATH \
     # Install SBT
-    && wget -nv https://dl.bintray.com/sbt/rpm/sbt-$SBT_VERSION.rpm \
-    && yum install -y sbt-$SBT_VERSION.rpm \
-    && rm -fr sbt-$SBT_VERSION.rpm \
-    # Cleanup
-    && rm -fr /tmp/* /var/tmp/*
+    && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
+    && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
+    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && rm sbt.tgz
+ENV PATH "/usr/local/bin/sbt/bin:$PATH"
+RUN sbt version
+# Cleanup
+RUN rm -fr /tmp/* /var/tmp/*
 #****************     END JAVA     ****************************************************
 
 
@@ -321,7 +324,7 @@ RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*; rbenv global $RUBY_26_VERSION
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.6"
+ENV PYTHON_37_VERSION="3.7.10"
 ENV PYTHON_PIP_VERSION=19.3.1
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
@@ -391,7 +394,7 @@ RUN set -ex \
     && docker-compose version
 
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.1"
+ENV PYTHON_38_VERSION="3.8.8"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*

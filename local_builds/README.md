@@ -9,10 +9,13 @@ locally before committing your changes to build on the cloud.
 
 Start by pulling the signed local agent image from [DockerHub](https://hub.docker.com/r/amazon/aws-codebuild-local/):
 
+For x86_64:
     docker pull amazon/aws-codebuild-local:latest --disable-content-trust=false
 
+For ARM:
+    docker pull amazon/aws-codebuild-local:aarch64 --disable-content-trust=false
 
-You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/codebuild/latest/userguide/samples.html). Please allow at least an hour after a new version has been pushed for the updated SHA to be reflected in our documentation. 
+You can verify the SHA matches our [latest release](https://docs.aws.amazon.com/codebuild/latest/userguide/use-codebuild-agent.html#codebuild-agent-sha). Please allow at least an hour after a new version has been pushed for the updated SHA to be reflected in our documentation. 
 
 Download and use our codebuild_build.sh script to run your local builds.
 
@@ -23,7 +26,7 @@ Download and use our codebuild_build.sh script to run your local builds.
   -a        Used to specify an artifact output directory.  
 
 **Optional:**  
-  -l        Used to override the default local agent image.  
+  -l        Used to override the default local agent image. Default is "amazon/aws-codebuild-local:latest".
   -r        Used to specify a report output directory.  
   -c        Use the AWS configuration and credentials from your local host. This includes ~/.aws and any AWS_* environment variables.  
   -p        Used to specify the AWS CLI Profile.  
