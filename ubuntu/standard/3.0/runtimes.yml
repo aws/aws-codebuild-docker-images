@@ -70,6 +70,10 @@ runtimes:
         commands:
           - echo "Installing Python version 3.8 ..."
           - pyenv global  $PYTHON_38_VERSION
+      3.9:
+        commands:
+          - echo "Installing Python version 3.9 ..."
+          - pyenv global  $PYTHON_39_VERSION
   php:
     versions:
       7.3:

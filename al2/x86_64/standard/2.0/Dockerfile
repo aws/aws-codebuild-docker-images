@@ -325,14 +325,15 @@ RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*; rbenv global $RUBY_26_VERSION
 
 #**************** PYTHON *****************************************************
 ENV PYTHON_37_VERSION="3.7.10"
-ENV PYTHON_PIP_VERSION=19.3.1
+ENV PYTHON_PIP_VERSION=21.1.2
+ENV PYYAML_VERSION=5.4.1
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==5.1.2" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
     && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 #**************** END PYTHON *****************************************************
@@ -393,15 +394,26 @@ RUN set -ex \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     && docker-compose version
 
+#Python 3.9
+ENV PYTHON_39_VERSION="3.9.5"
+
+COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
+RUN   pyenv global  $PYTHON_39_VERSION
+RUN set -ex \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
+
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.8"
+ENV PYTHON_38_VERSION="3.8.10"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==5.1.2" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
     && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 # Node 12

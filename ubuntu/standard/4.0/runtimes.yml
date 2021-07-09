@@ -70,6 +70,10 @@ runtimes:
           - goenv global  $GOLANG_14_VERSION
   python:
     versions:
+      3.9:
+        commands:
+          - echo "Installing Python version 3.9 ..."
+          - pyenv global  $PYTHON_39_VERSION
       3.8:
         commands:
           - echo "Installing Python version 3.8 ..."

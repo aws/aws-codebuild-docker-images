@@ -242,9 +242,9 @@ RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*; rbenv global $RUBY_26_VERSION
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.7"
-ENV PYTHON_PIP_VERSION=20.1.1
-ENV PYYAML_VERSION=5.3.1
+ENV PYTHON_37_VERSION="3.7.10"
+ENV PYTHON_PIP_VERSION=21.1.2
+ENV PYYAML_VERSION=5.4.1
 ENV DOCKER_COMPOSE_VERSION="1.26.0"
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
@@ -347,8 +347,21 @@ RUN set -ex \
     && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && chmod +x /usr/local/bin/dind
 
+#Python 3.9
+ENV PYTHON_39_VERSION="3.9.5"
+
+COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
+RUN   pyenv global  $PYTHON_39_VERSION
+RUN set -ex \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli awscli boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir "docker-compose==$DOCKER_COMPOSE_VERSION" \
+    && docker-compose version
+
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.3"
+ENV PYTHON_38_VERSION="3.8.10"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
