@@ -32,7 +32,7 @@ $ docker run -it --entrypoint sh aws/codebuild/standard:5.0 -c bash
 
 Some of the images in this repository are no longer actively maintained by AWS CodeBuild and may no longer build successfully.  These images will not receive any further updates.  They remain in this repository as a reference for the contents of these images that were previously released by CodeBuild.
 
-The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
+The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console
 
 + [standard 3.0](ubuntu/standard/3.0)
 + [standard 4.0](ubuntu/standard/4.0)
