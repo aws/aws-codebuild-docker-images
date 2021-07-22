@@ -297,7 +297,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_10_VERSION="10.23.0"
+ENV NODE_10_VERSION="10.24.1"
 
 RUN  n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
