@@ -361,7 +361,7 @@ RUN set -ex \
     && docker-compose version
 
 # Node 12
-ENV NODE_12_VERSION="12.18.0"
+ENV NODE_12_VERSION="12.22.2"
 
 RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && rm -rf /tmp/*
