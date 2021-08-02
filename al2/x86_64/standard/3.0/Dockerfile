@@ -421,13 +421,20 @@ RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --s
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
 
-#DotNet 3.1
-ENV DOTNET_31_SDK_VERSION="3.1.301"
+# .NET Core
+ENV DOTNET_31_SDK_VERSION="3.1.404"
+ENV DOTNET_5_SDK_VERSION="5.0.202"
 ENV DOTNET_ROOT="/root/.dotnet"
 
+# Add .NET Core 3.1 Global Tools install folder to PATH
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_31_SDK_VERSION \
     && dotnet --list-sdks \
     && rm -rf /tmp/*
+
+# Add .NET Core 5 Global Tools install folder to PATH
+RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_5_SDK_VERSION \
+     && dotnet --list-sdks \
+     && rm -rf /tmp/*
 
 ## Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE skip
