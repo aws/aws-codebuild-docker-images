@@ -120,7 +120,8 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-we
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/2.3.1644.0/linux_amd64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/linux_amd64/amazon-ssm-agent.rpm
+
 
 # Install env tools for runtimes
 ## Dotnet

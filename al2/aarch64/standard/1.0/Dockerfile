@@ -129,7 +129,7 @@ COPY ssh_config /root/.ssh/config
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.eu-north-1.amazonaws.com/amazon-ssm-eu-north-1/latest/linux_arm64/amazon-ssm-agent.rpm
+    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/linux_arm64/amazon-ssm-agent.rpm
 COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
