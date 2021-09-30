@@ -203,6 +203,7 @@ ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version
 # Cleanup
 RUN rm -fr /tmp/* /var/tmp/* \
+    && yum clean all
 #****************     END JAVA     ****************************************************
 
 
