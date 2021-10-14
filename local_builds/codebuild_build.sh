@@ -186,7 +186,7 @@ if [ -n "$local_agent_image" ]
 then
     docker_command+=" $local_agent_image"
 else
-    docker_command+=" amazon/aws-codebuild-local:latest"
+    docker_command+=" public.ecr.aws/codebuild/local-builds:latest"
 fi
 
 # Note we do not expose the AWS_SECRET_ACCESS_KEY or the AWS_SESSION_TOKEN
