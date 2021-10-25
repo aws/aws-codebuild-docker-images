@@ -21,8 +21,7 @@ ENV RUBY_VERSION="2.6.5" \
  NODE_8_VERSION="8.16.0" \
  GOLANG_VERSION="1.13.15" \
  GOLANG_12_VERSION="1.12.9" \
- DOCKER_18_VERSION="18.09.6" \
- DOCKER_VERSION="19.03.11" \
+ DOCKER_VERSION="20.10.9" \
  DOCKER_COMPOSE_VERSION="1.26.0"
 
 ARG CHINA_REGION
@@ -30,8 +29,7 @@ ARG CHINA_REGION
 #****************        Utilities     ********************************************* 
 ENV DOCKER_BUCKET="download.docker.com" \    
     DOCKER_CHANNEL="stable" \
-    DOCKER_18_SHA256="c4857639514471e2d1aa6d567880b7fc226437ede462021ed44157d4dcd11dc8" \
-    DOCKER_SHA256="9cd49fe82f6b7ec413b04daef35bc0c87b01d6da67611e5beef36291538d3145" \
+    DOCKER_SHA256="0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src" \
@@ -39,18 +37,18 @@ ENV DOCKER_BUCKET="download.docker.com" \
 
 # Install git, SSH, and other utilities
 RUN set -ex \
-    && yum install -y openssh-clients \
+    && yum install -yq openssh-clients \
     && mkdir ~/.ssh \
     && touch ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && yum install -y $EPEL_REPO \
+    && yum install -yq $EPEL_REPO \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && amazon-linux-extras enable corretto8 \
-    && yum groupinstall -y "Development tools" \
-    && yum install -y wget fakeroot jq \
+    && yum groupinstall -yq "Development tools" \
+    && yum install -yq wget fakeroot jq \
        bzr mercurial procps-ng \
        ImageMagick \
        openssl-devel libdb-devel \
@@ -76,7 +74,7 @@ RUN set -ex \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
-   && tar zxvf $GIT_TAR_FILE \
+   && tar zxf $GIT_TAR_FILE \
    && cd git-$GIT_VERSION \
    && make -j4 prefix=/usr \
    && make install prefix=/usr \
@@ -84,43 +82,26 @@ RUN set -ex \
    && rm -rf $GIT_TAR_FILE /tmp/*
 
 # Install Docker
-ENV DOCKER_18_PATH=/usr/local/bin/docker18
-ENV DOCKER_PATH=/usr/local/bin/docker19
-
 RUN set -ex \
-# for old version (docker 18)
-    && mkdir $DOCKER_18_PATH; cd $DOCKER_18_PATH; curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/aarch64/docker-${DOCKER_18_VERSION}.tgz" -o docker.tgz \
-    && echo "${DOCKER_18_SHA256} *docker.tgz" | sha256sum -c - \
-    && tar --extract --file docker.tgz --strip-components 1  --directory $DOCKER_18_PATH \
-    && rm docker.tgz \
-    && for tool_path in $DOCKER_18_PATH/*; do \
-          tool=`basename $tool_path`; \
-          update-alternatives --install /usr/local/bin/$tool $tool $tool_path 10000; \
-        done \
-# for new version (docker 19)
-    && mkdir $DOCKER_PATH; cd $DOCKER_PATH ; curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/aarch64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/aarch64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
-    && tar --extract --file docker.tgz --strip-components 1  --directory $DOCKER_PATH \
+    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
-    && for tool_path in $DOCKER_PATH/*; do \
-          tool=`basename $tool_path`; \
-          update-alternatives --install /usr/local/bin/$tool $tool $tool_path 10000; \
-          update-alternatives --set $tool $tool_path; \
-        done \
     && docker -v \
-# set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && groupadd dockremap \
     && useradd -g dockremap dockremap \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && chmod +x /usr/local/bin/dind
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
 RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/arm64/aws-iam-authenticator \
     && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/arm64/kubectl \
-    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator
+    && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-arm64-latest \
+    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli
 
 VOLUME /var/lib/docker
 
@@ -129,7 +110,7 @@ COPY ssh_config /root/.ssh/config
 
 # Configure SSM
 RUN set -ex \
-    && yum install -y https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/linux_arm64/amazon-ssm-agent.rpm
+    && yum install -yq https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/linux_arm64/amazon-ssm-agent.rpm
 COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
@@ -163,9 +144,9 @@ ENV PATH="/usr/local/bin:$PATH" \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
 
-RUN yum install -y tcl-devel tk-devel bzip2-devel gdbm-devel libuuid-devel \
-    &&  wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_37_VERSION%%[a-z]*}/Python-$PYTHON_37_VERSION.tar.xz" \
-    && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_37_VERSION%%[a-z]*}/Python-$PYTHON_37_VERSION.tar.xz.asc" \
+RUN yum install -yq tcl-devel tk-devel bzip2-devel gdbm-devel libuuid-devel \
+    && wget -qO python.tar.xz "https://www.python.org/ftp/python/${PYTHON_37_VERSION%%[a-z]*}/Python-$PYTHON_37_VERSION.tar.xz" \
+    && wget -qO python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_37_VERSION%%[a-z]*}/Python-$PYTHON_37_VERSION.tar.xz.asc" \
     && export GNUPGHOME="$(mktemp -d)" \
     && (gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$GPG_KEY" \
         || gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$GPG_KEY" \
@@ -187,7 +168,7 @@ RUN yum install -y tcl-devel tk-devel bzip2-devel gdbm-devel libuuid-devel \
     && ldconfig \
 # explicit path to "pip3" to ensure distribution-provided "pip3" cannot interfere
    && if [ ! -e /usr/local/bin/pip3 ]; then \
-         wget -O /tmp/get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+         wget -qO /tmp/get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
         && /usr/local/python37/bin/python3 /tmp/get-pip.py "pip==$PYTHON_PIP_VERSION" \
         && rm /tmp/get-pip.py ; \
      fi \
@@ -200,7 +181,7 @@ RUN yum install -y tcl-devel tk-devel bzip2-devel gdbm-devel libuuid-devel \
      /usr/local/python37/bin/pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
         && /usr/local/python37/bin/pip3 install pipenv virtualenv --no-cache-dir
 
-RUN /usr/local/python37/bin/pip3 install --no-cache-dir --upgrade setuptools wheel tox codecov  \
+RUN /usr/local/python37/bin/pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel tox codecov  \
 # then we use "pip list" to ensure we don't have more than one pip version installed
 # https://github.com/docker-library/python/pull/100
     && [ "$(/usr/local/python37/bin/pip3 list |tac|tac| awk -F '[ ()]+' '$1 == "pip" { print $2; exit }')" = "$PYTHON_PIP_VERSION" ] \
@@ -224,7 +205,7 @@ RUN cd /usr/local/python37/bin \
 
 #****************        PYTHON 3.8    *********************************************
 # extra dependencies (over what buildpack-deps already includes)
-RUN yum install -y \
+RUN yum install -yq \
         tcl tcl-dev \
 		tk  tk-dev \
 		uuid-dev \
@@ -235,8 +216,8 @@ ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
 
 RUN set -ex \
 	\
-	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
-	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
+	&& wget -qO python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+	&& wget -qO python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
 	&& export GNUPGHOME="$(mktemp -d)" \
         && (gpg --batch --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys "$GPG_KEY" \
          || gpg --batch --keyserver pgp.mit.edu --recv-keys "$GPG_KEY") \
@@ -284,7 +265,7 @@ ENV PYTHON_GET_PIP_SHA256 8d412752ae26b46a39a201ec618ef9ef7656c5b2d8529cdcbe60cd
 
 RUN set -ex; \
 	\
-	wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
+	wget -qO get-pip.py "$PYTHON_GET_PIP_URL"; \
 	echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
 	\
 	/usr/local/python38/bin/python3 get-pip.py \
@@ -336,10 +317,10 @@ RUN cd /usr/local/python38/bin \
  RUN set -xe; \
      mkdir -p $SRC_DIR; \
      cd $SRC_DIR; \
-     yum install -y curl-devel; \
-     wget -O php.tar.xz "$PHP_URL"; \
+     yum install -yq curl-devel; \
+     wget -qO php.tar.xz "$PHP_URL"; \
      echo "$PHP_DOWNLOAD_SHA *php.tar.xz" | sha256sum -c -; \
-     wget -O php.tar.xz.asc "$PHP_ASC_URL"; \
+     wget -qO php.tar.xz.asc "$PHP_ASC_URL"; \
      export GNUPGHOME="$(mktemp -d)"; \
      for key in $GPG_KEYS; do \
          ( gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" \
@@ -349,7 +330,7 @@ RUN cd /usr/local/python38/bin \
      gpg --batch --verify php.tar.xz.asc php.tar.xz; \
      rm -rf "$GNUPGHOME"; \
      set -eux; \
-     yum install -y libedit-devel dpkg-dev libargon2-devel re2c; \
+     yum install -yq libedit-devel dpkg-dev libargon2-devel re2c; \
      export \
          CFLAGS="$PHP_CFLAGS" \
          CPPFLAGS="$PHP_CPPFLAGS" \
@@ -421,7 +402,7 @@ RUN cd /usr/local/python38/bin \
      && n $NODE_VERSION && npm install --save-dev -g grunt && npm install --save-dev -g grunt-cli && npm install --save-dev -g webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
      && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
-     && yum install -y yarn \
+     && yum install -yq yarn \
      && yarn --version \
      && cd / && rm -rf $N_SRC_DIR \
      && yum clean all
@@ -459,7 +440,7 @@ ENV JDK_DOWNLOAD_URL="https://d3pxv6yz143wms.cloudfront.net/${JDK_VERSION}/${JDK
 
 RUN set -ex \
     # Install Amazon Corretto 8
-    && yum -y update; yum -y install java-1.8.0-amazon-corretto-devel \
+    && yum -yq update; yum -yq install java-1.8.0-amazon-corretto-devel \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-trust \
     # Install Amazon Corretto 11
@@ -467,7 +448,7 @@ RUN set -ex \
     && mkdir -p $JAVA_HOME \
     && curl -LSso /var/tmp/$JDK_DOWNLOAD_TAR $JDK_DOWNLOAD_URL \
     && echo "$JDK_DOWNLOAD_SHA256 /var/tmp/$JDK_DOWNLOAD_TAR" | sha256sum -c - \
-    && tar xzvf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
+    && tar xzf /var/tmp/$JDK_DOWNLOAD_TAR -C $JAVA_HOME --strip-components=1 \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
@@ -483,14 +464,14 @@ RUN set -ex \
     && mkdir -p $MAVEN_HOME \
     && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
-    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
     && mkdir -p $MAVEN_CONFIG \
     # Install Gradle
     && mkdir -p $GRADLE_PATH \
     && for version in $INSTALLED_GRADLE_VERSIONS; do { \
-       wget "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
-       && unzip "$GRADLE_PATH/gradle-$version-all.zip" -d /usr/local \
+       wget -q "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
+       && unzip -q "$GRADLE_PATH/gradle-$version-all.zip" -d /usr/local \
        && echo -e "$GRADLE_DOWNLOADS_SHA256" | grep "$version" | sed "s|$version|$GRADLE_PATH/gradle-$version-all.zip|" | sha256sum -c - \
        && mkdir "/tmp/gradle-$version" \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
@@ -500,12 +481,12 @@ RUN set -ex \
        && if [ "$version" != "$GRADLE_VERSION" ]; then rm -rf "/usr/local/gradle-$version"; fi; \
      }; done \
     # Install default GRADLE_VERSION to path
-      && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
-      && rm -rf $GRADLE_PATH \
+    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
+    && rm -rf $GRADLE_PATH \
     # Install SBT
     && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
     && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
-    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && tar xzf sbt.tgz -C /usr/local/bin/ \
     && rm sbt.tgz
 ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version
@@ -523,12 +504,12 @@ ENV GOLANG_DOWNLOAD_SHA256="a5c59e3f0aeaf6e939790152a8bfabb91d70c9787afb7aee06ae
 RUN set -ex \
     && mkdir -p "$GOPATH/src" "$GOPATH/bin" \
     && chmod -R 777 "$GOPATH" \
-    && wget "https://dl.google.com/go/go$GOLANG_VERSION.linux-arm64.tar.gz" -O /tmp/golang.tar.gz \
+    && wget -q "https://dl.google.com/go/go$GOLANG_VERSION.linux-arm64.tar.gz" -O /tmp/golang.tar.gz \
     && echo "$GOLANG_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/golang.tar.gz -C /tmp \
     && mv /tmp/go /usr/local/go13  \
     && rm -fr /tmp/* /var/tmp/* \
-    && wget "https://github.com/golang/dep/releases/download/v$DEP_VERSION/$DEP_BINARY" -O "$GOPATH/bin/dep" \
+    && wget -q "https://github.com/golang/dep/releases/download/v$DEP_VERSION/$DEP_BINARY" -O "$GOPATH/bin/dep" \
     && chmod +x "$GOPATH/bin/dep"
 
 RUN ln -s /usr/local/go13 /usr/local/go
@@ -540,7 +521,7 @@ ENV PATH="$GOPATH/bin:/usr/local/go/bin:$PATH"
 ENV GOLANG_12_DOWNLOAD_SHA256="3606dc6ce8b4a5faad81d7365714a86b3162df041a32f44568418c9efbd7f646"
 
 RUN set -ex \
-    && wget "https://dl.google.com/go/go$GOLANG_12_VERSION.linux-arm64.tar.gz" -O /tmp/golang.tar.gz \
+    && wget -q "https://dl.google.com/go/go$GOLANG_12_VERSION.linux-arm64.tar.gz" -O /tmp/golang.tar.gz \
     && echo "$GOLANG_12_DOWNLOAD_SHA256 /tmp/golang.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/golang.tar.gz -C /tmp \
     && mv /tmp/go /usr/local/go12  \
@@ -549,9 +530,9 @@ RUN set -ex \
 #****************     END GO     **********************************************************
 
 RUN set -ex \
-   && yum install -y openssl \
+   && yum install -yq openssl \
    && curl -o stunnel-5.55.tar.gz https://www.stunnel.org/downloads/stunnel-5.55.tar.gz \
-   && tar xvfz stunnel-5.55.tar.gz \
+   && tar xfz stunnel-5.55.tar.gz \
    && cd stunnel-5.55 \
    && ./configure \
    && make \

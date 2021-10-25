@@ -17,20 +17,20 @@ ARG DEBIAN_FRONTEND="noninteractive"
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
-    && apt install -y apt-transport-https gnupg ca-certificates \
+    && apt install -y -qq apt-transport-https gnupg ca-certificates \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
-    && apt-get install software-properties-common -y --no-install-recommends \
+    && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-add-repository -y ppa:git-core/ppa \
     && apt-get update \
-    && apt-get install git=1:2.* -y --no-install-recommends \
+    && apt-get install git=1:2.* -y -qq --no-install-recommends \
     && git version \
-    && apt-get install -y --no-install-recommends openssh-client \
+    && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
     && touch ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && apt-get install -y --no-install-recommends \
+    && apt-get install -y -qq --no-install-recommends \
           apt-utils asciidoc autoconf automake build-essential bzip2 \
           bzr curl dirmngr docbook-xml docbook-xsl dpkg-dev \
           e2fsprogs expect fakeroot file g++ gcc gettext gettext-base \
@@ -63,12 +63,12 @@ FROM core AS tools
 # Install Firefox
 RUN set -ex \
     && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
-    && apt-get install -y firefox \
+    && apt-get install -y -qq firefox \
     && firefox --version
 
 # Install GeckoDriver
 RUN set -ex \
-    && apt-get install -y firefox-geckodriver \
+    && apt-get install -y -qq firefox-geckodriver \
     && geckodriver --version
 
 # Install Chrome
@@ -76,15 +76,15 @@ RUN set -ex \
     && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google.list \
     && apt-get update \
-    && apt-get install -y google-chrome-stable \
+    && apt-get install -y -qq google-chrome-stable \
     && google-chrome --version
 
 # Install ChromeDriver
 RUN set -ex \
     && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5}'` \
-    && CHROME_DRIVER_VERSION=`wget -nv -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION` \
-    && wget -nv -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver_linux64.zip -d /opt \
+    && CHROME_DRIVER_VERSION=`wget -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION` \
+    && wget -qO /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && unzip -q /tmp/chromedriver_linux64.zip -d /opt \
     && rm /tmp/chromedriver_linux64.zip \
     && mv /opt/chromedriver /opt/chromedriver-$CHROME_DRIVER_VERSION \
     && chmod 755 /opt/chromedriver-$CHROME_DRIVER_VERSION \
@@ -103,13 +103,13 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-we
 RUN set -ex \
     && mkdir /tmp/ssm \
     && cd /tmp/ssm \
-    && wget https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/debian_amd64/amazon-ssm-agent.deb \
+    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/debian_amd64/amazon-ssm-agent.deb \
     && dpkg -i amazon-ssm-agent.deb
 
 # Install AWS CLI v2
 # https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
 RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip \
-    && unzip /tmp/awscliv2.zip -d /opt \
+    && unzip -q /tmp/awscliv2.zip -d /opt \
     && /opt/aws/install -i /usr/local/aws-cli -b /usr/local/bin \
     && rm /tmp/awscliv2.zip \
     && rm -rf /opt/aws \
@@ -119,7 +119,7 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
 # Dotnet
 ENV PATH "/root/.dotnet/:/root/.dotnet/tools/:$PATH"
 RUN set -ex  \
-&& wget -nv -O /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
+&& wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
 && chmod +x /usr/local/bin/dotnet-install.sh
 
 #nodejs
@@ -208,7 +208,7 @@ RUN     n $NODE_14_VERSION && npm install --save-dev -g -f grunt && npm install 
      && n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-     && apt-get update && apt-get install -y --no-install-recommends yarn \
+     && apt-get update && apt-get install -y -qq --no-install-recommends yarn \
      && yarn --version \
      && cd / && rm -rf $N_SRC_DIR;rm -rf /tmp/*
 
@@ -238,7 +238,7 @@ RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
+    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
@@ -246,7 +246,7 @@ RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
+    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
@@ -254,7 +254,7 @@ RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade setuptools wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
+    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 #**************** END PYTHON *****************************************************
 
@@ -286,7 +286,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 ENV GOLANG_15_VERSION="1.15.12"
 ENV GOLANG_16_VERSION="1.16.4"
 
-RUN goenv install $GOLANG_15_VERSION;\
+RUN goenv install $GOLANG_15_VERSION; rm -rf /tmp/*; \
     goenv install $GOLANG_16_VERSION; rm -rf /tmp/*; \
     goenv global  $GOLANG_15_VERSION
 
@@ -326,25 +326,25 @@ ENV PATH="${PATH}:/opt/tools"
 
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y software-properties-common apt-utils \
+    && apt-get install -y -qq software-properties-common apt-utils \
     # Install Corretto 8
-    && wget -O- https://apt.corretto.aws/corretto.key | apt-key add - \
+    && wget -qO- https://apt.corretto.aws/corretto.key | apt-key add - \
     && add-apt-repository 'deb https://apt.corretto.aws stable main' \
     && apt-get update \
-    && apt-get install -y java-1.8.0-amazon-corretto-jdk \
-    && apt-get install -y --no-install-recommends ca-certificates-java \
+    && apt-get install -y -qq java-1.8.0-amazon-corretto-jdk \
+    && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
     && dpkg --add-architecture i386 \
     && apt-get update \
-    && apt-get install -y --force-yes libc6-i386 \
+    && apt-get install -y -qq --force-yes libc6-i386 \
        lib32stdc++6 lib32gcc1 lib32ncurses6 \
        lib32z1 libqt5widgets5 
 
 RUN set -ex \
     # Install Corretto 11
     # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
-    && apt-get install -y java-11-amazon-corretto-jdk \
+    && apt-get install -y -qq java-11-amazon-corretto-jdk \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
@@ -363,15 +363,15 @@ RUN set -ex \
     && mkdir -p $MAVEN_HOME \
     && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
-    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
     && mkdir -p $MAVEN_CONFIG_HOME \
     # Install Gradle
     && mkdir -p $GRADLE_PATH \
     && for version in $INSTALLED_GRADLE_VERSIONS; do { \
-       wget -nv "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
-       && unzip "$GRADLE_PATH/gradle-$version-all.zip" -d /usr/local \
+       wget -q "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
+       && unzip -q "$GRADLE_PATH/gradle-$version-all.zip" -d /usr/local \
        && echo "$GRADLE_DOWNLOADS_SHA256" | grep "$version" | sed "s|$version|$GRADLE_PATH/gradle-$version-all.zip|" | sha256sum -c - \
        && rm "$GRADLE_PATH/gradle-$version-all.zip" \
        && mkdir "/tmp/gradle-$version" \
@@ -388,7 +388,7 @@ RUN set -ex \
     # Install SBT
     && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
     && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
-    && tar xzvf sbt.tgz -C /usr/local/bin/ \
+    && tar xzf sbt.tgz -C /usr/local/bin/ \
     && rm sbt.tgz
 ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version -Dsbt.rootdir=true
@@ -404,8 +404,8 @@ ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 ARG DOCKER_COMPOSE_VERSION="1.27.4"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="ddb13aff1fcdcceb710bf71a210169b9c1abfd7420eeaf42cf7975f8fae2fcc8"
-ARG DOCKER_VERSION="19.03.13"
+ARG DOCKER_SHA256="caf74e54b58c0b38bb4d96c8f87665f29b684371c9a325562a3904b8c389995e"
+ARG DOCKER_VERSION="20.10.9"
 
 # Install Docker
 RUN set -ex \
@@ -419,7 +419,7 @@ RUN set -ex \
     && useradd -g dockremap dockremap \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget -nv "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     # Ensure docker-compose works
