@@ -99,6 +99,10 @@ runtimes:
         commands:
           - echo "Installing Node.js version 14 ..."
           - n $NODE_14_VERSION
+      16:
+        commands:
+          - echo "Installing Node.js version 16 ..."
+          - n $NODE_16_VERSION
   dotnet:
     versions:
       3.1:
