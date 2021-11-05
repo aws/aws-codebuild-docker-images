@@ -166,7 +166,10 @@ FROM tools AS runtimes_1
 #****************      JAVA     ****************************************************
 COPY tools/android-accept-licenses.sh /opt/tools/android-accept-licenses.sh
 
-ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
+ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64" \
@@ -226,6 +229,26 @@ RUN set -x \
     # Install Amazon Corretto 11
     # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
     && yum install -y -q java-11-amazon-corretto \
+    && for tool_path in $JAVA_HOME/bin/*; do \
+          tool=`basename $tool_path`; \
+          update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
+          update-alternatives --set $tool $tool_path; \
+        done
+
+RUN set -x \
+    # Install Amazon Corretto 17
+    # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
+    && export GNUPGHOME="$(mktemp -d)" \
+    && curl -fL -o corretto.key https://yum.corretto.aws/corretto.key \
+    && gpg --batch --import corretto.key \
+    && gpg --batch --export --armor '6DC3636DAE534049C8B94623A122542AB04F24E3' > corretto.key \
+    && rpm --import corretto.key \
+    && rm -r "$GNUPGHOME" corretto.key \
+    && curl -fL -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
+    && grep -q '^gpgcheck=1' /etc/yum.repos.d/corretto.repo \
+    && yum install -y java-17-amazon-corretto-devel-17.0.0.35-1 \
+    && (find /usr/lib/jvm/java-17-amazon-corretto -name src.zip -delete || true) \
+    && yum install -y fontconfig \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \

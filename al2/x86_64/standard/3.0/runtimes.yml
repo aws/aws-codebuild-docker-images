@@ -15,6 +15,25 @@ runtimes:
           - echo "Installing Android version 29 ..."
   java:
     versions:
+      corretto17:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 17 ..."
+
+          - export JAVA_HOME="$JAVA_17_HOME"
+
+          - export JRE_HOME="$JRE_17_HOME"
+
+          - export JDK_HOME="$JDK_17_HOME"
+
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
       corretto11:
         commands:
           - echo "Installing corretto(OpenJDK) version 11 ..."
