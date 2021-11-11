@@ -161,6 +161,7 @@ FROM tools AS runtimes
 
 ENV DOTNET_31_SDK_VERSION="3.1.404"
 ENV DOTNET_5_SDK_VERSION="5.0.202"
+ENV DOTNET_6_SDK_VERSION="6.0.100"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 3.1 Global Tools install folder to PATH
@@ -170,6 +171,11 @@ RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_31_SDK_VERSION \
 
 # Add .NET Core 5 Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_5_SDK_VERSION \
+     && dotnet --list-sdks \
+     && rm -rf /tmp/*
+
+# Add .NET Core 6 Global Tools install folder to PATH
+RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
      && dotnet --list-sdks \
      && rm -rf /tmp/*
 
