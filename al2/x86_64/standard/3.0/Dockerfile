@@ -246,7 +246,7 @@ RUN set -x \
     && rm -r "$GNUPGHOME" corretto.key \
     && curl -fL -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
     && grep -q '^gpgcheck=1' /etc/yum.repos.d/corretto.repo \
-    && yum install -y java-17-amazon-corretto-devel-17.0.0.35-1 \
+    && yum install -y java-17-amazon-corretto-devel \
     && (find /usr/lib/jvm/java-17-amazon-corretto -name src.zip -delete || true) \
     && yum install -y fontconfig \
     && for tool_path in $JAVA_HOME/bin/*; do \
