@@ -362,7 +362,7 @@ RUN go get -u github.com/golang/dep/cmd/dep
 #=======================End of layer: runtimes_1  =================
 FROM runtimes_1 AS runtimes_2
 
-#Docker 19
+#Docker 20
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
