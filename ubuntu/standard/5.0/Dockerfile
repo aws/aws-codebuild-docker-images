@@ -434,7 +434,7 @@ VOLUME /var/lib/docker
 FROM runtimes_n_corretto AS std_v5
 
 # Activate runtime versions specific to image version.
-RUN n $NODE_14_VERSION
+RUN n $NODE_16_VERSION
 RUN pyenv  global $PYTHON_39_VERSION
 RUN phpenv global $PHP_80_VERSION
 RUN rbenv  global $RUBY_27_VERSION
