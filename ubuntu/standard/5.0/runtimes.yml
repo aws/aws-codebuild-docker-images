@@ -50,7 +50,7 @@ runtimes:
       1.16:
         commands:
           - echo "Installing Go version 1.16 ..."
-          - goenv global  $GOLANG_16_VERSION          
+          - goenv global  $GOLANG_16_VERSION
   python:
     versions:
       3.7:
@@ -109,3 +109,7 @@ runtimes:
         commands:
           - echo "Installing .NET version 5.0 ..."
           - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_5_SDK_VERSION
+      6.0:
+        commands:
+          - echo "Installing .NET version 6.0 ..."
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_6_SDK_VERSION
