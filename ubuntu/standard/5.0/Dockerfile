@@ -261,7 +261,7 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 ENV PHP_73_VERSION="7.3.25"
 ENV PHP_74_VERSION="7.4.13"
-ENV PHP_80_VERSION="8.0.0"
+ENV PHP_80_VERSION="8.0.16"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
@@ -316,7 +316,7 @@ ARG MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b
 ARG GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n0080de8491f0918e4f529a6db6820fa0b9e818ee2386117f4394f95feb1d5583 6.7"
 ARG SBT_DOWNLOAD_SHA256="5cf648f18ee9573cd26970999ae4e76ac034721a671bb45e7311c6d1375f9d33"
 
-ARG MAVEN_CONFIG_HOME="/root/.m2" 
+ARG MAVEN_CONFIG_HOME="/root/.m2"
 
 ENV JAVA_HOME="$JAVA_11_HOME" \
     JDK_HOME="$JDK_11_HOME" \
@@ -339,7 +339,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y -qq --force-yes libc6-i386 \
        lib32stdc++6 lib32gcc1 lib32ncurses6 \
-       lib32z1 libqt5widgets5 
+       lib32z1 libqt5widgets5
 
 RUN set -ex \
     # Install Corretto 11
@@ -356,7 +356,7 @@ RUN set -ex \
     && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
     && rm /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz \
-    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000
 
 RUN set -ex \
     # Install Maven
