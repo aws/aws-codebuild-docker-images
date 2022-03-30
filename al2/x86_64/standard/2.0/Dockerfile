@@ -65,8 +65,7 @@ RUN set -ex \
     && wget -qO ~/FirefoxSetup.tar.bz2 "https://download.mozilla.org/?product=firefox-latest&os=linux64" \
     && tar xjf ~/FirefoxSetup.tar.bz2 -C /opt/ \
     && ln -s /opt/firefox/firefox /usr/local/bin/firefox \
-    && rm ~/FirefoxSetup.tar.bz2 \
-    && firefox --version
+    && rm ~/FirefoxSetup.tar.bz2
 
 # Install GeckoDriver
 RUN set -ex \
@@ -162,7 +161,7 @@ ENV GOPATH="/go"
 FROM tools AS runtimes_1
 
 #****************      JAVA     ****************************************************
-RUN cat tools/android-accept-licenses.sh > /opt/tools/android-accept-licenses.sh && chmod 755 /opt/tools/android-accept-licenses.sh
+COPY tools/android-accept-licenses.sh /opt/tools/android-accept-licenses.sh
 
 ENV JAVA_11_HOME="/opt/jvm/amazon-corretto-11" \
     JDK_11_HOME="/opt/jvm/amazon-corretto-11" \
@@ -332,7 +331,7 @@ ENV PYTHON_37_VERSION="3.7.10"
 ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
 
-RUN cat tools/runtime_configs/python/$PYTHON_37_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
+COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
@@ -345,7 +344,7 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 ENV PHP_73_VERSION="7.3.13"
 
-RUN cat tools/runtime_configs/php/$PHP_73_VERSION > /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
+COPY tools/runtime_configs/php/$PHP_73_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
 RUN phpenv install $PHP_73_VERSION && rm -rf /tmp/* && phpenv global $PHP_73_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_73_VERSION/etc/conf.d/memory.ini"
 
@@ -400,7 +399,7 @@ RUN set -ex \
 #Python 3.8
 ENV PYTHON_38_VERSION="3.8.10"
 
-RUN cat tools/runtime_configs/python/$PYTHON_38_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
+COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
@@ -411,7 +410,7 @@ RUN set -ex \
 #Python 3.9
 ENV PYTHON_39_VERSION="3.9.5"
 
-RUN cat tools/runtime_configs/python/$PYTHON_39_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
@@ -454,18 +453,18 @@ RUN pyenv  global $PYTHON_38_VERSION
 RUN phpenv global $PHP_73_VERSION
 RUN rbenv  global $RUBY_26_VERSION
 RUN goenv  global $GOLANG_13_VERSION
+RUN firefox --version
 
 ENV MAVEN_CONFIG=$MAVEN_CONFIG_HOME
 ENV DEBIAN_FRONTEND="noninteractive"
 
 # Configure SSH
-RUN cat ssh_config > /root/.ssh/config
-RUN cat runtimes.yml > /codebuild/image/config/runtimes.yml
-RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
-RUN cat legal/bill_of_material.txt     > /usr/share/doc/bill_of_material.txt
-RUN cat amazon-ssm-agent.json          > /etc/amazon/ssm/amazon-ssm-agent.json
+COPY ssh_config /root/.ssh/config
+COPY runtimes.yml /codebuild/image/config/runtimes.yml
+COPY dockerd-entrypoint.sh /usr/local/bin/
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
+COPY legal/bill_of_material.txt     /usr/share/doc
+COPY amazon-ssm-agent.json          /etc/amazon/ssm/
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
