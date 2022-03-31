@@ -50,7 +50,15 @@ runtimes:
       1.16:
         commands:
           - echo "Installing Go version 1.16 ..."
-          - goenv global  $GOLANG_16_VERSION          
+          - goenv global  $GOLANG_16_VERSION
+      1.17:
+        commands:
+          - echo "Installing Go version 1.17 ..."
+          - goenv global  $GOLANG_17_VERSION
+      1.18:
+        commands:
+          - echo "Installing Go version 1.18 ..."
+          - goenv global  $GOLANG_18_VERSION
   python:
     versions:
       3.7:
