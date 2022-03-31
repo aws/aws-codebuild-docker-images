@@ -1,4 +1,4 @@
-# Copyright 2019-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2019-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -27,6 +27,8 @@ RUN set -ex \
     && git version \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
+    && mkdir -p /opt/tools \
+    && mkdir -p /codebuild/image/config \
     && touch ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
@@ -104,9 +106,7 @@ RUN set -ex \
    && STUNNEL_VERSION=5.56 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
    && STUNNEL_SHA256="7384bfb356b9a89ddfee70b5ca494d187605bb516b4fff597e167f97e2236b22" \
-   && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR \
-   && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum -c - \
-   && tar xfz $STUNNEL_TAR \
+   && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
    && make -j4 \
@@ -114,7 +114,7 @@ RUN set -ex \
    && openssl genrsa -out key.pem 2048 \
    && openssl req -new -x509 -key key.pem -out cert.pem -days 1095 -subj "/C=US/ST=Washington/L=Seattle/O=Amazon/OU=Codebuild/CN=codebuild.amazon.com" \
    && cat key.pem cert.pem >> /usr/local/etc/stunnel/stunnel.pem \
-   && cd .. ; rm -rf stunnel-${STUNNEL_VERSION}*
+   && cd .. && rm -rf stunnel-${STUNNEL_VERSION}*
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
@@ -226,7 +226,7 @@ RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install 
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
      && apt-get update && apt-get install -y -qq --no-install-recommends yarn \
      && yarn --version \
-     && cd / && rm -rf $N_SRC_DIR;rm -rf /tmp/*
+     && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
 
@@ -235,8 +235,8 @@ RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install 
 ENV RUBY_26_VERSION="2.6.6" \
     RUBY_27_VERSION="2.7.2"
 
-RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*
-RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION;ruby -v
+RUN rbenv install $RUBY_26_VERSION && rm -rf /tmp/*
+RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VERSION && ruby -v
 
 #**************** END RUBY *****************************************************
 
@@ -249,7 +249,7 @@ ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
-RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -257,7 +257,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
-RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -265,7 +265,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
-RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -281,12 +281,11 @@ ENV PHP_74_VERSION="7.4.7" \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 COPY tools/runtime_configs/php/$PHP_73_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
-RUN phpenv install $PHP_73_VERSION; rm -rf /tmp/*; phpenv global $PHP_73_VERSION
+RUN phpenv install $PHP_73_VERSION && rm -rf /tmp/* && phpenv global $PHP_73_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_73_VERSION/etc/conf.d/memory.ini"
 
-
 COPY tools/runtime_configs/php/$PHP_74_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
-RUN phpenv install $PHP_74_VERSION; rm -rf /tmp/*; phpenv global $PHP_74_VERSION
+RUN phpenv install $PHP_74_VERSION && rm -rf /tmp/* && phpenv global $PHP_74_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/conf.d/memory.ini"
 
 # Install Composer globally
@@ -297,10 +296,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 ENV GOLANG_13_VERSION="1.13.15" \
     GOLANG_12_VERSION="1.12.17"
 
-RUN goenv install $GOLANG_12_VERSION; rm -rf /tmp/*
+RUN goenv install $GOLANG_12_VERSION && rm -rf /tmp/*
 
-RUN goenv install $GOLANG_13_VERSION; rm -rf /tmp/*; \
-    goenv global  $GOLANG_13_VERSION
+RUN goenv install $GOLANG_13_VERSION && rm -rf /tmp/* && goenv global  $GOLANG_13_VERSION
 
 RUN go get -u github.com/golang/dep/cmd/dep
 #****************      END GOLANG     *******************************
@@ -323,7 +321,7 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     MAVEN_VERSION=3.6.3 \
     INSTALLED_GRADLE_VERSIONS="4.10.3 5.6.4" \
     GRADLE_VERSION=5.6.4 \
-    SBT_VERSION=1.2.8 \
+    SBT_VERSION=1.6.1 \
     ANDROID_HOME="/usr/local/android-sdk-linux" \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANDROID_SDK_MANAGER_VER="4333796" \
@@ -336,7 +334,8 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
     ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9" \
-    SBT_DOWNLOAD_SHA256="9bb9212541176d6fcce7bd12e4cf8a9c9649f5b63f88b3aff474e0b02c7cfe58"
+    SBT_DOWNLOAD_SHA256="60286bf1b875b31e2955f8a699888cd2612e9afd94d03cde0a2e71efd7492ffc" \
+    LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
 
@@ -426,9 +425,11 @@ RUN set -ex \
     && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
     && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
     && tar xzf sbt.tgz -C /usr/local/bin/ \
-    && rm sbt.tgz
+    && rm sbt.tgz \
+    && for version in $LOG4J_UNSAFE_VERSIONS; do find / -name log4j*-$version.jar | xargs rm -f; done
+
 ENV PATH "/usr/local/bin/sbt/bin:$PATH"
-RUN sbt version
+RUN sbt version -Dsbt.rootdir=true
 # Cleanup
 RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
@@ -441,8 +442,8 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_COMPOSE_VERSION="1.26.0" \
     SRC_DIR="/usr/src"
 
-ENV DOCKER_SHA256="caf74e54b58c0b38bb4d96c8f87665f29b684371c9a325562a3904b8c389995e"
-ENV DOCKER_VERSION="20.10.9"
+ENV DOCKER_SHA256="dd6ff72df1edfd61ae55feaa4aadb88634161f0aa06dbaaf291d1be594099ff3"
+ENV DOCKER_VERSION="20.10.11"
 
 # Install Docker
 RUN set -ex \
@@ -470,8 +471,7 @@ FROM runtimes_n_corretto AS std_v4
 
 # GoLang 14
 ENV GOLANG_14_VERSION="1.14.12"
-RUN goenv install $GOLANG_14_VERSION; rm -rf /tmp/*; \
-    goenv global  $GOLANG_14_VERSION
+RUN goenv install $GOLANG_14_VERSION && rm -rf /tmp/* && goenv global  $GOLANG_14_VERSION
 
 # Activate runtime versions specific to image version.
 RUN n $NODE_12_VERSION
@@ -487,6 +487,6 @@ COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
 COPY legal/bill_of_material.txt     /usr/share/doc
 COPY amazon-ssm-agent.json          /etc/amazon/ssm/
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
 #=======================END of STD:4.0  =================
