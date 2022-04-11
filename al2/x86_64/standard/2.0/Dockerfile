@@ -327,7 +327,7 @@ RUN rbenv install $RUBY_26_VERSION && rm -rf /tmp/* && rbenv global $RUBY_26_VER
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.12"
+ENV PYTHON_37_VERSION="3.7.13"
 ENV PYTHON_PIP_VERSION=21.3.1
 ENV PYYAML_VERSION=6.0
 
@@ -397,7 +397,7 @@ RUN set -ex \
     && docker-compose version
 
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.12"
+ENV PYTHON_38_VERSION="3.8.13"
 
 COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION && rm -rf /tmp/*
@@ -408,7 +408,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.10"
+ENV PYTHON_39_VERSION="3.9.12"
 
 COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION && rm -rf /tmp/*
@@ -419,7 +419,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv
 
 #Python 3.10
-ENV PYTHON_310_VERSION="3.10.2"
+ENV PYTHON_310_VERSION="3.10.4"
 
 COPY tools/runtime_configs/python/$PYTHON_310_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_310_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_310_VERSION; rm -rf /tmp/*

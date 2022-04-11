@@ -3,7 +3,7 @@ export PYTHON_CONFIGURE_OPTS="\
             --enable-loadable-sqlite-extensions"
 
 # Don't change below this line.
-# https://github.com/pyenv/pyenv/blob/master/plugins/python-build/share/python-build/3.9.10
+# https://github.com/pyenv/pyenv/blob/master/plugins/python-build/share/python-build/3.8.13
 
 #require_gcc
 prefer_openssl11
@@ -11,7 +11,7 @@ export PYTHON_BUILD_CONFIGURE_WITH_OPENSSL=1
 install_package "openssl-1.1.1m" "https://www.openssl.org/source/openssl-1.1.1m.tar.gz#f89199be8b23ca45fc7cb9f1d8d3ee67312318286ad030f5316aca6462db6c96" mac_openssl --if has_broken_mac_openssl
 install_package "readline-8.0" "https://ftpmirror.gnu.org/readline/readline-8.0.tar.gz#e339f51971478d369f8a053a330a190781acb9864cf4c541060f12078948e461" mac_readline --if has_broken_mac_readline
 if has_tar_xz_support; then
-    install_package "Python-3.9.10" "https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tar.xz#0a8fbfb5287ebc3a13e9baf3d54e08fa06778ffeccf6311aef821bb3a6586cc8" standard verify_py39 copy_python_gdb ensurepip
+  install_package "Python-3.8.13" "https://www.python.org/ftp/python/3.8.13/Python-3.8.13.tar.xz#6f309077012040aa39fe8f0c61db8c0fa1c45136763299d375c9e5756f09cf57" standard verify_py38 copy_python_gdb ensurepip
 else
-    install_package "Python-3.9.10" "https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz#1aa9c0702edbae8f6a2c95f70a49da8420aaa76b7889d3419c186bfc8c0e571e" standard verify_py39 copy_python_gdb ensurepip
+  install_package "Python-3.8.13" "https://www.python.org/ftp/python/3.8.13/Python-3.8.13.tgz#903b92d76354366b1d9c4434d0c81643345cef87c1600adfa36095d7b00eede4" standard verify_py38 copy_python_gdb ensurepip
 fi
