@@ -251,7 +251,7 @@ RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*; rbenv global $RUBY_26_VERSION
 
 #**************** PYTHON *****************************************************
 ENV PYTHON_37_VERSION="3.7.13"
-ENV PYTHON_PIP_VERSION=21.3.1
+ENV PYTHON_PIP_VERSION=22.0.4
 ENV PYYAML_VERSION=6.0
 ENV DOCKER_COMPOSE_VERSION="1.26.0"
 

@@ -238,7 +238,7 @@ ENV PYTHON_310_VERSION="3.10.4" \
     PYTHON_38_VERSION="3.8.13" \
     PYTHON_37_VERSION="3.7.13"
 
-ENV PYTHON_PIP_VERSION=21.3.1
+ENV PYTHON_PIP_VERSION=22.0.4
 ENV PYYAML_VERSION=6.0
 
 COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
