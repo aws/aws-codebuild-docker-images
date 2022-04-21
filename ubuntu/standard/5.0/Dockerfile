@@ -303,10 +303,10 @@ ENV GOLANG_16_VERSION="1.16.15"
 ENV GOLANG_17_VERSION="1.17.8"
 ENV GOLANG_18_VERSION="1.18"
 
-RUN goenv install $GOLANG_15_VERSION; rm -rf /tmp/*; \
-    goenv install $GOLANG_16_VERSION; rm -rf /tmp/*; \
-    goenv install $GOLANG_17_VERSION; rm -rf /tmp/*; \
-    goenv install $GOLANG_18_VERSION; rm -rf /tmp/*; \
+RUN goenv install $GOLANG_15_VERSION && rm -rf /tmp/* && \
+    goenv install $GOLANG_16_VERSION && rm -rf /tmp/* && \
+    goenv install $GOLANG_17_VERSION && rm -rf /tmp/* && \
+    goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_15_VERSION
 
 RUN go get -u github.com/golang/dep/cmd/dep
