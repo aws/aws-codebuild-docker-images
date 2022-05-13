@@ -203,7 +203,7 @@ RUN set -ex \
 
 ENV NODE_12_VERSION="12.22.2"
 ENV NODE_14_VERSION="14.17.2"
-ENV NODE_16_VERSION="16.13.0"
+ENV NODE_16_VERSION="16.15.0"
 
 RUN     n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && n $NODE_14_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
