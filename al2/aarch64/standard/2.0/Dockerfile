@@ -369,7 +369,7 @@ RUN set -ex \
     && docker-compose version
 
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.12"
+ENV PYTHON_39_VERSION="3.9.13"
 
 COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
