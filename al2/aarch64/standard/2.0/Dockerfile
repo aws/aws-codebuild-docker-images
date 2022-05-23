@@ -423,6 +423,15 @@ RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/con
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 #****************      END PHP     ****************************************************
 
+# Node 14
+ENV NODE_14_VERSION="14.19.3"
+
+RUN  n $NODE_14_VERSION \
+        && npm install --save-dev -g -f grunt \
+        && npm install --save-dev -g -f grunt-cli \
+        && npm install --save-dev -g -f webpack \
+        && rm -rf /tmp/*
+
 #===================END of runtimes_3 ==============
 FROM runtimes_3 AS aarch64_v2
 
