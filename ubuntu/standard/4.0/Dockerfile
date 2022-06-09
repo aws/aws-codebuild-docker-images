@@ -308,7 +308,6 @@ FROM runtimes AS runtimes_n_corretto
 
 #****************      JAVA     ****************************************************
 COPY tools/android-accept-licenses.sh /opt/tools/android-accept-licenses.sh
-RUN chmod 755 /opt/tools/android-accept-licenses.sh
 
 ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
@@ -483,7 +482,6 @@ RUN rbenv  global $RUBY_27_VERSION
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
 COPY legal/bill_of_material.txt     /usr/share/doc/bill_of_material.txt
 COPY amazon-ssm-agent.json          /etc/amazon/ssm/amazon-ssm-agent.json

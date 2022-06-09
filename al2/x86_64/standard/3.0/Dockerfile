@@ -165,7 +165,6 @@ FROM tools AS runtimes_1
 
 #****************      JAVA     ****************************************************
 COPY tools/android-accept-licenses.sh /opt/tools/android-accept-licenses.sh
-RUN chmod 755 /opt/tools/android-accept-licenses.sh
 
 ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
@@ -464,6 +463,9 @@ RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/con
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+
+# Verify firefox install
+RUN firefox --version
 #****************      END PHP     ****************************************************
 
 #===================END of runtimes_3 ==============
@@ -473,7 +475,6 @@ FROM runtimes_3 AS al2_v3
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
 COPY legal/bill_of_material.txt     /usr/share/doc/bill_of_material.txt
 COPY amazon-ssm-agent.json          /etc/amazon/ssm/amazon-ssm-agent.json

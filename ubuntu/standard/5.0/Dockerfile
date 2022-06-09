@@ -460,7 +460,6 @@ RUN goenv global  $GOLANG_15_VERSION
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/bill_of_material.txt     /usr/share/doc/bill_of_material.txt
 COPY amazon-ssm-agent.json          /etc/amazon/ssm/amazon-ssm-agent.json
 
