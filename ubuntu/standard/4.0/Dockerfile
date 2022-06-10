@@ -8,7 +8,6 @@
 # or in the "license" file accompanying this file.
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
-
 FROM public.ecr.aws/ubuntu/ubuntu:18.04 AS core
 
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -103,9 +102,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.56 \
+   && STUNNEL_VERSION=5.64 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="7384bfb356b9a89ddfee70b5ca494d187605bb516b4fff597e167f97e2236b22" \
+   && STUNNEL_SHA256="eebe53ed116ba43b2e786762b0c2b91511e7b74857ad4765824e7199e6faf883" \
    && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -118,8 +117,8 @@ RUN set -ex \
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.8/2020-04-16/bin/linux/amd64/kubectl \
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.22.6/2022-03-09/bin/linux/amd64/kubectl \
     && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest \
     && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
@@ -128,7 +127,7 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-we
 RUN set -ex \
     && mkdir /tmp/ssm \
     && cd /tmp/ssm \
-    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/3.0.1390.0/debian_amd64/amazon-ssm-agent.deb \
+    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/3.1.1374.0/debian_amd64/amazon-ssm-agent.deb \
     && dpkg -i amazon-ssm-agent.deb
 
 # Install env tools for runtimes
@@ -175,7 +174,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_31_SDK_VERSION="3.1.301"
+ENV DOTNET_31_SDK_VERSION="3.1.419"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core Global Tools install folder to PATH
@@ -217,7 +216,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_12_VERSION="12.22.2" \
+ENV NODE_12_VERSION="12.22.12" \
     NODE_10_VERSION="10.24.1"
 
 RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
@@ -232,8 +231,8 @@ RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install 
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_26_VERSION="2.6.6" \
-    RUBY_27_VERSION="2.7.2"
+ENV RUBY_26_VERSION="2.6.10" \
+    RUBY_27_VERSION="2.7.6"
 
 RUN rbenv install $RUBY_26_VERSION && rm -rf /tmp/*
 RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VERSION && ruby -v
@@ -241,9 +240,9 @@ RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VER
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_39_VERSION="3.9.5" \
-    PYTHON_38_VERSION="3.8.10" \
-    PYTHON_37_VERSION="3.7.10"
+ENV PYTHON_39_VERSION="3.9.12" \
+    PYTHON_38_VERSION="3.8.13" \
+    PYTHON_37_VERSION="3.7.13"
 
 ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
@@ -275,8 +274,8 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_74_VERSION="7.4.7" \
-    PHP_73_VERSION="7.3.19"
+ENV PHP_74_VERSION="7.4.29" \
+    PHP_73_VERSION="7.3.33"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
@@ -316,12 +315,12 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto/jre" \
-    ANT_VERSION=1.10.8 \
+    ANT_VERSION=1.10.12 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.6.3 \
     INSTALLED_GRADLE_VERSIONS="4.10.3 5.6.4" \
     GRADLE_VERSION=5.6.4 \
-    SBT_VERSION=1.6.1 \
+    SBT_VERSION=1.6.2 \
     ANDROID_HOME="/usr/local/android-sdk-linux" \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANDROID_SDK_MANAGER_VER="4333796" \
@@ -330,11 +329,11 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
     ANDROID_SDK_BUILD_TOOLS_28="build-tools;28.0.3" \
     ANDROID_SDK_PLATFORM_TOOLS_28="platforms;android-28" \
     ANDROID_SDK_EXTRAS="extras;android;m2repository extras;google;m2repository extras;google;google_play_services" \
-    ANT_DOWNLOAD_SHA512="4d80dc6ba23eeec7769085ddb00261b7480b596b56c6e69aa221391acbfb7338eb5855179c88222c8021095ef1f64f43caf2b4f90e8305d7c3128026d4258d06" \
+    ANT_DOWNLOAD_SHA512="2287dc5cfc21043c14e5413f9afb1c87c9f266ec2a9ba2d3bf2285446f6e4ccb59b558bf2e5c57911a05dfa293c7d5c7ad60ac9f744ba11406f4e6f9a27b2403" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="abc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4\n336b6898b491f6334502d8074a6b8c2d73ed83b92123106bd4bf837f04111043 4.10.3" \
     ANDROID_SDK_MANAGER_SHA256="92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9" \
-    SBT_DOWNLOAD_SHA256="60286bf1b875b31e2955f8a699888cd2612e9afd94d03cde0a2e71efd7492ffc" \
+    SBT_DOWNLOAD_SHA256="637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440" \
     LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2" 
@@ -375,7 +374,7 @@ RUN set -ex \
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS} ${ANDROID_SDK_PLATFORM_TOOLS} ${ANDROID_SDK_EXTRAS} ${ANDROID_SDK_NDK_TOOLS}" | grep -v '\[=' \
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --verbose platform-tools ${ANDROID_SDK_BUILD_TOOLS_28} ${ANDROID_SDK_PLATFORM_TOOLS_28}" | grep -v '\[=' \
     && android-accept-licenses.sh "env JAVA_HOME=$JAVA_8_HOME JRE_HOME=$JRE_8_HOME JDK_HOME=$JDK_8_HOME sdkmanager --licenses" \
-    && apt-get install -y -qq python-setuptools 
+    && apt-get install -y -qq python-setuptools
 
 RUN set -ex \
     # Install Corretto 11
@@ -442,8 +441,8 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_COMPOSE_VERSION="1.26.0" \
     SRC_DIR="/usr/src"
 
-ENV DOCKER_SHA256="dd6ff72df1edfd61ae55feaa4aadb88634161f0aa06dbaaf291d1be594099ff3"
-ENV DOCKER_VERSION="20.10.11"
+ENV DOCKER_SHA256="9ccfc39305ae1d8882d18c9c431544fca82913d6df717409ac2244ac58c4f070"
+ENV DOCKER_VERSION="20.10.15"
 
 # Install Docker
 RUN set -ex \
@@ -470,7 +469,7 @@ VOLUME /var/lib/docker
 FROM runtimes_n_corretto AS std_v4
 
 # GoLang 14
-ENV GOLANG_14_VERSION="1.14.12"
+ENV GOLANG_14_VERSION="1.14.15"
 RUN goenv install $GOLANG_14_VERSION && rm -rf /tmp/* && goenv global  $GOLANG_14_VERSION
 
 # Activate runtime versions specific to image version.
@@ -482,10 +481,10 @@ RUN rbenv  global $RUBY_27_VERSION
 # Configure SSH
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
-COPY dockerd-entrypoint.sh /usr/local/bin/
-COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
-COPY legal/bill_of_material.txt     /usr/share/doc
-COPY amazon-ssm-agent.json          /etc/amazon/ssm/
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
+COPY legal/bill_of_material.txt     /usr/share/doc/bill_of_material.txt
+COPY amazon-ssm-agent.json          /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
