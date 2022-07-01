@@ -383,4 +383,4 @@ COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
-#=======================END of STD:5.0  =================
+#=======================END of STD:6.0  =================

@@ -363,4 +363,4 @@ COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
-#=======================End of layer: al2_v3  =================
+#=======================End of layer: al2_v4  =================
