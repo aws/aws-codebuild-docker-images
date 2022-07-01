@@ -132,9 +132,9 @@ FROM tools AS runtimes_1
 
 #****************      JAVA     ****************************************************
 
-ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
-    JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
-    JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
+ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
+    JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
+    JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.12 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.8.6 \
@@ -149,14 +149,13 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.x86_64" \
     LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
-ENV JAVA_HOME="$JAVA_11_HOME" \
-    JDK_HOME="$JDK_11_HOME" \
-    JRE_HOME="$JRE_11_HOME"
+ENV JAVA_HOME="$JAVA_17_HOME" \
+    JDK_HOME="$JDK_17_HOME" \
+    JRE_HOME="$JRE_17_HOME"
 
 RUN set -x \
-    # Install Amazon Corretto 11
-    # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
-    && yum install -y -q java-11-amazon-corretto \
+    # Install Amazon Corretto 17
+    && yum install -y -q java-17-amazon-corretto \
     && update-ca-trust \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
@@ -357,7 +356,7 @@ FROM runtimes_3 AS al2_v3
 # Configure SSH
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
-COPY dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json

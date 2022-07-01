@@ -241,9 +241,9 @@ RUN go get -u github.com/golang/dep/cmd/dep
 FROM runtimes AS runtimes_n_corretto
 
 #****************      JAVA     ****************************************************
-ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto"
-ENV JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto"
-ENV JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto"
+ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
 ARG ANT_VERSION=1.10.12
 ARG MAVEN_HOME="/opt/maven"
 ARG MAVEN_VERSION=3.8.6
@@ -259,30 +259,25 @@ ENV LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 
-ENV JAVA_HOME="$JAVA_11_HOME" \
-    JDK_HOME="$JDK_11_HOME" \
-    JRE_HOME="$JRE_11_HOME"
+ENV JAVA_HOME="$JAVA_17_HOME" \
+    JDK_HOME="$JDK_17_HOME" \
+    JRE_HOME="$JRE_17_HOME"
 
 ENV PATH="${PATH}:/opt/tools"
 
 RUN set -ex \
     && apt-get update \
     && apt-get install -y -qq software-properties-common apt-utils \
-    # Install Corretto 8
+    # Install Corretto 17
     && wget -qO- https://apt.corretto.aws/corretto.key | apt-key add - \
     && add-apt-repository 'deb https://apt.corretto.aws stable main' \
     && apt-get update \
-    && apt-get install -y -qq java-11-amazon-corretto-jdk \
+    && apt-get install -y -qq java-17-amazon-corretto-jdk \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
     && dpkg --add-architecture i386 \
-    && apt-get update
-
-RUN set -ex \
-    # Install Corretto 11
-    # Note: We will use update-alternatives to make sure JDK11 has higher priority for all the tools
-    && apt-get install -y -qq java-11-amazon-corretto-jdk \
+    && apt-get update \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
@@ -294,7 +289,7 @@ RUN set -ex \
     && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
     && rm /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz \
-    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 
+    && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000
 
 RUN set -ex \
     # Install Maven

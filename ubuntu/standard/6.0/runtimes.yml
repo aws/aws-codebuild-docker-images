@@ -3,15 +3,15 @@ version: 0.1
 runtimes:
   java:
     versions:
-      corretto11:
+      corretto17:
         commands:
-          - echo "Installing Java version 11 ..."
+          - echo "Installing Java version 17 ..."
 
-          - export JAVA_HOME="$JAVA_11_HOME"
+          - export JAVA_HOME="$JAVA_17_HOME"
 
-          - export JRE_HOME="$JRE_11_HOME"
+          - export JRE_HOME="$JRE_17_HOME"
 
-          - export JDK_HOME="$JDK_11_HOME"
+          - export JDK_HOME="$JDK_17_HOME"
 
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
