@@ -28,6 +28,10 @@ runtimes:
         commands:
           - echo "Installing Go version 1.18 ..."
           - goenv global  $GOLANG_18_VERSION
+      1.19:
+        commands:
+          - echo "Installing Go version 1.19 ..."
+          - goenv global  $GOLANG_19_VERSION
   python:
     versions:
       3.10:
