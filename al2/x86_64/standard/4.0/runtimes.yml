@@ -1,0 +1,64 @@
+version: 0.1
+
+runtimes:
+  java:
+    versions:
+      corretto17:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 17 ..."
+
+          - export JAVA_HOME="$JAVA_17_HOME"
+
+          - export JRE_HOME="$JRE_17_HOME"
+
+          - export JDK_HOME="$JDK_17_HOME"
+
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+  golang:
+    versions:
+      1.18:
+        commands:
+          - echo "Installing Go version 1.18 ..."
+          - goenv global  $GOLANG_18_VERSION
+  python:
+    versions:
+      3.9:
+        commands:
+          - echo "Installing Python version 3.9 ..."
+          - pyenv global  $PYTHON_39_VERSION
+  php:
+    versions:
+      8.1:
+        commands:
+          - echo "Installing PHP version 8.1 ..."
+          - phpenv global $PHP_81_VERSION
+  ruby:
+    versions:
+      3.1:
+        commands:
+          - echo "Installing Ruby version 3.1 ..."
+          - rbenv global $RUBY_31_VERSION
+  nodejs:
+    versions:
+      16:
+        commands:
+          - echo "Installing Node.js version 16 ..."
+          - n $NODE_16_VERSION
+  docker:
+    versions:
+      20:
+        commands:
+          - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION"
+  dotnet:
+    versions:
+      6.0:
+        commands:
+          - echo "Installing .NET version 6.0 ..."
