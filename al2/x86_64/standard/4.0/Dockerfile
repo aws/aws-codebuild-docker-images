@@ -283,7 +283,7 @@ RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver    
+    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 #**************** END PYTHON *****************************************************
 
@@ -303,7 +303,7 @@ ENV GOLANG_18_VERSION="1.18.3"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \ 
+RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global $GOLANG_18_VERSION && \
     go env -w GO111MODULE=auto
 
@@ -345,7 +345,7 @@ RUN set -ex \
 FROM runtimes_2 AS runtimes_3
 
 # Install GitVersion
-ENV GITVERSION_VERSION="5.3.5"
+ENV GITVERSION_VERSION="5.10.3"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
