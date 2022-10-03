@@ -179,7 +179,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.16.0"
+ENV NODE_16_VERSION="16.17.1"
 
 RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
