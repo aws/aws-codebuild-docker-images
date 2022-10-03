@@ -359,7 +359,11 @@ RUN set -ex \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     # Ensure docker-compose works
-    && docker-compose version
+    && docker-compose version \
+    && mkdir -p /usr/local/lib/docker/cli-plugins/ \
+    && curl -SL https://github.com/docker/compose/releases/download/v2.11.2/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && docker compose version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
