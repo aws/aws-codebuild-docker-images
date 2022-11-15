@@ -39,7 +39,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper \
+           amazon-ecr-credential-helper java-17-amazon-corretto-devel \
     && rm /etc/yum.repos.d/mono-centos7-stable.repo
 
 RUN useradd codebuild-user
