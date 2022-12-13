@@ -227,7 +227,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_18_VERSION="1.18.3"
+ENV GOLANG_18_VERSION="1.18.8"
 
 RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_18_VERSION && \

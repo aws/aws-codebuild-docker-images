@@ -299,7 +299,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_18_VERSION="1.18.3"
+ENV GOLANG_18_VERSION="1.18.8"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
