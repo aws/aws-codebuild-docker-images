@@ -168,24 +168,26 @@ RUN cd ./sqlite-autoconf-3400000 && make install
 #**************** PROJ *****************************************************
 
 RUN yum install gcc-c++.x86_64 cpp.x86_64 sqlite-devel.x86_64 libtiff.x86_64 cmake3.x86_64 -y
-RUN wget https://download.osgeo.org/proj/proj-6.3.2.tar.gz
-RUN tar -xvf proj-6.3.2.tar.gz
-RUN cd proj-6.3.2 && ./configure SQLITE3_LIBS="-L/opt/sqlite/sqlite3/lib -lsqlite3"
-RUN cd proj-6.3.2 && make
-RUN cd proj-6.3.2 && make install
+RUN yum install libtiff-devel curl-devel -y
+RUN wget https://download.osgeo.org/proj/proj-9.1.1.tar.gz
+RUN tar xvf proj-9.1.1.tar.gz
+RUN mkdir proj-9.1.1/build
+RUN cd ./proj-9.1.1/build && cmake3 -DSQLITE3_INCLUDE_DIR=/usr/local/include -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so ..
+RUN cd ./proj-9.1.1/build && cmake3 --build .
+RUN cd ./proj-9.1.1/build && cmake3 --build . --target install
+RUN ./proj-9.1.1/build/bin/projsync --system-directory --all
 
-#**************** END PROJ *****************************************************
+#**************** GEOS *****************************************************
 
-#**************** GDAL *****************************************************
-
-RUN wget https://github.com/OSGeo/gdal/releases/download/v3.5.1/gdal-3.5.1.tar.gz
-RUN tar -xvf gdal-3.5.1.tar.gz
-RUN cd gdal-3.5.1
-RUN cd gdal-3.5.1 && ./configure --with-proj=/usr/local --with-python
-RUN cd gdal-3.5.1 && make
-RUN cd gdal-3.5.1 && make install
-
-#**************** END GDAL *****************************************************
+RUN wget https://download.osgeo.org/geos/geos-3.11.1.tar.bz2
+RUN tar xvf geos-3.11.1.tar.bz2
+RUN mkdir geos-3.11.1/_build
+RUN cd geos-3.11.1/_build && cmake3 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
+RUN cd geos-3.11.1/_build && make
+RUN cd geos-3.11.1/_build && make install
+RUN touch /etc/ld.so.conf.d/libgeos_c.so.1.conf
+RUN bash -c 'echo "/usr/local/lib64" >> /etc/ld.so.conf.d/libgeos_c.so.1.conf'
+RUN ldconfig
 
 
 #=======================End of layer: runtimes_1  =================
