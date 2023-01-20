@@ -40,6 +40,10 @@ runtimes:
         commands:
           - echo "Installing PHP version 8.1 ..."
           - phpenv global $PHP_81_VERSION
+      8.2:
+        commands:
+          - echo "Installing PHP version 8.2 ..."
+          - phpenv global $PHP_82_VERSION
   ruby:
     versions:
       3.1:
