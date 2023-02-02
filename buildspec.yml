@@ -3,7 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
-      - cd $CODEBUILD_SRC_DIR/ubuntu/standard/5.0
-      - docker build -t aws/codebuild/standard:5.0 .
-      - cd $CODEBUILD_SRC_DIR/al2/x86_64/standard/3.0
-      - docker build -t aws/codebuild/amazonlinux2-x86_64-standard:3.0 .
+      - cd $CODEBUILD_SRC_DIR/ubuntu/standard/6.0
+      - docker build -t aws/codebuild/standard:6.0 .
+      - cd $CODEBUILD_SRC_DIR/al2/x86_64/standard/4.0
+      - docker build -t aws/codebuild/amazonlinux2-x86_64-standard:4.0 .
