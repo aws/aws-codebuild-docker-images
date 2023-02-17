@@ -102,9 +102,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.64 \
+   && STUNNEL_VERSION=5.67 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="eebe53ed116ba43b2e786762b0c2b91511e7b74857ad4765824e7199e6faf883" \
+   && STUNNEL_SHA256="3086939ee6407516c59b0ba3fbf555338f9d52f459bcab6337c0f00e91ea8456" \
    && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -174,7 +174,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_31_SDK_VERSION="3.1.419"
+ENV DOTNET_31_SDK_VERSION="3.1.426"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core Global Tools install folder to PATH
@@ -193,7 +193,7 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 # Install GitVersion
-ENV GITVERSION_VERSION="5.3.5"
+ENV GITVERSION_VERSION="5.3.7"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
@@ -232,7 +232,7 @@ RUN     n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install 
 #**************** RUBY *********************************************************
 
 ENV RUBY_26_VERSION="2.6.10" \
-    RUBY_27_VERSION="2.7.6"
+    RUBY_27_VERSION="2.7.7"
 
 RUN rbenv install $RUBY_26_VERSION && rm -rf /tmp/*
 RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VERSION && ruby -v
@@ -240,9 +240,9 @@ RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VER
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_39_VERSION="3.9.12" \
-    PYTHON_38_VERSION="3.8.13" \
-    PYTHON_37_VERSION="3.7.13"
+ENV PYTHON_37_VERSION="3.7.16"
+ENV PYTHON_38_VERSION="3.8.16"
+ENV PYTHON_39_VERSION="3.9.16"
 
 ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
@@ -274,8 +274,8 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_74_VERSION="7.4.29" \
-    PHP_73_VERSION="7.3.33"
+ENV PHP_73_VERSION="7.3.33"
+ENV PHP_74_VERSION="7.4.33"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
@@ -438,11 +438,11 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.26.0" \
+    DOCKER_COMPOSE_VERSION="1.26.2" \
     SRC_DIR="/usr/src"
 
-ENV DOCKER_SHA256="9ccfc39305ae1d8882d18c9c431544fca82913d6df717409ac2244ac58c4f070"
-ENV DOCKER_VERSION="20.10.15"
+ENV DOCKER_SHA256="945C3A3DDCB79EE7307496C2F39EB3D8372466E8654E63D60BBB462E4A3C1427"
+ENV DOCKER_VERSION="20.10.22"
 
 # Install Docker
 RUN set -ex \
