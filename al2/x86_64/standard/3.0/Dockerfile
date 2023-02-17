@@ -96,9 +96,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.64 \
+   && STUNNEL_VERSION=5.67 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="eebe53ed116ba43b2e786762b0c2b91511e7b74857ad4765824e7199e6faf883" \
+   && STUNNEL_SHA256="3086939ee6407516c59b0ba3fbf555338f9d52f459bcab6337c0f00e91ea8456" \
    && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -284,9 +284,9 @@ RUN rm -fr /tmp/* /var/tmp/*
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 6.2.6
+ENV POWERSHELL_VERSION 6.2.7
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA ee5512d869ab9bd59bf17f417ff93013e0a169db91cf848ba2570d4818e05e17
+ENV POWERSHELL_DOWNLOAD_SHA 6073852FB8373FD3037FAE00793AECF5CCC1D3C6F4F18CCF0A85A433617ABC17
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -368,10 +368,10 @@ FROM runtimes_1 AS runtimes_2
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.26.0"
+    DOCKER_COMPOSE_VERSION="1.26.2"
 
-ENV DOCKER_SHA256="9ccfc39305ae1d8882d18c9c431544fca82913d6df717409ac2244ac58c4f070"
-ENV DOCKER_VERSION="20.10.15"
+ENV DOCKER_SHA256="945C3A3DDCB79EE7307496C2F39EB3D8372466E8654E63D60BBB462E4A3C1427"
+ENV DOCKER_VERSION="20.10.22"
 
 VOLUME /var/lib/docker
 
@@ -403,7 +403,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
 
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.12"
+ENV PYTHON_39_VERSION="3.9.16"
 
 COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION && rm -rf /tmp/*
@@ -423,7 +423,7 @@ RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --s
 FROM runtimes_2 AS runtimes_3
 
 #DotNet 3.1
-ENV DOTNET_31_SDK_VERSION="3.1.419"
+ENV DOTNET_31_SDK_VERSION="3.1.426"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 3.1 Global Tools install folder to PATH
@@ -448,7 +448,7 @@ RUN set -ex \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
 
 #Ruby 2.7
-ENV RUBY_27_VERSION="2.7.6"
+ENV RUBY_27_VERSION="2.7.7"
 RUN rbenv install $RUBY_27_VERSION && rm -rf /tmp/* && rbenv global $RUBY_27_VERSION && ruby -v
 
 #Golang 14
@@ -456,7 +456,7 @@ ENV GOLANG_14_VERSION="1.14.15"
 RUN goenv install $GOLANG_14_VERSION && rm -rf /tmp/* && goenv global  $GOLANG_14_VERSION
 
 #Php 7.4
-ENV PHP_74_VERSION="7.4.29"
+ENV PHP_74_VERSION="7.4.33"
 COPY tools/runtime_configs/php/$PHP_74_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
 RUN phpenv install $PHP_74_VERSION && rm -rf /tmp/* && phpenv global $PHP_74_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/conf.d/memory.ini"
