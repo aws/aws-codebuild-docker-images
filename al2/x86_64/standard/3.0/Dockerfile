@@ -302,8 +302,10 @@ RUN set -ex \
 #****************      NODEJS     ****************************************************
 
 ENV NODE_10_VERSION="10.24.1"
+ENV NODE_16_VERSION="16.16.0"
 
 RUN  n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+     && n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
      && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
      && yum install -y https://download-ib01.fedoraproject.org/pub/epel/8/Modular/x86_64/Packages/l/libuv-1.43.0-2.module_el8+13804+34326f90.x86_64.rpm \
