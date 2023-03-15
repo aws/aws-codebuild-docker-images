@@ -175,7 +175,7 @@ RUN set -x \
 RUN set -ex \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
-    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
@@ -305,7 +305,7 @@ ENV GOLANG_18_VERSION="1.18.9"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \ 
+RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global $GOLANG_18_VERSION && \
     go env -w GO111MODULE=auto
 

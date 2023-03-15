@@ -15,7 +15,7 @@ ENV RUBY_VERSION="2.6.5" \
  PYTHON_37_VERSION="3.7.4" \
  PYTHON_VERSION="3.8.0" \
  PHP_VERSION=7.3.10 \
- JAVA_VERSION=11 \ 
+ JAVA_VERSION=11 \
  NODE_VERSION="12.13.0" \
  NODE_10_VERSION="10.16.3" \
  NODE_8_VERSION="8.16.0" \
@@ -27,7 +27,7 @@ ENV RUBY_VERSION="2.6.5" \
 ARG CHINA_REGION
 
 #****************        Utilities     ********************************************* 
-ENV DOCKER_BUCKET="download.docker.com" \    
+ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
@@ -301,20 +301,24 @@ RUN cd /usr/local/python38/bin \
           update-alternatives --set $tool $tool_path; \
         done \
     && rm -fr /tmp/* /var/tmp/*
+
 #****************      END PYTHON     *********************************************
 
 #****************      PHP     ****************************************************
  ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
+
  ENV PHP_DOWNLOAD_SHA="42f00a15419e05771734b7159c8d39d639b8a5a6770413adfa2615f6f923d906" \
      PHPPATH="/php" \
      PHP_INI_DIR="/usr/local/etc/php" \
      PHP_CFLAGS="-fstack-protector -fpic -fpie -O2" \
      PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
+
  ENV PHP_SRC_DIR="$SRC_DIR/php" \
      PHP_CPPFLAGS="$PHP_CFLAGS" \
      PHP_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz/from/this/mirror" \
      PHP_ASC_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz.asc/from/this/mirror"
- RUN set -xe; \
+
+RUN set -xe; \
      mkdir -p $SRC_DIR; \
      cd $SRC_DIR; \
      yum install -yq curl-devel; \
@@ -389,6 +393,7 @@ RUN cd /usr/local/python38/bin \
 
  # Install Composer globally
  RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+
 #****************      END PHP     ****************************************************
 
 #****************      NODEJS     ****************************************************
@@ -462,7 +467,7 @@ RUN set -ex \
     && update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000 \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
-    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
