@@ -50,7 +50,7 @@ FROM core AS tools
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.36.1 \
+   && GIT_VERSION=2.39.1 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -63,9 +63,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.64 \
+   && STUNNEL_VERSION=5.67 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="eebe53ed116ba43b2e786762b0c2b91511e7b74857ad4765824e7199e6faf883" \
+   && STUNNEL_SHA256="3086939ee6407516c59b0ba3fbf555338f9d52f459bcab6337c0f00e91ea8456" \
    && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -137,15 +137,15 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.12 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.8.6 \
-    INSTALLED_GRADLE_VERSIONS="7.4.2" \
-    GRADLE_VERSION=7.4.2 \
-    SBT_VERSION=1.6.2 \
+    MAVEN_VERSION=3.8.7 \
+    INSTALLED_GRADLE_VERSIONS="7.6" \
+    GRADLE_VERSION=7.6 \
+    SBT_VERSION=1.8.2 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="2287dc5cfc21043c14e5413f9afb1c87c9f266ec2a9ba2d3bf2285446f6e4ccb59b558bf2e5c57911a05dfa293c7d5c7ad60ac9f744ba11406f4e6f9a27b2403" \
-    MAVEN_DOWNLOAD_SHA512="f790857f3b1f90ae8d16281f902c689e4f136ebe584aba45e4b1fa66c80cba826d3e0e52fdd04ed44b4c66f6d3fe3584a057c26dfcac544a60b301e6d0f91c26" \
-    GRADLE_DOWNLOADS_SHA256="e6d864e3b5bc05cc62041842b306383fc1fefcec359e70cebb1d470a6094ca82 7.4.2" \
-    SBT_DOWNLOAD_SHA256="637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440" \
+    MAVEN_DOWNLOAD_SHA512="21c2be0a180a326353e8f6d12289f74bc7cd53080305f05358936f3a1b6dd4d91203f4cc799e81761cf5c53c5bbe9dcc13bdb27ec8f57ecf21b2f9ceec3c8d27" \
+    GRADLE_DOWNLOADS_SHA256="312eb12875e1747e05c2f81a4789902d7e4ec5defbd1eefeaccc08acf096505d 7.6" \
+    SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686" \
     LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -155,7 +155,9 @@ ENV JAVA_HOME="$JAVA_17_HOME" \
 
 RUN set -x \
     # Install Amazon Corretto 17
-    && yum install -y -q java-17-amazon-corretto \
+    && rpm --import https://yum.corretto.aws/corretto.key \
+    && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
+    && yum install -y -q java-17-amazon-corretto java-17-amazon-corretto-devel \
     && update-ca-trust \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
@@ -173,7 +175,7 @@ RUN set -x \
 RUN set -ex \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
-    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
@@ -216,9 +218,9 @@ RUN rm -fr /tmp/* /var/tmp/*
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 7.2.4
+ENV POWERSHELL_VERSION 7.2.8
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA 935B874A2E5F5662AB23EFBE7392DC96C27D4FD064041D28A25A487EC5F6CC2E
+ENV POWERSHELL_DOWNLOAD_SHA 28FF2653667AC63B508F0B98433E48F64E6BC1EC59F8C1D252BA89EB5A7441A2
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -229,7 +231,7 @@ RUN set -ex \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
 
 #DotNet 6.0
-ENV DOTNET_60_SDK_VERSION="6.0.301"
+ENV DOTNET_60_SDK_VERSION="6.0.405"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6.0 Global Tools install folder to PATH
@@ -251,7 +253,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.15.1"
+ENV NODE_16_VERSION="16.19.0"
 
 RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
@@ -265,7 +267,7 @@ RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --s
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_31_VERSION="3.1.2"
+ENV RUBY_31_VERSION="3.1.3"
 
 RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* && rbenv global $RUBY_31_VERSION && ruby -v
 
@@ -273,7 +275,7 @@ RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* && rbenv global $RUBY_31_VER
 
 #**************** PYTHON *****************************************************
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.12"
+ENV PYTHON_39_VERSION="3.9.16"
 ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
 
@@ -288,7 +290,7 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_81_VERSION="8.1.6"
+ENV PHP_81_VERSION="8.1.13"
 
 COPY tools/runtime_configs/php/$PHP_81_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_81_VERSION
 RUN phpenv install $PHP_81_VERSION && rm -rf /tmp/* && phpenv global $PHP_81_VERSION
@@ -299,11 +301,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_18_VERSION="1.18.3"
+ENV GOLANG_18_VERSION="1.18.9"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \ 
+RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global $GOLANG_18_VERSION && \
     go env -w GO111MODULE=auto
 
@@ -317,10 +319,10 @@ FROM runtimes_1 AS runtimes_2
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.26.0"
+    DOCKER_COMPOSE_VERSION="1.26.2"
 
-ENV DOCKER_SHA256="9ccfc39305ae1d8882d18c9c431544fca82913d6df717409ac2244ac58c4f070"
-ENV DOCKER_VERSION="20.10.15"
+ENV DOCKER_SHA256="945C3A3DDCB79EE7307496C2F39EB3D8372466E8654E63D60BBB462E4A3C1427"
+ENV DOCKER_VERSION="20.10.22"
 
 VOLUME /var/lib/docker
 
@@ -345,13 +347,13 @@ RUN set -ex \
 FROM runtimes_2 AS runtimes_3
 
 # Install GitVersion
-ENV GITVERSION_VERSION="5.3.5"
+ENV GITVERSION_VERSION="5.11.1"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
 
 #===================END of runtimes_3 ==============
-FROM runtimes_3 AS al2_v3
+FROM runtimes_3 AS al2_v4
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config

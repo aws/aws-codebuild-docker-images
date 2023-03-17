@@ -11,7 +11,7 @@ The master branch will sometimes have changes that are still in the process of b
 Steps to build Standard 6.0 image
 
 * Run `git clone https://github.com/aws/aws-codebuild-docker-images.git` to download this repository to your local machine
-* Run `cd ubuntu/standard/6.0` to change the directory in your local workspace. This is the location of the Standard 5.0 Dockerfile with Ubuntu base.
+* Run `cd aws-codebuild-docker-images/ubuntu/standard/6.0` to change the directory in your local workspace. This is the location of the Standard 6.0 Dockerfile with Ubuntu base.
 * Run `docker build -t aws/codebuild/standard:6.0 .` to build Docker image locally
 
 To poke around in the image interactively, build it and run:

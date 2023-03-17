@@ -62,9 +62,9 @@ FROM core AS tools
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.64 \
+   && STUNNEL_VERSION=5.67 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="eebe53ed116ba43b2e786762b0c2b91511e7b74857ad4765824e7199e6faf883" \
+   && STUNNEL_SHA256="3086939ee6407516c59b0ba3fbf555338f9d52f459bcab6337c0f00e91ea8456" \
    && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -143,7 +143,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.301"
+ENV DOTNET_6_SDK_VERSION="6.0.405"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6 Global Tools install folder to PATH
@@ -163,9 +163,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ARG POWERSHELL_VERSION=7.2.4
+ARG POWERSHELL_VERSION=7.2.8
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=935B874A2E5F5662AB23EFBE7392DC96C27D4FD064041D28A25A487EC5F6CC2E
+ARG POWERSHELL_DOWNLOAD_SHA=28FF2653667AC63B508F0B98433E48F64E6BC1EC59F8C1D252BA89EB5A7441A2
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -179,7 +179,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.15.1"
+ENV NODE_16_VERSION="16.19.0"
 
 RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
@@ -192,7 +192,7 @@ RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --s
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_31_VERSION="3.1.2"
+ENV RUBY_31_VERSION="3.1.3"
 
 RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* \
     && rbenv global $RUBY_31_VERSION && ruby -v
@@ -200,7 +200,7 @@ RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_310_VERSION="3.10.5"
+ENV PYTHON_310_VERSION="3.10.9"
 
 ARG PYTHON_PIP_VERSION=22.1.2
 ENV PYYAML_VERSION=5.4.1
@@ -216,7 +216,7 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_81_VERSION="8.1.6"
+ENV PHP_81_VERSION="8.1.13"
 
 COPY tools/runtime_configs/php/$PHP_81_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_81_VERSION
 RUN phpenv install $PHP_81_VERSION && rm -rf /tmp/* && phpenv global $PHP_81_VERSION
@@ -227,7 +227,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_18_VERSION="1.18.3"
+ENV GOLANG_18_VERSION="1.18.9"
 
 RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_18_VERSION && \
@@ -246,15 +246,15 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
 ARG ANT_VERSION=1.10.12
 ARG MAVEN_HOME="/opt/maven"
-ARG MAVEN_VERSION=3.8.6
-ARG INSTALLED_GRADLE_VERSIONS="7.4.2"
-ARG GRADLE_VERSION=7.4.2
-ARG SBT_VERSION=1.6.2
+ARG MAVEN_VERSION=3.8.7
+ARG INSTALLED_GRADLE_VERSIONS="7.6"
+ARG GRADLE_VERSION=7.6
+ARG SBT_VERSION=1.8.2
 ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="2287dc5cfc21043c14e5413f9afb1c87c9f266ec2a9ba2d3bf2285446f6e4ccb59b558bf2e5c57911a05dfa293c7d5c7ad60ac9f744ba11406f4e6f9a27b2403"
-ARG MAVEN_DOWNLOAD_SHA512="f790857f3b1f90ae8d16281f902c689e4f136ebe584aba45e4b1fa66c80cba826d3e0e52fdd04ed44b4c66f6d3fe3584a057c26dfcac544a60b301e6d0f91c26"
-ARG GRADLE_DOWNLOADS_SHA256="e6d864e3b5bc05cc62041842b306383fc1fefcec359e70cebb1d470a6094ca82 7.4.2"
-ARG SBT_DOWNLOAD_SHA256="637637b6c4e6fa04ab62cd364061e32b12480b09001cd23303df62b36fadd440"
+ARG MAVEN_DOWNLOAD_SHA512="21c2be0a180a326353e8f6d12289f74bc7cd53080305f05358936f3a1b6dd4d91203f4cc799e81761cf5c53c5bbe9dcc13bdb27ec8f57ecf21b2f9ceec3c8d27"
+ARG GRADLE_DOWNLOADS_SHA256="312eb12875e1747e05c2f81a4789902d7e4ec5defbd1eefeaccc08acf096505d 7.6"
+ARG SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686"
 ENV LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -294,7 +294,7 @@ RUN set -ex \
 RUN set -ex \
     # Install Maven
     && mkdir -p $MAVEN_HOME \
-    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
     && tar xzf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
     && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
@@ -337,11 +337,11 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="2.6.0"
+ARG DOCKER_COMPOSE_VERSION="2.6.1"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="969210917b5548621a2b541caf00f86cc6963c6cf0fb13265b9731c3b98974d9"
-ARG DOCKER_VERSION="20.10.17"
+ARG DOCKER_SHA256="945C3A3DDCB79EE7307496C2F39EB3D8372466E8654E63D60BBB462E4A3C1427"
+ARG DOCKER_VERSION="20.10.22"
 
 # Install Docker
 RUN set -ex \
