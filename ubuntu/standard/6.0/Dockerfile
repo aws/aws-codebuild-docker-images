@@ -27,8 +27,8 @@ RUN set -ex \
     && mkdir ~/.ssh \
     && mkdir -p /codebuild/image/config \
     && touch ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && apt-get install -y -qq --no-install-recommends \
           apt-utils asciidoc autoconf automake build-essential bzip2 \
