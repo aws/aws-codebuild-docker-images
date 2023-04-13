@@ -18,8 +18,8 @@ RUN set -ex \
     && mkdir -p /opt/tools \
     && mkdir -p /codebuild/image/config \
     && touch ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && amazon-linux-extras install epel -y \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
