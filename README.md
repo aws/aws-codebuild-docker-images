@@ -40,3 +40,4 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [amazonlinux2-x86_64-standard:3.0](al2/x86_64/standard/3.0)
 + [amazonlinux2-x86_64-standard:4.0](al2/x86_64/standard/4.0)
 + [amazonlinux2-aarch64-standard:2.0](al2/aarch64/standard/2.0)
++ [amazonlinux2-aarch64-standard:3.0](al2/aarch64/standard/3.0)
