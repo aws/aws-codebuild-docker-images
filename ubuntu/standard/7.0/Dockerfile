@@ -327,6 +327,7 @@ ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 ARG DOCKER_COMPOSE_VERSION="2.17.2"
+ARG DOCKER_BUILDX_VERSION="0.10.4"
 ARG SRC_DIR="/usr/src"
 
 ARG DOCKER_SHA256="ec8a71e79125d3ca76f7cc295f35eea225f4450e0ffe0775f103e2952ff580f6"
@@ -346,9 +347,13 @@ RUN set -ex \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
+    # Add docker buildx tool
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 > /usr/local/bin/docker-buildx \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose /usr/local/bin/docker-buildx \
     # Ensure docker-compose works
-    && docker-compose version
+    && docker-compose version \
+    # Ensure docker-buildx works
+    && docker-buildx version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
