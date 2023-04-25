@@ -348,12 +348,13 @@ RUN set -ex \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
     # Add docker buildx tool
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 > /usr/local/bin/docker-buildx \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose /usr/local/bin/docker-buildx \
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 > /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-buildx \
     # Ensure docker-compose works
     && docker-compose version \
     # Ensure docker-buildx works
-    && docker-buildx version
+    && /usr/local/lib/docker/cli-plugins/docker-buildx version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
