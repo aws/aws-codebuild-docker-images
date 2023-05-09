@@ -1,0 +1,19 @@
+The Amazon CodeBuild Product includes the following third-party software/licensing:
+
+----------------
+gzip : GPLv3+ and GFDL
+----------------
+openssh-clients : BSD
+----------------
+perl : Artistic
+----------------
+tar : GPLv3+
+----------------
+wget : GPLv3+
+----------------
+unzip : http://www.info-zip.org/pub/infozip/license.html
+----------------
+maven : Apache License, Version 2.0
+----------------
+gradle : Apache License, Version 2.0
+----------------
