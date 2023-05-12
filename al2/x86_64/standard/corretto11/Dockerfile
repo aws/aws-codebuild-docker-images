@@ -59,4 +59,4 @@ COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["sh","-c"]
