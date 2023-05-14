@@ -1,0 +1,58 @@
+# create codebuild project (from repo)
+# aws cloudformation deploy --stack-name "codebuild-image-for-node-14" --capabilities CAPABILITY_NAMED_IAM --template-file ./deploy_codebuild/codebuild-project.cfn.yml
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: codebuild project with associated permissions
+Resources:
+  Project:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: build-codebuild-image-for-node14
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        EnvironmentVariables:
+          - Name: ENVIRONMENT
+            Type: PLAINTEXT
+            Value: dev
+        Image: aws/codebuild/standard:5.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+      ServiceRole: !Ref Role
+      Source:
+        Location: https://github.com/kramtechnologies/cognito-aws-codebuild-docker-images
+        BuildSpec: deploy_codebuild/buildspec.yml
+        ReportBuildStatus: false
+        Type: GITHUB
+      LogsConfig:
+        CloudWatchLogs:
+          GroupName: /aws/codebuild
+          StreamName: build-codebuild-image-for-node-14
+          Status: ENABLED
+      TimeoutInMinutes: 5
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: codebuild-build-codebuild-image-for-node-14
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EnableFullDeployment
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - "Sid": "Admin"
+                "Effect": "Allow"
+                "Action":
+                  - "cloudwatch:*"
+                  - "codebuild:*"
+                  - "ecr:*"
+                  - "logs:*"
+                "Resource": "*"

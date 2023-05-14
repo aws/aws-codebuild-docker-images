@@ -1,0 +1,22 @@
+#  aws codebuild start-build --project-name build-codebuild-image-for-node14 > /dev/null
+
+version: 0.2
+env:
+  variables:
+    AWS_ACCOUNT: 415984593091
+    AWS_REGION: us-east-1
+    IMAGE_NAME: codebuild_node14
+    VERSION_TAG: 14
+phases:
+  install:
+    commands:
+      - cd ./ubuntu/standard/5.0
+      - docker build -t aws/codebuild/standard:5.0 .
+  build:
+    commands:
+      - echo Build started on `date`
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com
+      - docker tag aws/codebuild/standard:5.0 $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$VERSION_TAG
+      - docker tag aws/codebuild/standard:5.0 $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
+      - docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:$VERSION_TAG
+      - docker push $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_NAME:latest
