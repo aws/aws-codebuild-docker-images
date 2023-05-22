@@ -38,6 +38,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [standard 6.0](ubuntu/standard/6.0)
 + [standard 7.0](ubuntu/standard/7.0)
 + [amazonlinux2-x86_64-standard:4.0](al2/x86_64/standard/4.0)
++ [amazonlinux2-x86_64-standard:5.0](al2/x86_64/standard/5.0)
 + [amazonlinux2-x86_64-standard:corretto8](al2/x86_64/standard/corretto8)
 + [amazonlinux2-x86_64-standard:corretto11](al2/x86_64/standard/corretto11)
 + [amazonlinux2-aarch64-standard:2.0](al2/aarch64/standard/2.0)
