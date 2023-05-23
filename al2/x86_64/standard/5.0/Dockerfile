@@ -9,7 +9,7 @@
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-FROM public.ecr.aws/amazonlinux/amazonlinux:2 AS core
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS core
 
 # Install git, SSH, and other utilities
 RUN set -ex \
@@ -21,22 +21,19 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && amazon-linux-extras install epel -y \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
-    && amazon-linux-extras enable corretto8 \
-    && amazon-linux-extras enable docker \
     && yum groupinstall -y -q "Development tools" \
     && yum install -y -q \
-           GeoIP-devel ImageMagick asciidoc bzip2-devel bzr bzrtools cvs cvsps \
-           docbook-dtds docbook-style-xsl dpkg-dev e2fsprogs expat-devel expect fakeroot \
+           ImageMagick asciidoc bzip2-devel cvs cvsps \
+           docbook-dtds docbook-style-xsl e2fsprogs expat-devel expect fakeroot \
            glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
            libcurl-devel libdb-devel libedit-devel libevent-devel libffi-devel \
-           libicu-devel libjpeg-devel libpng-devel libserf libsqlite3x-devel \
+           libicu-devel libjpeg-devel libpng-devel libserf sqlite-devel \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
-           libyaml-devel libzip-devel mariadb-devel mercurial mlocate mono-devel \
+           libyaml-devel libzip-devel mariadb105-devel mercurial mlocate \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
-           perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
+           perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
            amazon-ecr-credential-helper \
@@ -50,7 +47,7 @@ FROM core AS tools
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.39.1 \
+   && GIT_VERSION=2.40.0 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -78,8 +75,8 @@ RUN set -ex \
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.22.6/2022-03-09/bin/linux/amd64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.22.6/2022-03-09/bin/linux/amd64/kubectl \
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.26.2/2023-03-17/bin/linux/amd64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.26.2/2023-03-17/bin/linux/amd64/kubectl \
     && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest \
     && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
@@ -138,15 +135,13 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.13 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.9.1 \
-    INSTALLED_GRADLE_VERSIONS="7.6" \
-    GRADLE_VERSION=7.6 \
+    GRADLE_VERSION=8.1.1 \
     SBT_VERSION=1.8.2 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9" \
     MAVEN_DOWNLOAD_SHA512="d3be5956712d1c2cf7a6e4c3a2db1841aa971c6097c7a67f59493a5873ccf8c8b889cf988e4e9801390a2b1ae5a0669de07673acb090a083232dbd3faf82f3e3" \
-    GRADLE_DOWNLOADS_SHA256="312eb12875e1747e05c2f81a4789902d7e4ec5defbd1eefeaccc08acf096505d 7.6" \
-    SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686" \
-    LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
+    GRADLE_DOWNLOADS_SHA256="5625a0ae20fe000d9225d000b36909c7a0e0e8dda61c19b12da769add847c975 8.1.1" \
+    SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_17_HOME" \
@@ -183,20 +178,17 @@ RUN set -ex \
     && mkdir -p $MAVEN_CONFIG_HOME \
     # Install Gradle
     && mkdir -p $GRADLE_PATH \
-    && for version in $INSTALLED_GRADLE_VERSIONS; do { \
-       wget -q "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
-       && unzip -q "$GRADLE_PATH/gradle-$version-all.zip" -d /usr/local \
-       && echo -e "$GRADLE_DOWNLOADS_SHA256" | grep "$version" | sed "s|$version|$GRADLE_PATH/gradle-$version-all.zip|" | sha256sum -c - \
-       && rm "$GRADLE_PATH/gradle-$version-all.zip" \
-       && mkdir "/tmp/gradle-$version" \
-       && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" init \
-       && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
-       # Android Studio uses the "-all" distribution for it's wrapper script.
-       && perl -pi -e "s/gradle-$version-bin.zip/gradle-$version-all.zip/" "/tmp/gradle-$version/gradle/wrapper/gradle-wrapper.properties" \
-       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init \
-       && rm -rf "/tmp/gradle-$version" \
-       && if [ "$version" != "$GRADLE_VERSION" ]; then rm -rf "/usr/local/gradle-$version"; fi; \
-     }; done \
+    && wget -q "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-all.zip" -O "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" \
+    && unzip -q "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" -d /usr/local \
+    && echo -e "$GRADLE_DOWNLOADS_SHA256" | grep "$GRADLE_VERSION" | sed "s|$GRADLE_VERSION|$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip|" | sha256sum -c - \
+    && rm "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" \
+    && mkdir "/tmp/gradle-$GRADLE_VERSION" \
+    && "/usr/local/gradle-$GRADLE_VERSION/bin/gradle" -p "/tmp/gradle-$GRADLE_VERSION" init \
+    && "/usr/local/gradle-$GRADLE_VERSION/bin/gradle" -p "/tmp/gradle-$GRADLE_VERSION" wrapper \
+    # Android Studio uses the "-all" distribution for it's wrapper script.
+    && perl -pi -e "s/gradle-$GRADLE_VERSION-bin.zip/gradle-$GRADLE_VERSION-all.zip/" "/tmp/gradle-$GRADLE_VERSION/gradle/wrapper/gradle-wrapper.properties" \
+    && "/tmp/gradle-$GRADLE_VERSION/gradlew" -p "/tmp/gradle-$GRADLE_VERSION" init \
+    && rm -rf "/tmp/gradle-$GRADLE_VERSION" \
     # Install default GRADLE_VERSION to path
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
@@ -204,8 +196,7 @@ RUN set -ex \
     && curl -fSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" -o sbt.tgz \
     && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
     && tar xzf sbt.tgz -C /usr/local/bin/ \
-    && rm sbt.tgz \
-    && for version in $LOG4J_UNSAFE_VERSIONS; do find / -name log4j*-$version.jar | xargs rm -f; done
+    && rm sbt.tgz
 
 ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version -Dsbt.rootdir=true
@@ -218,9 +209,9 @@ RUN rm -fr /tmp/* /var/tmp/*
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ENV POWERSHELL_VERSION 7.2.11
+ENV POWERSHELL_VERSION 7.3.4
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA 9D6F798461D172391B508FCF27F9CBBB4BEF307EBFD6886ED50860C322C7D1B3
+ENV POWERSHELL_DOWNLOAD_SHA E85D5544E13A924F8B2C4A5DC2D43ABE46E46633F89E8D138D39C0AAEACB9976
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -229,6 +220,15 @@ RUN set -ex \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+
+# Install AWS CLI v2
+# https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
+RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip \
+    && unzip -q /tmp/awscliv2.zip -d /opt \
+    && /opt/aws/install --update -i /usr/local/aws-cli -b /usr/local/bin \
+    && rm /tmp/awscliv2.zip \
+    && rm -rf /opt/aws \
+    && aws --version
 
 #DotNet 6.0
 ENV DOTNET_60_SDK_VERSION="6.0.408"
@@ -253,60 +253,55 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.20.0"
+ENV NODE_18_VERSION="18.16.0"
 
-RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
-     && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
-     && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
-     && yum install -y https://download-ib01.fedoraproject.org/pub/epel/8/Modular/x86_64/Packages/l/libuv-1.43.0-2.module_el8+13804+34326f90.x86_64.rpm \
-     && yum install -y -q yarn \
-     && yarn --version \
+RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_31_VERSION="3.1.4"
+ENV RUBY_32_VERSION="3.2.2"
 
-RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* && rbenv global $RUBY_31_VERSION && ruby -v
+RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* && rbenv global $RUBY_32_VERSION && ruby -v
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-#Python 3.9
-ENV PYTHON_39_VERSION="3.9.16"
-ENV PYTHON_PIP_VERSION=21.3.1
-ENV PYYAML_VERSION=5.4.1
+#Python 3.11
+ENV PYTHON_311_VERSION="3.11.2"
+ENV PYTHON_PIP_VERSION=23.1.1
+ENV PYYAML_VERSION=6.0
 
-COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
-RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION && rm -rf /tmp/*
-RUN   pyenv global  $PYTHON_39_VERSION
+COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
+RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSION && rm -rf /tmp/*
+RUN   pyenv global  $PYTHON_311_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==57.5.0' wheel aws-sam-cli awscli boto3 pipenv virtualenv --use-feature=2020-resolver
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' wheel aws-sam-cli boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION"
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_81_VERSION="8.1.18"
+ENV PHP_82_VERSION="8.2.5"
 
-COPY tools/runtime_configs/php/$PHP_81_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_81_VERSION
-RUN phpenv install $PHP_81_VERSION && rm -rf /tmp/* && phpenv global $PHP_81_VERSION
-RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_81_VERSION/etc/conf.d/memory.ini"
+COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
+RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
+RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini"
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_18_VERSION="1.18.10"
+ENV GOLANG_20_VERSION="1.20.3"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
-    goenv global $GOLANG_18_VERSION && \
+RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
+    goenv global $GOLANG_20_VERSION && \
     go env -w GO111MODULE=auto
 
 RUN go get -u github.com/golang/dep/cmd/dep
@@ -315,14 +310,15 @@ RUN go get -u github.com/golang/dep/cmd/dep
 #=======================End of layer: runtimes_1  =================
 FROM runtimes_1 AS runtimes_2
 
-#Docker 20
+#Docker 23
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="1.29.2"
+    DOCKER_COMPOSE_VERSION="2.17.3" \
+    DOCKER_BUILDX_VERSION="0.10.4"
 
-ENV DOCKER_SHA256="AB91092320A87691A1EAF0225B48585DB9C69CFF0ED4B0F569F744FF765515E3"
-ENV DOCKER_VERSION="20.10.24"
+ENV DOCKER_SHA256="81BD643A32B3428F6D9EAFBD9331D0DA1577C958C1C2702DB1EFF7AFA1CDF3CD"
+ENV DOCKER_VERSION="23.0.4"
 
 VOLUME /var/lib/docker
 
@@ -338,22 +334,31 @@ RUN set -ex \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
-    && curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
-    && docker-compose version
-
+    # Install docker compose as docker plugin and maintain docker-compose usage
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    # Ensure docker-compose and docker compose work
+    && docker-compose version \
+    && docker compose version \
+    # Add docker buildx tool
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/bin/docker-buildx \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-buildx \
+    # Ensure docker-buildx works
+    && docker-buildx version
 
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
 
 # Install GitVersion
-ENV GITVERSION_VERSION="5.11.1"
+ENV GITVERSION_VERSION="5.12.0"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion
 
 #===================END of runtimes_3 ==============
-FROM runtimes_3 AS al2_v4
+FROM runtimes_3 AS al2_v5
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config
@@ -365,4 +370,5 @@ COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
-#=======================End of layer: al2_v4  =================
+
+#=======================End of layer: al2_v5  =================

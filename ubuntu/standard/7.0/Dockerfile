@@ -143,7 +143,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.407"
+ENV DOTNET_6_SDK_VERSION="6.0.408"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6 Global Tools install folder to PATH
@@ -163,9 +163,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ARG POWERSHELL_VERSION=7.3.3
+ARG POWERSHELL_VERSION=7.3.4
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=478320F62C9BEC5765414B82B4086310777BF95AB2FC2310B2DB6CBC253B40B4
+ARG POWERSHELL_DOWNLOAD_SHA=E85D5544E13A924F8B2C4A5DC2D43ABE46E46633F89E8D138D39C0AAEACB9976
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -179,7 +179,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_18_VERSION="18.15.0"
+ENV NODE_18_VERSION="18.16.0"
 
 RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
@@ -188,7 +188,7 @@ RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --s
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_32_VERSION="3.2.1"
+ENV RUBY_32_VERSION="3.2.2"
 
 RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* \
     && rbenv global $RUBY_32_VERSION && ruby -v
@@ -198,7 +198,7 @@ RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* \
 #**************** PYTHON *****************************************************
 ENV PYTHON_311_VERSION="3.11.2"
 
-ARG PYTHON_PIP_VERSION=23.0.1
+ARG PYTHON_PIP_VERSION=23.1.1
 ENV PYYAML_VERSION=6.0
 
 COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
@@ -206,13 +206,13 @@ RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSIO
 RUN pyenv global $PYTHON_311_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.6.0' wheel aws-sam-cli boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' wheel aws-sam-cli boto3 pipenv virtualenv \
     && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION"
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_82_VERSION="8.2.4"
+ENV PHP_82_VERSION="8.2.5"
 
 COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
 RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
@@ -223,7 +223,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.2"
+ENV GOLANG_20_VERSION="1.20.3"
 
 RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_20_VERSION && \
@@ -242,12 +242,12 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
 ARG ANT_VERSION=1.10.13
 ARG MAVEN_HOME="/opt/maven"
 ARG MAVEN_VERSION=3.9.1
-ARG GRADLE_VERSION=8.0.2
+ARG GRADLE_VERSION=8.1.1
 ARG SBT_VERSION=1.8.2
 ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9"
 ARG MAVEN_DOWNLOAD_SHA512="d3be5956712d1c2cf7a6e4c3a2db1841aa971c6097c7a67f59493a5873ccf8c8b889cf988e4e9801390a2b1ae5a0669de07673acb090a083232dbd3faf82f3e3"
-ARG GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2"
+ARG GRADLE_DOWNLOADS_SHA256="5625a0ae20fe000d9225d000b36909c7a0e0e8dda61c19b12da769add847c975 8.1.1"
 ARG SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -326,12 +326,12 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="2.17.2"
+ARG DOCKER_COMPOSE_VERSION="2.17.3"
 ARG DOCKER_BUILDX_VERSION="0.10.4"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="ec8a71e79125d3ca76f7cc295f35eea225f4450e0ffe0775f103e2952ff580f6"
-ARG DOCKER_VERSION="23.0.1"
+ARG DOCKER_SHA256="81BD643A32B3428F6D9EAFBD9331D0DA1577C958C1C2702DB1EFF7AFA1CDF3CD"
+ARG DOCKER_VERSION="23.0.4"
 
 # Install Docker
 RUN set -ex \
@@ -346,15 +346,19 @@ RUN set -ex \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
-    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 > /usr/local/bin/docker-compose \
-    # Add docker buildx tool
+    # Install docker compose as docker plugin and maintain docker-compose usage
     && mkdir -p /usr/local/lib/docker/cli-plugins \
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 > /usr/local/lib/docker/cli-plugins/docker-buildx \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-buildx \
-    # Ensure docker-compose works
+    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    # Ensure docker-compose and docker compose work
     && docker-compose version \
+    && docker compose version \
+    # Add docker buildx tool
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/bin/docker-buildx \
+    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-buildx \
     # Ensure docker-buildx works
-    && /usr/local/lib/docker/cli-plugins/docker-buildx version
+    && docker-buildx version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
