@@ -283,6 +283,7 @@ ENV DOCKER_BUCKET="download.docker.com" \
 ENV DOCKER_SHA256="3865F837DBD951B19EEB5F7D87AADA2E865B2017E9462FE389F0E5D9A438324D"
 ENV DOCKER_VERSION="23.0.1"
 ENV DOCKER_COMPOSE_VERSION="2.17.2"
+ENV DOCKER_BUILDX_VERSION="0.10.5"
 
 VOLUME /var/lib/docker
 
@@ -302,7 +303,12 @@ RUN set -ex \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 > /usr/local/bin/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
     # Ensure docker-compose works
-    && docker-compose version
+    && docker-compose version \
+    # Add docker buildx tool
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm64 -o /usr/local/bin/docker-buildx \
+    && chmod +x /usr/local/bin/docker-buildx \
+    # Ensure docker-buildx works
+    && docker-buildx version
 
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
