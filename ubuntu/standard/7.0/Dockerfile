@@ -12,12 +12,15 @@ FROM public.ecr.aws/ubuntu/ubuntu:22.04 AS core
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
+ADD https://download.mono-project.com/repo/xamarin.gpg /tmp/xamarin.gpg
+
 # Install git, SSH, and other utilities
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
     && apt install -y -qq apt-transport-https gnupg ca-certificates \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
+    && gpg --dearmor -o /etc/apt/keyrings/xamarin-mono-archive.gpg /tmp/xamarin.gpg \
+    && rm /tmp/xamarin.gpg \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-add-repository -y ppa:git-core/ppa \
     && apt-get update \
