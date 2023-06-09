@@ -65,7 +65,7 @@ RUN set -ex \
    && STUNNEL_VERSION=5.56 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
    && STUNNEL_SHA256="7384bfb356b9a89ddfee70b5ca494d187605bb516b4fff597e167f97e2236b22" \
-   && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR \
+   && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR \
    && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum -c - \
    && tar xvfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
