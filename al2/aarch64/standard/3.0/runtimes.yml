@@ -28,7 +28,7 @@ runtimes:
         commands:
           - echo "Installing Go version 1.20 ..."
           - rm -rf /usr/local/go
-          - ln -s /usr/local/go12 /usr/local/go
+          - ln -s /usr/local/go20 /usr/local/go
   python:
     versions:
       3.11:
