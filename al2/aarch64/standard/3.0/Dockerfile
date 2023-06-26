@@ -214,7 +214,10 @@ RUN set -ex \
 
 ENV NODE_18_VERSION="18.15.0"
 
-RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
+     && npm install --save-dev -g -f yarn \
+     && npm install --save-dev -g -f grunt-cli \
+     && npm install --save-dev -g -f webpack \
      && cd / && rm -rf $N_SRC_DIR; rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
