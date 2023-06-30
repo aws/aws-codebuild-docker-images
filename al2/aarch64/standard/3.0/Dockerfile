@@ -300,15 +300,22 @@ RUN set -ex \
     && echo 'dockremap:165536:65536' >> /etc/subuid \
     && echo 'dockremap:165536:65536' >> /etc/subgid \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
-    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 > /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-compose \
-    # Ensure docker-compose works
+    && chmod +x /usr/local/bin/dind \
+    # Install docker compose as docker plugin and maintain docker-compose usage
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 > /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    # Ensure docker-compose and docker compose works
     && docker-compose version \
+    && docker compose version \
     # Add docker buildx tool
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm64 -o /usr/local/bin/docker-buildx \
-    && chmod +x /usr/local/bin/docker-buildx \
-    # Ensure docker-buildx works
-    && docker-buildx version
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
+    # Ensure docker-buildx and docker buildx works
+    && docker-buildx version \
+    && docker buildx version
 
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
