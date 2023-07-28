@@ -143,7 +143,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.408"
+ENV DOTNET_6_SDK_VERSION="6.0.410"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6 Global Tools install folder to PATH
@@ -179,9 +179,13 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_18_VERSION="18.16.0"
+ENV NODE_18_VERSION="18.16.1"
 
 RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
+     && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
+     && apt-get update && apt-get install -y -qq --no-install-recommends yarn \
+     && yarn --version \
      && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
@@ -196,7 +200,7 @@ RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_311_VERSION="3.11.2"
+ENV PYTHON_311_VERSION="3.11.4"
 
 ARG PYTHON_PIP_VERSION=23.1.1
 ENV PYYAML_VERSION=6.0
@@ -212,7 +216,7 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_82_VERSION="8.2.5"
+ENV PHP_82_VERSION="8.2.7"
 
 COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
 RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
@@ -223,7 +227,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.3"
+ENV GOLANG_20_VERSION="1.20.5"
 
 RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_20_VERSION && \
@@ -241,14 +245,14 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
 ARG ANT_VERSION=1.10.13
 ARG MAVEN_HOME="/opt/maven"
-ARG MAVEN_VERSION=3.9.1
+ARG MAVEN_VERSION=3.9.2
 ARG GRADLE_VERSION=8.1.1
-ARG SBT_VERSION=1.8.2
+ARG SBT_VERSION=1.8.3
 ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9"
-ARG MAVEN_DOWNLOAD_SHA512="d3be5956712d1c2cf7a6e4c3a2db1841aa971c6097c7a67f59493a5873ccf8c8b889cf988e4e9801390a2b1ae5a0669de07673acb090a083232dbd3faf82f3e3"
+ARG MAVEN_DOWNLOAD_SHA512="900bdeeeae550d2d2b3920fe0e00e41b0069f32c019d566465015bdd1b3866395cbe016e22d95d25d51d3a5e614af2c83ec9b282d73309f644859bbad08b63db"
 ARG GRADLE_DOWNLOADS_SHA256="5625a0ae20fe000d9225d000b36909c7a0e0e8dda61c19b12da769add847c975 8.1.1"
-ARG SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686"
+ARG SBT_DOWNLOAD_SHA256="21F4210786FD68FD15DCA3F4C8EE9CAE0DB249C54E1B0EF6E829E9FA4936423A"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 
@@ -327,11 +331,11 @@ ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 ARG DOCKER_COMPOSE_VERSION="2.17.3"
-ARG DOCKER_BUILDX_VERSION="0.10.4"
+ARG DOCKER_BUILDX_VERSION="0.11.0"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="81BD643A32B3428F6D9EAFBD9331D0DA1577C958C1C2702DB1EFF7AFA1CDF3CD"
-ARG DOCKER_VERSION="23.0.4"
+ARG DOCKER_SHA256="544262F4A3621222AFB79960BFAD4D486935DAB80893478B5CC9CF8EBAF409AE"
+ARG DOCKER_VERSION="23.0.6"
 
 # Install Docker
 RUN set -ex \
@@ -349,16 +353,18 @@ RUN set -ex \
     # Install docker compose as docker plugin and maintain docker-compose usage
     && mkdir -p /usr/local/lib/docker/cli-plugins \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
-    && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
     # Ensure docker-compose and docker compose work
     && docker-compose version \
     && docker compose version \
     # Add docker buildx tool
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/bin/docker-buildx \
-    && chmod +x /usr/local/bin/dind /usr/local/bin/docker-buildx \
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
     # Ensure docker-buildx works
-    && docker-buildx version
+    && docker-buildx version \
+    && docker buildx version
 
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
