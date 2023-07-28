@@ -72,11 +72,13 @@ RUN set -ex \
     && geckodriver --version
 
 # Install Chrome
+ENV CHROME_VERSION="114.0.5735.198-1"
+
 RUN set -ex \
-    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y -qq google-chrome-stable \
+    && wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
+    && (dpkg -i /tmp/chrome.deb || apt-get -fy install) \
+    && rm /tmp/chrome.deb \
+    && sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' "/opt/google/chrome/google-chrome" \
     && google-chrome --version
 
 # Install ChromeDriver
@@ -241,9 +243,9 @@ RUN rbenv install $RUBY_26_VERSION && rm -rf /tmp/* \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.16"
-ENV PYTHON_38_VERSION="3.8.16"
-ENV PYTHON_39_VERSION="3.9.16"
+ENV PYTHON_37_VERSION="3.7.17"
+ENV PYTHON_38_VERSION="3.8.17"
+ENV PYTHON_39_VERSION="3.9.17"
 
 ARG PYTHON_PIP_VERSION=21.3.1
 ENV PYYAML_VERSION=5.4.1
@@ -277,7 +279,7 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 ENV PHP_73_VERSION="7.3.33"
 ENV PHP_74_VERSION="7.4.33"
-ENV PHP_80_VERSION="8.0.28"
+ENV PHP_80_VERSION="8.0.29"
 
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"

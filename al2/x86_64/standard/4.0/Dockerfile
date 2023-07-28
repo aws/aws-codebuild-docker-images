@@ -137,15 +137,15 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.13 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.1 \
-    INSTALLED_GRADLE_VERSIONS="7.6" \
-    GRADLE_VERSION=7.6 \
-    SBT_VERSION=1.8.2 \
+    MAVEN_VERSION=3.9.2 \
+    INSTALLED_GRADLE_VERSIONS="7.6.1" \
+    GRADLE_VERSION=7.6.1 \
+    SBT_VERSION=1.8.3 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9" \
-    MAVEN_DOWNLOAD_SHA512="d3be5956712d1c2cf7a6e4c3a2db1841aa971c6097c7a67f59493a5873ccf8c8b889cf988e4e9801390a2b1ae5a0669de07673acb090a083232dbd3faf82f3e3" \
-    GRADLE_DOWNLOADS_SHA256="312eb12875e1747e05c2f81a4789902d7e4ec5defbd1eefeaccc08acf096505d 7.6" \
-    SBT_DOWNLOAD_SHA256="1f65344da074dbd66dfefa93c0eff8d319d772e5cad47fcbeb6ae178bbdf4686" \
+    MAVEN_DOWNLOAD_SHA512="900bdeeeae550d2d2b3920fe0e00e41b0069f32c019d566465015bdd1b3866395cbe016e22d95d25d51d3a5e614af2c83ec9b282d73309f644859bbad08b63db" \
+    GRADLE_DOWNLOADS_SHA256="518a863631feb7452b8f1b3dc2aaee5f388355cc3421bbd0275fbeadd77e84b2 7.6.1" \
+    SBT_DOWNLOAD_SHA256="21F4210786FD68FD15DCA3F4C8EE9CAE0DB249C54E1B0EF6E829E9FA4936423A" \
     LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -231,7 +231,7 @@ RUN set -ex \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
 
 #DotNet 6.0
-ENV DOTNET_60_SDK_VERSION="6.0.408"
+ENV DOTNET_60_SDK_VERSION="6.0.410"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6.0 Global Tools install folder to PATH
@@ -253,12 +253,12 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.20.0"
+ENV NODE_16_VERSION="16.20.1"
 
 RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sSL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo \
      && rpm --import https://dl.yarnpkg.com/rpm/pubkey.gpg \
-     && yum install -y https://download-ib01.fedoraproject.org/pub/epel/8/Modular/x86_64/Packages/l/libuv-1.43.0-2.module_el8+13804+34326f90.x86_64.rpm \
+     && yum install -y https://dl.fedoraproject.org/pub/epel/8/Modular/x86_64/Packages/l/libuv-1.43.0-2.module_el8+13804+34326f90.x86_64.rpm \
      && yum install -y -q yarn \
      && yarn --version \
      && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
@@ -275,7 +275,7 @@ RUN rbenv install $RUBY_31_VERSION && rm -rf /tmp/* && rbenv global $RUBY_31_VER
 
 #**************** PYTHON *****************************************************
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.16"
+ENV PYTHON_39_VERSION="3.9.17"
 ENV PYTHON_PIP_VERSION=21.3.1
 ENV PYYAML_VERSION=5.4.1
 
@@ -290,7 +290,7 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_81_VERSION="8.1.18"
+ENV PHP_81_VERSION="8.1.20"
 
 COPY tools/runtime_configs/php/$PHP_81_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_81_VERSION
 RUN phpenv install $PHP_81_VERSION && rm -rf /tmp/* && phpenv global $PHP_81_VERSION
