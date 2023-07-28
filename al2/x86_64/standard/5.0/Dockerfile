@@ -277,15 +277,17 @@ RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* && rbenv global $RUBY_32_VER
 #Python 3.11
 ENV PYTHON_311_VERSION="3.11.4"
 ENV PYTHON_PIP_VERSION=23.1.2
-ENV PYYAML_VERSION=6.0
+ENV PYYAML_VERSION=5.4.1
 
 COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSION && rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_311_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' wheel aws-sam-cli boto3 pipenv virtualenv \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION"
+    && pip3 install wheel \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' aws-sam-cli boto3 pipenv virtualenv \
+    && pip3 uninstall cython --yes
 
 #**************** END PYTHON *****************************************************
 

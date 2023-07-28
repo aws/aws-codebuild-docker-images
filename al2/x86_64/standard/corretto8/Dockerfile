@@ -22,7 +22,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && yum install -y -q make gettext-devel gcc openssl-devel curl-devel expat-devel
+    && yum install -y -q make gettext-devel gcc openssl-devel curl-devel expat-devel iptables
 
 RUN useradd codebuild-user
 
@@ -111,6 +111,8 @@ RUN set -ex \
 # Configure SSH
 COPY ssh_config /root/.ssh/config
 COPY runtimes.yml /codebuild/image/config/runtimes.yml
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 
-ENTRYPOINT ["sh","-c"]
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]

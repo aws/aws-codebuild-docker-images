@@ -210,8 +210,10 @@ RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_310_VERS
 RUN   pyenv global  $PYTHON_310_VERSION
 RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==62.6.0' wheel aws-sam-cli boto3 pipenv virtualenv
+    && pip3 install wheel \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==62.6.0' aws-sam-cli boto3 pipenv virtualenv \
+    && pip3 uninstall cython --yes
 
 #**************** END PYTHON *****************************************************
 
