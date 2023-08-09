@@ -52,6 +52,7 @@ function usage {
     echo "               * Blank lines are ignored"
     echo "               * File can be of type .env or .txt"
     echo "               * There is no special handling of quotation marks, meaning they will be part of the VAL"
+    echo "  -f PLATFORM  Set docker command platform."
     exit 1
 }
 
@@ -74,7 +75,7 @@ while getopts "cmdi:a:r:s:b:e:l:p:f:h" opt; do
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
         p  ) aws_profile=$OPTARG;;
-        f ) docker_platform=$OPTARG;;
+        f  ) docker_platform=$OPTARG;;
         h  ) usage; exit;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
