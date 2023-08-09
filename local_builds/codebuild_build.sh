@@ -61,7 +61,7 @@ awsconfig_flag=false
 mount_src_dir_flag=false
 docker_privileged_mode_flag=false
 
-while getopts "cmdi:a:r:s:b:e:l:p:h" opt; do
+while getopts "cmdi:a:r:s:b:e:l:p:f:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
@@ -74,6 +74,7 @@ while getopts "cmdi:a:r:s:b:e:l:p:h" opt; do
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
         p  ) aws_profile=$OPTARG;;
+        f ) docker_platform=$OPTARG;;
         h  ) usage; exit;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -173,6 +174,11 @@ fi
 if $docker_privileged_mode_flag
 then
     docker_command+=" -e \"DOCKER_PRIVILEGED_MODE=TRUE\""
+fi
+
+if [ -n "$docker_platform" ]
+then
+    docker_command+=" --platform \"$docker_platform\""
 fi
 
 if isOSWindows
