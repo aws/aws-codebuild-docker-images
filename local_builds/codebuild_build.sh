@@ -52,7 +52,7 @@ function usage {
     echo "               * Blank lines are ignored"
     echo "               * File can be of type .env or .txt"
     echo "               * There is no special handling of quotation marks, meaning they will be part of the VAL"
-    echo "  -f PLATFORM  Set docker command platform."
+    echo "  -f PLATFORM  Used to specify the platform argument to docker command."
     exit 1
 }
 
@@ -177,16 +177,16 @@ then
     docker_command+=" -e \"DOCKER_PRIVILEGED_MODE=TRUE\""
 fi
 
-if [ -n "$docker_platform" ]
-then
-    docker_command+=" --platform \"$docker_platform\""
-fi
-
 if isOSWindows
 then
     docker_command+=" -e \"INITIATOR=$USERNAME\""
 else
     docker_command+=" -e \"INITIATOR=$USER\""
+fi
+
+if [ -n "$docker_platform" ]
+then
+    docker_command+=" --platform \"$docker_platform\""
 fi
 
 if [ -n "$local_agent_image" ]
