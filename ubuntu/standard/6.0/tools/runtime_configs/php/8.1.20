@@ -5,7 +5,7 @@ configure_option "--with-libedit"
 
 PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
 
-#https://github.com/php-build/php-build/blob/master/share/php-build/definitions/8.2.5
+#https://github.com/php-build/php-build/blob/master/share/php-build/definitions/8.1.20
 #Don't change beyond this line
 
 configure_option "--enable-gd"
@@ -15,6 +15,6 @@ configure_option "--with-mhash"
 
 configure_option -D "--with-xmlrpc"
 
-install_package "https://www.php.net/distributions/php-8.2.5.tar.bz2"
+install_package "https://www.php.net/distributions/php-8.1.20.tar.bz2"
 install_xdebug "3.2.0"
 enable_builtin_opcache
