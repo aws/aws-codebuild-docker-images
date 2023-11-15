@@ -127,6 +127,12 @@ ENV GOPATH="/go"
 
 FROM tools AS runtimes_1
 
+#****************     Pack CLI     *************************************************
+RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
+    | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+
+#****************     END Pack CLI     *********************************************
+
 #****************      JAVA     ****************************************************
 
 ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
