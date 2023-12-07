@@ -101,7 +101,8 @@ RUN set -ex \
     && rm -fr /tmp/* /var/tmp/*
 
 ENV GOPATH="$GOPATH:$LAMBDA_USER_HOME/go" \
-    GOBIN="$LAMBDA_USER_HOME/go/bin"
+    GOBIN="$LAMBDA_USER_HOME/go/bin" \
+    GOMODCACHE="$LAMBDA_USER_HOME/gomodcache"
 #=======================End of layer: go_runtime  =================
 
 FROM go_runtime AS al_v1

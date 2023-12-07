@@ -9,11 +9,14 @@
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-FROM public.ecr.aws/lambda/ruby:3.2-x86_64 AS core
+FROM public.ecr.aws/lambda/nodejs:20-arm64 AS core
+
+# Set LD_LIBRARY_PATH to avoid Openssl issues
+ENV LD_LIBRARY_PATH=""
 
 # Install SSH, and other utilities
 RUN set -ex \
-    && yum install -y -q openssh-clients \
+    && dnf install -y openssh-clients \
     && mkdir ~/.ssh \
     && mkdir -p /opt/tools \
     && mkdir -p /codebuild/image/config \
@@ -22,9 +25,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
-    && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
-    && yum groupinstall -y -q "Development tools" \
-    && yum install -y -q \
+    && dnf install -y \
            ImageMagick asciidoc bzip2-devel cvs cvsps \
            docbook-dtds docbook-style-xsl e2fsprogs expat-devel expect fakeroot \
            glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
@@ -36,8 +37,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper \
-    && rm /etc/yum.repos.d/mono-centos7-stable.repo
+           amazon-ecr-credential-helper make gcc gettext
 
 RUN /usr/sbin/useradd codebuild-user
 
@@ -62,40 +62,39 @@ RUN set -ex \
 
 # Install AWS CLI v2
 # https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
-RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip \
+RUN curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip \
     && unzip -q /tmp/awscliv2.zip -d /opt \
     && /opt/aws/install --update -i /usr/local/aws-cli -b /usr/local/bin \
     && rm /tmp/awscliv2.zip \
     && rm -rf /opt/aws \
     && aws --version
 
-# Install AWS SAM CLI
-RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip -O /tmp/samcli.zip \
-    && unzip -q /tmp/samcli.zip -d /opt \
-    && /opt/install --update -i /usr/local/sam-cli -b /usr/local/bin \
-    && rm /tmp/samcli.zip /opt/install \
-    && rm -rf /opt/aws-sam-cli-src \
+## Install AWS SAM CLI
+RUN dnf install python3 \
+    && pip3 install aws-sam-cli \
     && sam --version
 
 # AWS Tools
 # https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI_installation.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl \
-    && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest \
-    && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
+RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/arm64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/arm64/kubectl \
+    && curl -sS -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-arm64-latest \
+    && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
 #=======================  End of layer: tools  =================
 
-FROM tools AS ruby_runtime
+FROM tools AS node_runtime
 
-ENV GEM_HOME="$LAMBDA_USER_HOME/ruby/gems"
-ENV PATH="$GEM_HOME/bin:$PATH"
+RUN dnf install -y libuv \
+    && npm install -g yarn \
+    && yarn --version \
+    && npm config --global set prefix $LAMBDA_USER_HOME/npm \
+    && rm -fr /tmp/*
 
-#=======================End of layer: ruby_runtime  =================
+ENV PATH="$LAMBDA_USER_HOME/npm/bin:$PATH"
+#=======================End of layer: node_runtime  =================
 
-FROM ruby_runtime AS al_v1
-
-FROM tools AS al_v1
+FROM node_runtime AS al_v1
 
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 

@@ -9,11 +9,11 @@
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-FROM public.ecr.aws/lambda/ruby:3.2-arm64 AS core
+FROM public.ecr.aws/lambda/java:21-arm64 AS core
 
 # Install SSH, and other utilities
 RUN set -ex \
-    && yum install -y -q openssh-clients \
+    && dnf install -y openssh-clients \
     && mkdir ~/.ssh \
     && mkdir -p /opt/tools \
     && mkdir -p /codebuild/image/config \
@@ -22,9 +22,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
-    && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
-    && yum groupinstall -y -q "Development tools" \
-    && yum install -y -q \
+    && dnf install -y \
            ImageMagick asciidoc bzip2-devel cvs cvsps \
            docbook-dtds docbook-style-xsl e2fsprogs expat-devel expect fakeroot \
            glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
@@ -36,8 +34,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper \
-    && rm /etc/yum.repos.d/mono-centos7-stable.repo
+           amazon-ecr-credential-helper make gcc gettext
 
 RUN /usr/sbin/useradd codebuild-user
 
@@ -70,8 +67,7 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscl
     && aws --version
 
 ## Install AWS SAM CLI
-RUN yum install -y python3 python3-devel \
-    && pip3 install --upgrade pip \
+RUN dnf install python3 \
     && pip3 install aws-sam-cli \
     && sam --version
 
@@ -84,16 +80,50 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazon
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
 #=======================  End of layer: tools  =================
 
-FROM tools AS ruby_runtime
+FROM tools AS java_runtime
 
-ENV GEM_HOME="$LAMBDA_USER_HOME/ruby/gems"
-ENV PATH="$GEM_HOME/bin:$PATH"
+ENV MAVEN_HOME="/opt/maven" \
+    MAVEN_VERSION=3.9.4 \
+    GRADLE_VERSION=8.2.1 \
+    ANT_VERSION=1.10.13 \
+    GRADLE_PATH="$SRC_DIR/gradle" \
+    MAVEN_DOWNLOAD_SHA512="deaa39e16b2cf20f8cd7d232a1306344f04020e1f0fb28d35492606f647a60fe729cc40d3cba33e093a17aed41bd161fe1240556d0f1b80e773abd408686217e" \
+    GRADLE_DOWNLOADS_SHA256="7c3ad722e9b0ce8205b91560fd6ce8296ac3eadf065672242fd73c06b8eeb6ee" \
+    ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9"
 
-#=======================End of layer: ruby_runtime  =================
+ARG MAVEN_CONFIG_HOME="/root/.m2"
 
-FROM ruby_runtime AS al_v1
+# Install Maven
+RUN set -ex \
+    && mkdir -p $MAVEN_HOME \
+    && curl -LSso /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz https://apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && echo "$MAVEN_DOWNLOAD_SHA512 /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz" | sha512sum -c - \
+    && tar xzvf /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME --strip-components=1 \
+    && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
+    && /usr/sbin/update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
+    && mkdir -p $MAVEN_CONFIG_HOME \
+    # Install Gradle
+    && mkdir -p $GRADLE_PATH \
+    && wget -nv "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-all.zip" -O "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" \
+    && unzip "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" -d /usr/local \
+    && echo "$GRADLE_DOWNLOADS_SHA256 $GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" | sha256sum -c - \
+    && rm "$GRADLE_PATH/gradle-$GRADLE_VERSION-all.zip" \
+    # Install default GRADLE_VERSION to path
+    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
+    && rm -rf $GRADLE_PATH \
+    # Install Ant
+    && curl -LSso /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz https://archive.apache.org/dist/ant/binaries/apache-ant-$ANT_VERSION-bin.tar.gz  \
+    && echo "$ANT_DOWNLOAD_SHA512 /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz" | sha512sum -c - \
+    && tar -xzf /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz -C /opt \
+    && rm /var/tmp/apache-ant-$ANT_VERSION-bin.tar.gz \
+    && /usr/sbin/update-alternatives --install /usr/bin/ant ant /opt/apache-ant-$ANT_VERSION/bin/ant 10000
 
-FROM tools AS al_v1
+COPY tools/runtime_configs/maven/settings.xml $MAVEN_HOME/conf/settings.xml
+
+ENV GRADLE_USER_HOME $LAMBDA_USER_HOME/.gradle
+#=======================End of layer: java_runtime  =================
+
+FROM java_runtime AS al_v1
 
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 
