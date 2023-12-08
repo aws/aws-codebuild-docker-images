@@ -9,11 +9,14 @@
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-FROM public.ecr.aws/lambda/ruby:3.2-x86_64 AS core
+FROM public.ecr.aws/lambda/nodejs:20-x86_64 AS core
+
+# Set LD_LIBRARY_PATH to avoid Openssl issues
+ENV LD_LIBRARY_PATH=""
 
 # Install SSH, and other utilities
 RUN set -ex \
-    && yum install -y -q openssh-clients \
+    && dnf install -y openssh-clients \
     && mkdir ~/.ssh \
     && mkdir -p /opt/tools \
     && mkdir -p /codebuild/image/config \
@@ -22,9 +25,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
-    && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
-    && yum groupinstall -y -q "Development tools" \
-    && yum install -y -q \
+    && dnf install -y \
            ImageMagick asciidoc bzip2-devel cvs cvsps \
            docbook-dtds docbook-style-xsl e2fsprogs expat-devel expect fakeroot \
            glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
@@ -36,8 +37,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper \
-    && rm /etc/yum.repos.d/mono-centos7-stable.repo
+           amazon-ecr-credential-helper make gcc gettext
 
 RUN /usr/sbin/useradd codebuild-user
 
@@ -86,16 +86,18 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazon
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
 #=======================  End of layer: tools  =================
 
-FROM tools AS ruby_runtime
+FROM tools AS node_runtime
 
-ENV GEM_HOME="$LAMBDA_USER_HOME/ruby/gems"
-ENV PATH="$GEM_HOME/bin:$PATH"
+RUN dnf install -y libuv \
+    && npm install -g yarn \
+    && yarn --version \
+    && npm config --global set prefix $LAMBDA_USER_HOME/npm \
+    && rm -fr /tmp/*
 
-#=======================End of layer: ruby_runtime  =================
+ENV PATH="$LAMBDA_USER_HOME/npm/bin:$PATH"
+#=======================End of layer: node_runtime  =================
 
-FROM ruby_runtime AS al_v1
-
-FROM tools AS al_v1
+FROM node_runtime AS al_v1
 
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 
