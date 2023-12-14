@@ -17,12 +17,7 @@ RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
     && apt install -y -qq apt-transport-https gnupg ca-certificates \
-    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
-    && apt-add-repository -y ppa:git-core/ppa \
-    && apt-get update \
-    && apt-get install git=1:2.* -y -qq --no-install-recommends \
-    && git version \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
     && mkdir -p /codebuild/image/config \
@@ -48,7 +43,7 @@ RUN set -ex \
           netbase openssl patch pkg-config procps python3-configobj \
           python3-openssl rsync sgml-base sgml-data \
           tar tcl tcl8.6 tk tk-dev unzip wget xfsprogs xml-core xmlto xsltproc \
-          libzip-dev vim xvfb xz-utils zip zlib1g-dev \
+          libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_CTYPE="C.UTF-8"
@@ -60,11 +55,32 @@ RUN useradd codebuild-user
 
 FROM core AS tools
 
+# Install Git
+RUN set -ex \
+   && GIT_VERSION=2.42.1 \
+   && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
+   && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
+   && curl -L -o $GIT_TAR_FILE $GIT_SRC \
+   && tar zxf $GIT_TAR_FILE \
+   && cd git-$GIT_VERSION \
+   && make -j4 \
+   && make install prefix=/usr \
+   && cd .. && rm -rf git-$GIT_VERSION \
+   && rm -rf $GIT_TAR_FILE /tmp/*
+
+# Install AWS SAM CLI
+RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip -O /tmp/samcli.zip \
+    && unzip -q /tmp/samcli.zip -d /opt \
+    && /opt/install --update -i /usr/local/sam-cli -b /usr/local/bin \
+    && rm /tmp/samcli.zip /opt/install \
+    && rm -rf /opt/aws-sam-cli-src \
+    && sam --version
+
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.69 \
+   && STUNNEL_VERSION=5.71 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="1ff7d9f30884c75b98c8a0a4e1534fa79adcada2322635e6787337b4e38fdb81" \
+   && STUNNEL_SHA256="f023aae837c2d32deb920831a5ee1081e11c78a5d57340f8e6f0829f031017f5" \
    && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
    && ./configure \
@@ -110,7 +126,7 @@ RUN set -ex  \
 ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install 
+     && cd $N_SRC_DIR && make install
 
 #ruby
 ARG RBENV_SRC_DIR="/usr/local/rbenv"
@@ -125,7 +141,7 @@ RUN set -ex \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
 #python
-RUN curl https://pyenv.run | bash
+RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
 #php
@@ -143,13 +159,22 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.410"
+ENV DOTNET_6_SDK_VERSION="6.0.417"
+ENV DOTNET_8_SDK_VERSION="8.0.100"
+ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
+ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
+
+# Add .NET Core 8 Global Tools install folder to PATH
+RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
+     && dotnet --list-sdks \
+     && rm -rf /tmp/*
 
 # Add .NET Core 6 Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
      && dotnet --list-sdks \
-     && rm -rf /tmp/*
+     && rm -rf /tmp/* \
+     && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature 
 
 # Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE skip
@@ -179,13 +204,17 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_18_VERSION="18.16.1"
+ENV NODE_18_VERSION="18.18.2"
+ENV NODE_20_VERSION="20.9.0"
 
-RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
-     && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
-     && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-     && apt-get update && apt-get install -y -qq --no-install-recommends yarn \
-     && yarn --version \
+RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
+     && npm install --save-dev -g -f grunt-cli \
+     && npm install --save-dev -g -f webpack \
+     && npm install --save-dev -g -f yarn \
+     && n $NODE_20_VERSION && npm install --save-dev -g -f grunt \
+     && npm install --save-dev -g -f grunt-cli \
+     && npm install --save-dev -g -f webpack \
+     && npm install --save-dev -g -f yarn \
      && cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
 
 #****************      END NODEJS     ****************************************************
@@ -194,31 +223,41 @@ RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt && npm install --s
 
 ENV RUBY_32_VERSION="3.2.2"
 
-RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* \
-    && rbenv global $RUBY_32_VERSION && ruby -v
+RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_311_VERSION="3.11.4"
+ENV PYTHON_311_VERSION="3.11.6"
+ENV PYTHON_312_VERSION="3.12.0"
 
-ARG PYTHON_PIP_VERSION=23.1.1
+ARG PYTHON_PIP_VERSION=23.3.1
 ENV PYYAML_VERSION=5.4.1
+
+COPY tools/runtime_configs/python/$PYTHON_312_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_312_VERSION
+RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_312_VERSION && rm -rf /tmp/*
+RUN set -ex \
+    && pyenv global  $PYTHON_312_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 uninstall cython --yes
 
 COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
 RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSION && rm -rf /tmp/*
-RUN pyenv global $PYTHON_311_VERSION
 RUN set -ex \
+    && pyenv global  $PYTHON_311_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' aws-sam-cli boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
     && pip3 uninstall cython --yes
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_82_VERSION="8.2.7"
+ENV PHP_82_VERSION="8.2.12"
 
 COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
 RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
@@ -229,9 +268,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.5"
+ENV GOLANG_20_VERSION="1.20.11"
+ENV GOLANG_21_VERSION="1.21.4"
 
 RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
+    goenv install $GOLANG_21_VERSION && rm -rf /tmp/* && \
     goenv global  $GOLANG_20_VERSION && \
     go env -w GO111MODULE=auto
 
@@ -245,16 +286,19 @@ FROM runtimes AS runtimes_n_corretto
 ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
-ARG ANT_VERSION=1.10.13
+ENV JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
+    JDK_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
+    JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto"
+ARG ANT_VERSION=1.10.14
 ARG MAVEN_HOME="/opt/maven"
-ARG MAVEN_VERSION=3.9.2
-ARG GRADLE_VERSION=8.1.1
-ARG SBT_VERSION=1.8.3
+ARG MAVEN_VERSION=3.9.5
+ARG GRADLE_VERSION=8.3
+ARG SBT_VERSION=1.9.6
 ARG GRADLE_PATH="$SRC_DIR/gradle"
-ARG ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9"
-ARG MAVEN_DOWNLOAD_SHA512="900bdeeeae550d2d2b3920fe0e00e41b0069f32c019d566465015bdd1b3866395cbe016e22d95d25d51d3a5e614af2c83ec9b282d73309f644859bbad08b63db"
-ARG GRADLE_DOWNLOADS_SHA256="5625a0ae20fe000d9225d000b36909c7a0e0e8dda61c19b12da769add847c975 8.1.1"
-ARG SBT_DOWNLOAD_SHA256="21F4210786FD68FD15DCA3F4C8EE9CAE0DB249C54E1B0EF6E829E9FA4936423A"
+ARG ANT_DOWNLOAD_SHA512="4e74b382dd8271f9eac9fef69ba94751fb8a8356dbd995c4d642f2dad33de77bd37d4001d6c8f4f0ef6789529754968f0c1b6376668033c8904c6ec84543332a"
+ARG MAVEN_DOWNLOAD_SHA512="4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b"
+ARG GRADLE_DOWNLOADS_SHA256="bb09982fdf52718e4c7b25023d10df6d35a5fff969860bdf5a5bd27a3ab27a9e 8.3"
+ARG SBT_DOWNLOAD_SHA256="923d7917ccb99a9fd985f4abfd81caacaed42284e67d3f7696cc5239e7c595cb"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 
@@ -272,6 +316,7 @@ RUN set -ex \
     && add-apt-repository 'deb https://apt.corretto.aws stable main' \
     && apt-get update \
     && apt-get install -y -qq java-17-amazon-corretto-jdk \
+    && apt-get install -y -qq java-21-amazon-corretto-jdk \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
@@ -332,7 +377,7 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="2.17.3"
+ARG DOCKER_COMPOSE_VERSION="2.23.1"
 ARG DOCKER_BUILDX_VERSION="0.11.0"
 ARG SRC_DIR="/usr/src"
 
@@ -380,6 +425,7 @@ RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_82_VERSION
 RUN rbenv global $RUBY_32_VERSION
 RUN goenv global $GOLANG_20_VERSION
+RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config
@@ -387,6 +433,8 @@ COPY runtimes.yml /codebuild/image/config/runtimes.yml
 COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
 COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
+
+
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 

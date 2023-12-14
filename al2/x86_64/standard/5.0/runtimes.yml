@@ -3,6 +3,25 @@ version: 0.1
 runtimes:
   java:
     versions:
+      corretto21:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 21 ..."
+
+          - export JAVA_HOME="$JAVA_21_HOME"
+
+          - export JRE_HOME="$JRE_21_HOME"
+
+          - export JDK_HOME="$JDK_21_HOME"
+
+          - |-
+              for tool_path in "$JAVA_HOME"/bin/*;
+               do tool=`basename "$tool_path"`;
+                if [ $tool != 'java-rmi.cgi' ];
+                then
+                 rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                  && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+                fi;
+              done
       corretto17:
         commands:
           - echo "Installing corretto(OpenJDK) version 17 ..."
@@ -21,19 +40,27 @@ runtimes:
                rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
-            done      
+            done
   golang:
     versions:
+      1.21:
+        commands:
+          - echo "Installing Go version 1.21 ..."
+          - goenv global $GOLANG_21_VERSION
       1.20:
         commands:
           - echo "Installing Go version 1.20 ..."
-          - goenv global  $GOLANG_20_VERSION
+          - goenv global $GOLANG_20_VERSION
   python:
     versions:
+      3.12:
+        commands:
+          - echo "Installing Python version 3.12 ..."
+          - pyenv global $PYTHON_312_VERSION
       3.11:
         commands:
           - echo "Installing Python version 3.11 ..."
-          - pyenv global  $PYTHON_311_VERSION
+          - pyenv global $PYTHON_311_VERSION
   php:
     versions:
       8.2:
@@ -48,12 +75,21 @@ runtimes:
           - rbenv global $RUBY_32_VERSION
   nodejs:
     versions:
+      20:
+        commands:
+          - echo "Installing Node.js version 20 ..."
+          - n $NODE_20_VERSION
       18:
         commands:
           - echo "Installing Node.js version 18 ..."
           - n $NODE_18_VERSION
   dotnet:
     versions:
+      8.0:
+        commands:
+          - echo "Installing .NET version 8.0 ..."
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward feature
       6.0:
         commands:
           - echo "Installing .NET version 6.0 ..."
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
