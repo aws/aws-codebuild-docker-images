@@ -241,6 +241,8 @@ xvfb : /usr/share/doc/xvfb/copyright
 ----------------
 xz-utils : /usr/share/doc/xz-utils/copyright
 ----------------
+git-lfs : /usr/share/doc/git-lfs/copyright
+----------------
 zip : /usr/share/doc/zip/copyright
 ----------------
 zlib1g-dev : /usr/share/doc/zlib1g-dev/copyright
