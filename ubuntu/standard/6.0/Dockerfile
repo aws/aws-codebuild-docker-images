@@ -60,6 +60,37 @@ RUN useradd codebuild-user
 
 FROM core AS tools
 
+# Install Firefox
+RUN set -ex \
+    && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
+    && apt-get install -y -qq firefox \
+    && firefox --version
+
+# Install GeckoDriver
+RUN set -ex \
+    && apt-get install -y -qq firefox-geckodriver \
+    && geckodriver --version
+
+# Install Chrome
+RUN set -ex \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google.list \
+    && apt-get update \
+    && apt-get install -y -qq google-chrome-stable \
+    && google-chrome --version
+
+# Install ChromeDriver
+RUN set -ex \
+    && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5}'` \
+    && CHROME_DRIVER_VERSION=`wget -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION` \
+    && wget -qO /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && unzip -q /tmp/chromedriver_linux64.zip -d /opt \
+    && rm /tmp/chromedriver_linux64.zip \
+    && mv /opt/chromedriver /opt/chromedriver-$CHROME_DRIVER_VERSION \
+    && chmod 755 /opt/chromedriver-$CHROME_DRIVER_VERSION \
+    && ln -s /opt/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
+    && chromedriver --version
+
 # Install stunnel
 RUN set -ex \
    && STUNNEL_VERSION=5.69 \
@@ -110,7 +141,7 @@ RUN set -ex  \
 ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install 
+     && cd $N_SRC_DIR && make install
 
 #ruby
 ARG RBENV_SRC_DIR="/usr/local/rbenv"
