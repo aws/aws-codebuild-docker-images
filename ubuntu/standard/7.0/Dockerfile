@@ -282,6 +282,12 @@ RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
 
 FROM runtimes AS runtimes_n_corretto
 
+#****************     Pack CLI     *************************************************
+RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
+    | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+ 
+#****************     END Pack CLI     *********************************************
+ 
 #****************      JAVA     ****************************************************
 ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
