@@ -17,6 +17,8 @@ bzip2 : /usr/share/doc/bzip2/copyright
 ----------------
 bzr : /usr/share/doc/bzr/copyright
 ----------------
+pack: https://github.com/buildpacks/pack/blob/main/LICENSE
+----------------
 ca-certificates-java : /usr/share/doc/ca-certificates-java/copyright
 ----------------
 curl : /usr/share/doc/curl/copyright
