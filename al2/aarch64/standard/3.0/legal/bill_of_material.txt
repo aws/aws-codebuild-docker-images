@@ -35,6 +35,8 @@ fakeroot : GPLv3+ and LGPLv2+ and (GPL+ or Artistic)
 ----------------
 glib2-devel : LGPLv2+
 ----------------
+git-lfs : /usr/share/doc/git-lfs/copyright
+----------------
 groff : GPLv3+ and GFDL and BSD and MIT
 ----------------
 gzip : GPLv3+ and GFDL

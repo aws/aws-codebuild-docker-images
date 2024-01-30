@@ -22,25 +22,65 @@ runtimes:
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi; 
             done
+          - export GRADLE_VERSION=$GRADLE_80_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_80_VERSION/bin/gradle /usr/bin/gradle
+      corretto21:
+        commands:
+          - echo "Installing corretto (OpenJDK) version 21 ..."
+
+          - export JAVA_HOME="$JAVA_21_HOME"
+
+          - export JRE_HOME="$JRE_21_HOME"
+
+          - export JDK_HOME="$JDK_21_HOME"
+
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+          - export GRADLE_VERSION=$GRADLE_85_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_85_VERSION/bin/gradle /usr/bin/gradle
   golang:
     versions:
       1.20:
         commands:
           - echo "Installing Go version 1.20 ..."
-          - rm -rf /usr/local/go
-          - ln -s /usr/local/go12 /usr/local/go
+          - goenv global $GOLANG_20_VERSION
+      1.21:
+        commands:
+          - echo "Installing Go version 1.21 ..."
+          - goenv global $GOLANG_21_VERSION
   python:
     versions:
       3.11:
         commands:
           - echo "Installing Python version 3.11 ..."
-          - pyenv global  $PYTHON_311_VERSION
+          - pyenv global $PYTHON_311_VERSION
+      3.12:
+        commands:
+          - echo "Installing Python version 3.12 ..."
+          - pyenv global $PYTHON_312_VERSION
   php:
     versions:
       8.1:
         commands:
           - echo "Installing PHP version 8.1 ..."
           - phpenv global $PHP_81_VERSION
+      8.2:
+        commands:
+          - echo "Installing PHP version 8.2 ..."
+          - phpenv global $PHP_82_VERSION
+      8.3:
+        commands:
+          - echo "Installing PHP version 8.3 ..."
+          - phpenv global $PHP_83_VERSION
   ruby:
     versions:
       3.2:
@@ -53,6 +93,10 @@ runtimes:
         commands:
           - echo "Installing Node.js version 18 ..."
           - n $NODE_18_VERSION
+      20:
+        commands:
+          - echo "Installing Node.js version 20 ..."
+          - n $NODE_20_VERSION
   docker:
     versions:
       23:
@@ -63,3 +107,8 @@ runtimes:
       6.0:
         commands:
           - echo "Installing .NET version 6.0 ..."
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+      8.0:
+        commands:
+          - echo "Installing .NET version 8.0 ..."
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --force --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward feature
