@@ -86,6 +86,12 @@ RUN set -ex \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
+    # replace runc package to resolve CVE-2024-21626
+    && amazon-linux-extras enable docker \
+    && yum -y install runc \
+    && rm -f /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && groupadd dockremap \
     && useradd -g dockremap dockremap \

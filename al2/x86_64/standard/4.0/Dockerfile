@@ -237,7 +237,7 @@ RUN set -ex \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
 
 #DotNet 6.0
-ENV DOTNET_60_SDK_VERSION="6.0.410"
+ENV DOTNET_60_SDK_VERSION="6.0.418"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6.0 Global Tools install folder to PATH
@@ -338,6 +338,11 @@ RUN set -ex \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
+    # replace runc package to resolve CVE-2024-21626
+    && yum -y install runc \
+    && rm -f /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && groupadd dockremap \
     && useradd -g dockremap dockremap \

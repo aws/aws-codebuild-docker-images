@@ -159,8 +159,8 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.417"
-ENV DOTNET_8_SDK_VERSION="8.0.100"
+ENV DOTNET_6_SDK_VERSION="6.0.418"
+ENV DOTNET_8_SDK_VERSION="8.0.101"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
@@ -397,6 +397,11 @@ RUN set -ex \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
+    # replace runc package to resolve CVE-2024-21626
+    && apt-get update && apt-get -y install runc \
+    && rm -f /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && addgroup dockremap \
     && useradd -g dockremap dockremap \
