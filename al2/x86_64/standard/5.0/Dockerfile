@@ -244,8 +244,8 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
     && aws --version
 
 #DotNet 6.0
-ENV DOTNET_6_SDK_VERSION="6.0.418"
-ENV DOTNET_8_SDK_VERSION="8.0.101"
+ENV DOTNET_6_SDK_VERSION="6.0.419"
+ENV DOTNET_8_SDK_VERSION="8.0.201"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"

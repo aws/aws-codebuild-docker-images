@@ -237,7 +237,7 @@ RUN set -ex \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
 
 #DotNet 6.0
-ENV DOTNET_60_SDK_VERSION="6.0.418"
+ENV DOTNET_60_SDK_VERSION="6.0.419"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6.0 Global Tools install folder to PATH
