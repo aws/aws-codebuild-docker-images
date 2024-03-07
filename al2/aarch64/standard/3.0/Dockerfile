@@ -36,7 +36,7 @@ RUN set -ex \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            patch pkg-config procps python3-configobj llvm rsync sqlite-devel \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper git-lfs
+           amazon-ecr-credential-helper git-lfs runc
 
 RUN useradd codebuild-user
 
@@ -357,6 +357,10 @@ RUN set -ex \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin \
     && rm docker.tgz \
+    # replace runc package to resolve CVE-2024-21626
+    && rm /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     && docker -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && groupadd dockremap \
@@ -384,8 +388,8 @@ RUN set -ex \
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_6_SDK_VERSION="6.0.417"
-ENV DOTNET_8_SDK_VERSION="8.0.100"
+ENV DOTNET_6_SDK_VERSION="6.0.419"
+ENV DOTNET_8_SDK_VERSION="8.0.201"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"

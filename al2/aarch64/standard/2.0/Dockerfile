@@ -39,7 +39,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper
+           amazon-ecr-credential-helper runc
 
 RUN useradd codebuild-user
 
@@ -346,6 +346,10 @@ RUN set -ex \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin \
     && rm docker.tgz \
+    # replace runc package to resolve CVE-2024-21626
+    && rm /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     && docker -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && groupadd dockremap \
