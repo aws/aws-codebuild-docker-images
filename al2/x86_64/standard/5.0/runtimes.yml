@@ -43,6 +43,11 @@ runtimes:
             done
   golang:
     versions:
+      1.22:
+        commands:
+          - echo "Installing Latest Go version 1.22 ..."
+          - goenv install 1.22
+          - goenv global 1.22
       1.21:
         commands:
           - echo "Installing Go version 1.21 ..."
