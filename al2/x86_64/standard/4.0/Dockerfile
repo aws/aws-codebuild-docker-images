@@ -35,7 +35,7 @@ RUN set -ex \
            libicu-devel libjpeg-devel libpng-devel libserf libsqlite3x-devel \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
            libyaml-devel libzip-devel mariadb-devel mercurial mlocate mono-devel \
-           ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
+           ncurses-devel oniguruma-devel openssl openssl-devel perl perl-FindBin perl-DBD-SQLite \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
