@@ -269,10 +269,10 @@ ENV PATH="${PATH}:/opt/tools"
 
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y -qq software-properties-common apt-utils \
+    && apt-get install -y -qq software-properties-common apt-utils sudo \
     # Install Corretto 17
-    && wget -qO- https://apt.corretto.aws/corretto.key | apt-key add - \
-    && add-apt-repository 'deb https://apt.corretto.aws stable main' \
+    && wget -O - https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list \
     && apt-get update \
     && apt-get install -y -qq java-17-amazon-corretto-jdk \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \

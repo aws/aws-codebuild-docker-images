@@ -52,7 +52,6 @@ RUN useradd codebuild-user
 
 #=======================End of layer: core  =================
 
-
 FROM core AS tools
 
 # Install Git
@@ -115,52 +114,73 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
     && rm -rf /opt/aws \
     && aws --version
 
-# Install env tools for runtimes
+#****************     Pack CLI     *************************************************
+RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
+    | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+
+#****************     END Pack CLI     *********************************************
+
+#****************        DOCKER    *********************************************
+ARG DOCKER_BUCKET="download.docker.com"
+ARG DOCKER_CHANNEL="stable"
+ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
+ARG DOCKER_COMPOSE_VERSION="2.23.1"
+ARG DOCKER_BUILDX_VERSION="0.11.0"
+ARG SRC_DIR="/usr/src"
+
+ARG DOCKER_SHA256="544262F4A3621222AFB79960BFAD4D486935DAB80893478B5CC9CF8EBAF409AE"
+ARG DOCKER_VERSION="23.0.6"
+
+# Install Docker
+RUN set -ex \
+    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
+    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
+    && rm docker.tgz \
+    && docker -v \
+    # replace runc package to resolve CVE-2024-21626
+    && apt-get update && apt-get -y install runc \
+    && rm -f /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
+    # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    && addgroup dockremap \
+    && useradd -g dockremap dockremap \
+    && echo 'dockremap:165536:65536' >> /etc/subuid \
+    && echo 'dockremap:165536:65536' >> /etc/subgid \
+    && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
+    # Install docker compose as docker plugin and maintain docker-compose usage
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    # Ensure docker-compose and docker compose work
+    && docker-compose version \
+    && docker compose version \
+    # Add docker buildx tool
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
+    # Ensure docker-buildx works
+    && docker-buildx version \
+    && docker buildx version
+
+VOLUME /var/lib/docker
+#*********************** END  DOCKER  ****************************
+
+#=======================End of stage: tools  =================
+FROM tools AS runtimes
+
+#****************     .NET-CORE     *******************************************************
+
 # Dotnet
 ENV PATH "/root/.dotnet/:/root/.dotnet/tools/:$PATH"
 RUN set -ex  \
 && wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
 && chmod +x /usr/local/bin/dotnet-install.sh
 
-#nodejs
-ARG SRC_DIR="/usr/src"
-ARG N_SRC_DIR="$SRC_DIR/n"
-RUN git clone https://github.com/tj/n $N_SRC_DIR \
-     && cd $N_SRC_DIR && make install
-
-#ruby
-ARG RBENV_SRC_DIR="/usr/local/rbenv"
-
-ENV PATH="/root/.rbenv/shims:$RBENV_SRC_DIR/bin:$RBENV_SRC_DIR/shims:$PATH" \
-    RUBY_BUILD_SRC_DIR="$RBENV_SRC_DIR/plugins/ruby-build"
-
-RUN set -ex \
-    && git clone https://github.com/rbenv/rbenv.git $RBENV_SRC_DIR \
-    && mkdir -p $RBENV_SRC_DIR/plugins \
-    && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
-    && sh $RUBY_BUILD_SRC_DIR/install.sh
-
-#python
-RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
-ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
-
-#php
-RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
-ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
-
-#go
-RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
-ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
-ENV GOENV_DISABLE_GOPATH=1
-ENV GOPATH="/go"
-
-#=======================End of layer: tools  =================
-FROM tools AS runtimes
-
-#****************     .NET-CORE     *******************************************************
-
-ENV DOTNET_6_SDK_VERSION="6.0.419"
-ENV DOTNET_8_SDK_VERSION="8.0.201"
+ENV DOTNET_6_SDK_VERSION="6.0.420"
+ENV DOTNET_8_SDK_VERSION="8.0.203"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
@@ -174,7 +194,7 @@ RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
      && dotnet --list-sdks \
      && rm -rf /tmp/* \
-     && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature 
+     && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
 
 # Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE skip
@@ -188,9 +208,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ARG POWERSHELL_VERSION=7.3.4
+ARG POWERSHELL_VERSION=7.3.11
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=E85D5544E13A924F8B2C4A5DC2D43ABE46E46633F89E8D138D39C0AAEACB9976
+ARG POWERSHELL_DOWNLOAD_SHA=674CABD4AC9EAD59C1BBBDCE3FBE07134215128AF1C429A41FE74DDE96928BD4
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -204,8 +224,14 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_18_VERSION="18.18.2"
-ENV NODE_20_VERSION="20.9.0"
+#nodejs
+ARG SRC_DIR="/usr/src"
+ARG N_SRC_DIR="$SRC_DIR/n"
+RUN git clone https://github.com/tj/n $N_SRC_DIR \
+     && cd $N_SRC_DIR && make install
+
+ENV NODE_18_VERSION="18.19.1"
+ENV NODE_20_VERSION="20.11.1"
 
 RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
      && npm install --save-dev -g -f grunt-cli \
@@ -221,80 +247,147 @@ RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_32_VERSION="3.2.2"
+#rubyenv
+ENV RBENV_SRC_DIR="/usr/local/rbenv"
 
-RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/*
+ENV PATH="/root/.rbenv/shims:$RBENV_SRC_DIR/bin:$RBENV_SRC_DIR/shims:$PATH" \
+    RUBY_BUILD_SRC_DIR="$RBENV_SRC_DIR/plugins/ruby-build"
+
+RUN set -ex \
+    && git clone https://github.com/rbenv/rbenv.git $RBENV_SRC_DIR \
+    && mkdir -p $RBENV_SRC_DIR/plugins \
+    && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
+    && sh $RUBY_BUILD_SRC_DIR/install.sh
+
+ENV RUBY_33_VERSION="3.3.0"
+ENV RUBY_32_VERSION="3.2.3"
+ENV RUBY_31_VERSION="3.1.4"
+
+RUN rbenv install $RUBY_33_VERSION \
+    && rbenv install $RUBY_32_VERSION \
+    && rbenv install $RUBY_31_VERSION \
+    && rbenv global $RUBY_32_VERSION && ruby -v \
+    && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_311_VERSION="3.11.6"
-ENV PYTHON_312_VERSION="3.12.0"
 
-ARG PYTHON_PIP_VERSION=23.3.1
-ENV PYYAML_VERSION=5.4.1
+#Install pyenv
+RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-COPY tools/runtime_configs/python/$PYTHON_312_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_312_VERSION
-RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_312_VERSION && rm -rf /tmp/*
+ENV PYTHON_311_VERSION="3.11.8" \
+    PYTHON_312_VERSION="3.12.2" \
+    PYTHON_310_VERSION="3.10.13" \
+    PYTHON_39_VERSION="3.9.18" \
+    PYTHON_PIP_VERSION="24.0" \
+    PYYAML_VERSION="5.4.1" \
+    PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
+
+#Python312
 RUN set -ex \
-    && pyenv global  $PYTHON_312_VERSION \
+    && pyenv install $PYTHON_312_VERSION \
+    && pyenv global $PYTHON_312_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
     && pip3 uninstall cython --yes
 
-COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
-RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSION && rm -rf /tmp/*
+# Python311
 RUN set -ex \
-    && pyenv global  $PYTHON_311_VERSION \
+    && pyenv install $PYTHON_311_VERSION \
+    && pyenv global $PYTHON_311_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
     && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
     && pip3 uninstall cython --yes
+
+# Python310
+RUN set -ex \
+    && pyenv install $PYTHON_310_VERSION \
+    && pyenv global $PYTHON_310_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 uninstall cython --yes
+
+# Python39
+RUN set -ex \
+    && pyenv install $PYTHON_39_VERSION \
+    && pyenv global $PYTHON_39_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 uninstall cython --yes \
+    && rm -rf /tmp/*
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_82_VERSION="8.2.12"
 
-COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
-RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
-RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini"
+#phpenv
+RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
+ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-# Install Composer globally
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+ENV PHP_83_VERSION="8.3.4"
+ENV PHP_82_VERSION="8.2.17"
+# Set environment variables for PHP configure options
+ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
+# Set make arguments to use 4 parallel jobs.
+ENV PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
+
+RUN phpenv update \
+    && phpenv install $PHP_83_VERSION \
+    && phpenv install $PHP_82_VERSION \
+    && phpenv global $PHP_82_VERSION \
+    && php -v \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_83_VERSION/etc/conf.d/memory.ini" \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini" \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
+    && rm -rf /tmp/*
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.11"
-ENV GOLANG_21_VERSION="1.21.4"
+#goenv
+RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
+ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
+ENV GOENV_DISABLE_GOPATH=1
+ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
-    goenv install $GOLANG_21_VERSION && rm -rf /tmp/* && \
-    goenv global  $GOLANG_20_VERSION && \
-    go env -w GO111MODULE=auto
+ENV GOLANG_22_VERSION="1.22.1"
+ENV GOLANG_21_VERSION="1.21.8"
+ENV GOLANG_20_VERSION="1.20.13"
+ENV GOENV_DISABLE_GOPATH=1
+ENV GOPATH="/go"
+
+RUN goenv install $GOLANG_22_VERSION \
+    && goenv install $GOLANG_21_VERSION \
+    && goenv install $GOLANG_20_VERSION \
+    && goenv global $GOLANG_20_VERSION \
+    && go env -w GO111MODULE=auto \
+    && go get -u github.com/golang/dep/cmd/dep \
+    && rm -rf /tmp/*
 
 #****************      END GOLANG     *******************************
 
-#=======================End of layer: runtimes  =================
-
-FROM runtimes AS runtimes_n_corretto
-
-#****************     Pack CLI     *************************************************
-RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
-    | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
- 
-#****************     END Pack CLI     *********************************************
- 
 #****************      JAVA     ****************************************************
 ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
-    JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
-ENV JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
+    JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
+    JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
     JDK_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
-    JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto"
+    JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
+    JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
+    JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
+    JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto" \
+    JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
+    JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
+    JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto"
 ARG ANT_VERSION=1.10.14
 ARG MAVEN_HOME="/opt/maven"
 ARG MAVEN_VERSION=3.9.5
@@ -316,13 +409,15 @@ ENV PATH="${PATH}:/opt/tools"
 
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y -qq software-properties-common apt-utils \
+    && apt-get install -y -qq software-properties-common apt-utils sudo \
     # Install Corretto 17
-    && wget -qO- https://apt.corretto.aws/corretto.key | apt-key add - \
-    && add-apt-repository 'deb https://apt.corretto.aws stable main' \
+    && wget -O - https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list \
     && apt-get update \
     && apt-get install -y -qq java-17-amazon-corretto-jdk \
     && apt-get install -y -qq java-21-amazon-corretto-jdk \
+    && apt-get install -y -qq java-11-amazon-corretto-jdk \
+    && apt-get install -y -qq java-1.8.0-amazon-corretto-jdk \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
@@ -379,56 +474,9 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && apt-get clean
 #****************     END JAVA     ****************************************************
 
-#****************        DOCKER    *********************************************
-ARG DOCKER_BUCKET="download.docker.com"
-ARG DOCKER_CHANNEL="stable"
-ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="2.23.1"
-ARG DOCKER_BUILDX_VERSION="0.11.0"
-ARG SRC_DIR="/usr/src"
+#=======================End of stage: runtimes  =================
 
-ARG DOCKER_SHA256="544262F4A3621222AFB79960BFAD4D486935DAB80893478B5CC9CF8EBAF409AE"
-ARG DOCKER_VERSION="23.0.6"
-
-# Install Docker
-RUN set -ex \
-    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
-    && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
-    && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
-    && rm docker.tgz \
-    && docker -v \
-    # replace runc package to resolve CVE-2024-21626
-    && apt-get update && apt-get -y install runc \
-    && rm -f /usr/local/bin/runc \
-    && ln -s /usr/sbin/runc /usr/local/bin/runc \
-    && runc -v \
-    # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
-    && addgroup dockremap \
-    && useradd -g dockremap dockremap \
-    && echo 'dockremap:165536:65536' >> /etc/subuid \
-    && echo 'dockremap:165536:65536' >> /etc/subgid \
-    && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
-    # Install docker compose as docker plugin and maintain docker-compose usage
-    && mkdir -p /usr/local/lib/docker/cli-plugins \
-    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
-    && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
-    && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
-    # Ensure docker-compose and docker compose work
-    && docker-compose version \
-    && docker compose version \
-    # Add docker buildx tool
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
-    && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
-    && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
-    # Ensure docker-buildx works
-    && docker-buildx version \
-    && docker buildx version
-
-VOLUME /var/lib/docker
-#*********************** END  DOCKER  ****************************
-
-#=======================End of layer: corretto  =================
-FROM runtimes_n_corretto AS std_v7
+FROM runtimes AS std_v7
 
 # Activate runtime versions specific to image version.
 RUN n $NODE_18_VERSION
