@@ -113,7 +113,7 @@ RUN set -ex \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
 ##python
-RUN curl https://pyenv.run | bash
+RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
 ##php
