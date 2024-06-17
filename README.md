@@ -8,24 +8,24 @@ The master branch will sometimes have changes that are still in the process of b
 
 ### How to build Docker images
 
-Steps to build Standard 7.0 image
+Steps to build Standard 8.0 image
 
 * Run `git clone https://github.com/aws/aws-codebuild-docker-images.git` to download this repository to your local machine
-* Run `cd aws-codebuild-docker-images/ubuntu/standard/7.0` to change the directory in your local workspace. This is the location of the Standard 7.0 Dockerfile with Ubuntu base.
-* Run `docker build -t aws/codebuild/standard:7.0 .` to build Docker image locally
+* Run `cd aws-codebuild-docker-images/ubuntu/standard/8.0` to change the directory in your local workspace. This is the location of the Standard 8.0 Dockerfile with Ubuntu base.
+* Run `docker build -t aws/codebuild/standard:8.0 .` to build Docker image locally
 
 To poke around in the image interactively, build it and run:
-`docker run -it --entrypoint sh aws/codebuild/standard:7.0 -c bash`
+`docker run -it --entrypoint sh aws/codebuild/standard:8.0 -c bash`
 
 To let the Docker daemon start up in the container, build it and run:
-`docker run -it --privileged aws/codebuild/standard:7.0 bash`
+`docker run -it --privileged aws/codebuild/standard:8.0 bash`
 
 ```
 $ git clone https://github.com/aws/aws-codebuild-docker-images.git
 $ cd aws-codebuild-docker-images
-$ cd ubuntu/standard/7.0
-$ docker build -t aws/codebuild/standard:7.0 .
-$ docker run -it --entrypoint sh aws/codebuild/standard:7.0 -c bash
+$ cd ubuntu/standard/8.0
+$ docker build -t aws/codebuild/standard:8.0 .
+$ docker run -it --entrypoint sh aws/codebuild/standard:8.0 -c bash
 ```
 
 ### Image maintenance
@@ -37,6 +37,7 @@ The following images are actively maintained by AWS CodeBuild, and are listed in
 + [standard 5.0](ubuntu/standard/5.0)
 + [standard 6.0](ubuntu/standard/6.0)
 + [standard 7.0](ubuntu/standard/7.0)
++ [standard 8.0](ubuntu/standard/8.0)
 + [amazonlinux2-x86_64-standard:4.0](al2/x86_64/standard/4.0)
 + [amazonlinux2-x86_64-standard:5.0](al2/x86_64/standard/5.0)
 + [amazonlinux2-x86_64-standard:corretto8](al2/x86_64/standard/corretto8)
