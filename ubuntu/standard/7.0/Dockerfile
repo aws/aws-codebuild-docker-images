@@ -43,7 +43,7 @@ RUN set -ex \
           netbase openssl patch pkg-config procps python3-configobj \
           python3-openssl rsync sgml-base sgml-data \
           tar tcl tcl8.6 tk tk-dev unzip wget xfsprogs xml-core xmlto xsltproc \
-          libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs acl software-properties-common apt-utils sudo \
+          libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs acl \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_CTYPE="C.UTF-8"
@@ -175,7 +175,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
     && apt update \
-    && apt install gh -y \
+    && apt install gh -y
 #=======================End of stage: tools  =================
 FROM tools AS runtimes
 
