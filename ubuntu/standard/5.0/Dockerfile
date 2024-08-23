@@ -1,4 +1,4 @@
-# Copyright 2020-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2020-2024 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License.
 # A copy of the License is located at
@@ -19,10 +19,6 @@ RUN set -ex \
     && apt install -y -qq apt-transport-https gnupg ca-certificates \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
-    && apt-add-repository -y ppa:git-core/ppa \
-    && apt-get update \
-    && apt-get install git=1:2.* -y -qq --no-install-recommends \
-    && git version \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
     && mkdir -p /codebuild/image/config \
@@ -60,6 +56,19 @@ RUN useradd codebuild-user
 
 FROM core AS tools
 
+# Install Git
+RUN set -ex \
+   && GIT_VERSION=2.43.2 \
+   && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
+   && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
+   && curl -L -o $GIT_TAR_FILE $GIT_SRC \
+   && tar zxf $GIT_TAR_FILE \
+   && cd git-$GIT_VERSION \
+   && make -j4 \
+   && make install prefix=/usr \
+   && cd .. && rm -rf git-$GIT_VERSION \
+   && rm -rf $GIT_TAR_FILE /tmp/*
+
 # Install Firefox
 RUN set -ex \
     && apt-add-repository -y "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner" \
@@ -72,7 +81,7 @@ RUN set -ex \
     && geckodriver --version
 
 # Install Chrome
-ENV CHROME_VERSION="114.0.5735.198-1"
+ENV CHROME_VERSION="126.0.6478.55-1"
 
 RUN set -ex \
     && wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
@@ -83,14 +92,13 @@ RUN set -ex \
 
 # Install ChromeDriver
 RUN set -ex \
-    && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5}'` \
-    && CHROME_DRIVER_VERSION=`wget -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION` \
-    && wget -qO /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+    && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5"."$6}'` \
+    && wget -qO /tmp/chromedriver_linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip \
     && unzip -q /tmp/chromedriver_linux64.zip -d /opt \
     && rm /tmp/chromedriver_linux64.zip \
-    && mv /opt/chromedriver /opt/chromedriver-$CHROME_DRIVER_VERSION \
-    && chmod 755 /opt/chromedriver-$CHROME_DRIVER_VERSION \
-    && ln -s /opt/chromedriver-$CHROME_DRIVER_VERSION /usr/bin/chromedriver \
+    && mv /opt/chromedriver-linux64 /opt/chromedriver-${CHROME_VERSION} \
+    && chmod 755 /opt/chromedriver-${CHROME_VERSION} \
+    && ln -s /opt/chromedriver-${CHROME_VERSION}/chromedriver /usr/bin/chromedriver \
     && chromedriver --version
 
 # Install stunnel

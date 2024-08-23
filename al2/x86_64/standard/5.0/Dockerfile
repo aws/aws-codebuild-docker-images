@@ -36,7 +36,7 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper git-lfs \
+           amazon-ecr-credential-helper git-lfs acl \
     && rm /etc/yum.repos.d/mono-centos7-stable.repo
 
 RUN useradd codebuild-user
@@ -64,7 +64,7 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.42.1 \
+   && GIT_VERSION=2.45.2 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -106,15 +106,15 @@ RUN set -ex \
 RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
     | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
 
-#Docker 23
+#Docker 26
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="2.23.1" \
-    DOCKER_BUILDX_VERSION="0.11.0"
+    DOCKER_COMPOSE_VERSION="2.27.0" \
+    DOCKER_BUILDX_VERSION="0.14.1"
 
-ENV DOCKER_SHA256="544262F4A3621222AFB79960BFAD4D486935DAB80893478B5CC9CF8EBAF409AE"
-ENV DOCKER_VERSION="23.0.6"
+ENV DOCKER_SHA256="a9cede81aa3337f310132c2c920dba2edc8d29b7d97065b63ba41cf47ae1ca4f"
+ENV DOCKER_VERSION="26.1.4"
 
 VOLUME /var/lib/docker
 
@@ -153,6 +153,11 @@ RUN set -ex \
     # Cleanup
     && rm -rf /tmp/* /var/tmp/*
 
+# Install gh
+# See instruction: https://github.com/cli/cli/blob/trunk/docs/install_linux.md#fedora-centos-red-hat-enterprise-linux-dnf
+RUN yum -y install 'dnf-command(config-manager)' \
+    && yum config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
+    && yum -y install gh --repo gh-cli
 #=======================End of stage: tools  =================
 
 FROM tools AS runtimes
@@ -248,8 +253,9 @@ RUN sbt version -Dsbt.rootdir=true \
 #****************      NODEJS     *****************************************************
 
 ENV N_SRC_DIR="$SRC_DIR/n"
-ENV NODE_18_VERSION="18.19.1"
-ENV NODE_20_VERSION="20.11.1"
+ENV NODE_18_VERSION="18.20.3"
+ENV NODE_20_VERSION="20.14.0"
+ENV NODE_22_VERSION="22.2.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
@@ -263,8 +269,12 @@ RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
     && dnf install -y -v libuv-1.44* \
+    && n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
+    && npm install --save-dev -g -f grunt-cli \
+    && npm install --save-dev -g -f webpack \
+    && npm install --save-dev -g -f yarn \
     && cd / && rm -rf $N_SRC_DIR \
-    && rm -rf /tmp/*
+    && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
 #****************      END NODEJS     **************************************************
 
 #**************** RUBY *****************************************************************
@@ -281,9 +291,9 @@ RUN set -ex \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
-ENV RUBY_33_VERSION="3.3.0"
-ENV RUBY_32_VERSION="3.2.3"
-ENV RUBY_31_VERSION="3.1.4"
+ENV RUBY_33_VERSION="3.3.2"
+ENV RUBY_32_VERSION="3.2.4"
+ENV RUBY_31_VERSION="3.1.6"
 
 RUN rbenv install $RUBY_33_VERSION \
     && rbenv install $RUBY_32_VERSION \
@@ -298,10 +308,10 @@ RUN rbenv install $RUBY_33_VERSION \
 RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-ENV PYTHON_311_VERSION="3.11.8" \
-    PYTHON_312_VERSION="3.12.2" \
-    PYTHON_310_VERSION="3.10.13" \
-    PYTHON_39_VERSION="3.9.18" \
+ENV PYTHON_311_VERSION="3.11.9" \
+    PYTHON_312_VERSION="3.12.4" \
+    PYTHON_310_VERSION="3.10.14" \
+    PYTHON_39_VERSION="3.9.19" \
     PYTHON_PIP_VERSION=24.0 \
     PYYAML_VERSION=5.4.1 \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
@@ -354,8 +364,8 @@ RUN set -ex \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_83_VERSION="8.3.4"
-ENV PHP_82_VERSION="8.2.17"
+ENV PHP_83_VERSION="8.3.8"
+ENV PHP_82_VERSION="8.2.20"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
 # Set make arguments to use 4 parallel jobs.
@@ -380,9 +390,9 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-ENV GOLANG_22_VERSION="1.22.1"
-ENV GOLANG_21_VERSION="1.21.8"
-ENV GOLANG_20_VERSION="1.20.13"
+ENV GOLANG_22_VERSION="1.22.4"
+ENV GOLANG_21_VERSION="1.21.11"
+ENV GOLANG_20_VERSION="1.20.14"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
@@ -404,8 +414,8 @@ RUN set -ex  \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
 #DotNet 6.0
-ENV DOTNET_6_SDK_VERSION="6.0.420"
-ENV DOTNET_8_SDK_VERSION="8.0.203"
+ENV DOTNET_6_SDK_VERSION="6.0.423"
+ENV DOTNET_8_SDK_VERSION="8.0.301"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"

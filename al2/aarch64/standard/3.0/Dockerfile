@@ -32,11 +32,11 @@ RUN set -ex \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
            libyaml-devel libzip-devel mlocate \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
-           perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML \
+           perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML perl perl-FindBin \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            patch pkg-config procps python3-configobj llvm rsync sqlite-devel \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper git-lfs runc
+           amazon-ecr-credential-helper git-lfs runc acl
 
 RUN useradd codebuild-user
 
@@ -54,7 +54,7 @@ RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.42.1 \
+   && GIT_VERSION=2.45.2 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -140,12 +140,23 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscl
      && rm -rf /opt/aws \
      && aws --version
 
+## gh
+# See instruction: https://github.com/cli/cli/blob/trunk/docs/install_linux.md#fedora-centos-red-hat-enterprise-linux-dnf
+RUN yum -y install 'dnf-command(config-manager)' \
+    && yum config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo \
+    && yum -y install gh --repo gh-cli
 #=======================End of layer: tools  =================
 
 FROM tools AS runtimes_1
 
 #****************      JAVA     ****************************************************
-ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.aarch64" \
+ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
+    JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
+    JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
+    JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.aarch64" \
+    JDK_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.aarch64" \
+    JRE_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.aarch64" \
+    JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.aarch64" \
     JDK_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.aarch64" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.aarch64/jre" \
     JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
@@ -172,10 +183,14 @@ ENV JAVA_HOME="$JAVA_17_HOME" \
 
 
 RUN set -x \
+    && rpm --import https://yum.corretto.aws/corretto.key \
+    && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
     # Install Amazon Corretto 17
     # Note: We will use update-alternatives to make sure JDK17 has higher priority for all the tools
-    && yum install -yq java-17-amazon-corretto java-17-amazon-corretto-devel \
-    && yum install -yq java-21-amazon-corretto-devel \
+    && yum install -y -q java-21-amazon-corretto java-21-amazon-corretto-devel \
+    && yum install -y -q java-17-amazon-corretto java-17-amazon-corretto-devel \
+    && yum install -y -q java-11-amazon-corretto java-11-amazon-corretto-devel \
+    && yum install -y -q java-1.8.0-amazon-corretto java-1.8.0-amazon-corretto-devel \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
           update-alternatives --install /usr/bin/$tool $tool $tool_path 10000; \
@@ -248,8 +263,9 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_20_VERSION="20.10.0"
-ENV NODE_18_VERSION="18.19.0"
+ENV NODE_22_VERSION="22.2.0"
+ENV NODE_20_VERSION="20.14.0"
+ENV NODE_18_VERSION="18.20.3"
 
 RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
@@ -260,41 +276,70 @@ RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
     && dnf install -y -v libuv-1.44* \
-     && cd / && rm -rf $N_SRC_DIR; rm -rf /tmp/*
+    && n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
+    && npm install --save-dev -g -f grunt-cli \
+    && npm install --save-dev -g -f webpack \
+    && npm install --save-dev -g -f yarn \
+    && cd / && rm -rf $N_SRC_DIR \
+    && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
 
 #****************      END NODEJS     ****************************************************
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_32_VERSION="3.2.2"
+ENV RUBY_31_VERSION="3.1.6"
+ENV RUBY_32_VERSION="3.2.4"
+ENV RUBY_33_VERSION="3.3.2"
 
-RUN rbenv install $RUBY_32_VERSION && rm -rf /tmp/* \
-    && rbenv global $RUBY_32_VERSION && ruby -v
+RUN rbenv install $RUBY_33_VERSION \
+    && rbenv install $RUBY_32_VERSION \
+    && rbenv install $RUBY_31_VERSION \
+    && rbenv global $RUBY_32_VERSION && ruby -v \
+    && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_311_VERSION="3.11.7"
-ENV PYTHON_312_VERSION="3.12.1"
-ENV PYTHON_PIP_VERSION=23.3.1
+ENV PYTHON_39_VERSION="3.9.19"
+ENV PYTHON_310_VERSION="3.10.14"
+ENV PYTHON_311_VERSION="3.11.9"
+ENV PYTHON_312_VERSION="3.12.4"
+ENV PYTHON_PIP_VERSION=24.0
+ENV PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
 # Pin PyYAML at this version while installing aws-sam-cli via pip
 ENV PYYAML_VERSION=5.4.1
 
-COPY tools/runtime_configs/python/$PYTHON_312_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_312_VERSION
-RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_312_VERSION && rm -rf /tmp/*
-COPY tools/runtime_configs/python/$PYTHON_311_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_311_VERSION
-RUN env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_311_VERSION && rm -rf /tmp/*
 RUN set -ex \
+    && pyenv install $PYTHON_39_VERSION \
+    && pyenv global $PYTHON_39_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 uninstall cython --yes
+
+RUN set -ex \
+    && pyenv install $PYTHON_310_VERSION \
+    && pyenv global $PYTHON_310_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 uninstall cython --yes
+
+RUN set -ex \
+    && pyenv install $PYTHON_311_VERSION \
     && pyenv global $PYTHON_311_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==57.4.0' boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
     && pip3 uninstall cython --yes
 
 RUN set -ex \
-    && pyenv global  $PYTHON_312_VERSION \
+    && pyenv install $PYTHON_312_VERSION \
+    && pyenv global $PYTHON_312_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
@@ -306,32 +351,36 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_81_VERSION="8.1.26"
-ENV PHP_82_VERSION="8.2.13"
-ENV PHP_83_VERSION="8.3.0"
+ENV PHP_81_VERSION="8.1.28"
+ENV PHP_82_VERSION="8.2.20"
+ENV PHP_83_VERSION="8.3.8"
 
-COPY tools/runtime_configs/php/$PHP_83_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_83_VERSION
-RUN phpenv install $PHP_83_VERSION && rm -rf /tmp/* && phpenv global $PHP_83_VERSION
-RUN echo "memory_limit = -1;" >> "/root/.phpenv/versions/$PHP_83_VERSION/etc/conf.d/memory.ini"
+# Set environment variables for PHP configure options
+ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
+# Set make arguments to use 4 parallel jobs.
+ENV PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
 
-COPY tools/runtime_configs/php/$PHP_82_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_82_VERSION
-RUN phpenv install $PHP_82_VERSION && rm -rf /tmp/* && phpenv global $PHP_82_VERSION
-RUN echo "memory_limit = -1;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini"
-
-COPY tools/runtime_configs/php/$PHP_81_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_81_VERSION
-RUN phpenv install $PHP_81_VERSION; rm -rf /tmp/*; phpenv global $PHP_81_VERSION
-RUN echo "memory_limit = -1;" >> "/root/.phpenv/versions/$PHP_81_VERSION/etc/conf.d/memory.ini"
-
-# Install Composer globally
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+RUN phpenv update \
+    && phpenv install $PHP_83_VERSION \
+    && phpenv install $PHP_82_VERSION \
+    && phpenv install $PHP_81_VERSION \
+    && phpenv global $PHP_81_VERSION \
+    && php -v \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_81_VERSION/etc/conf.d/memory.ini" \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini" \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_83_VERSION/etc/conf.d/memory.ini" \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
+    && rm -rf /tmp/*
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.12"
-ENV GOLANG_21_VERSION="1.21.5"
+ENV GOLANG_20_VERSION="1.20.14"
+ENV GOLANG_21_VERSION="1.21.11"
+ENV GOLANG_22_VERSION="1.22.4"
 
-RUN goenv install $GOLANG_20_VERSION && rm -rf /tmp/* && \
-    goenv install $GOLANG_21_VERSION && rm -rf /tmp/*
+RUN goenv install $GOLANG_20_VERSION && \
+    goenv install $GOLANG_21_VERSION && \
+    goenv install $GOLANG_22_VERSION && rm -rf /tmp/*
 
 #****************      END GOLANG     ****************************************************
 
@@ -344,10 +393,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="CBA0A6D41FBDB0A00ED5D0EC4E96C60CD76D0077CEEB428E35752C8466BEDC69"
-ENV DOCKER_VERSION="23.0.6"
-ENV DOCKER_COMPOSE_VERSION="2.23.1"
-ARG DOCKER_BUILDX_VERSION="0.11.2"
+ENV DOCKER_SHA256="6f1a5fb161aef875d305ee4f79e65492b3c13e90dbe0a339df2ad6515e4f6849"
+ENV DOCKER_VERSION="26.1.4"
+ENV DOCKER_COMPOSE_VERSION="2.27.0"
+ARG DOCKER_BUILDX_VERSION="0.14.1"
 
 VOLUME /var/lib/docker
 
@@ -388,8 +437,8 @@ RUN set -ex \
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_6_SDK_VERSION="6.0.419"
-ENV DOTNET_8_SDK_VERSION="8.0.201"
+ENV DOTNET_6_SDK_VERSION="6.0.423"
+ENV DOTNET_8_SDK_VERSION="8.0.301"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
@@ -417,9 +466,7 @@ RUN set -ex \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
 
-# Install Composer globally
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
-#****************      END PHP     ****************************************************
+#****************      END DotNet     ****************************************************
 
 #===================END of runtimes_3 ==============
 FROM runtimes_3 AS aarch64_v3

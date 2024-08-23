@@ -41,6 +41,22 @@ runtimes:
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
+      default:
+        commands:
+          - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
+          - yum -y install java-$VERSION-amazon-corretto-devel
+          - export JAVA_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JRE_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JDK_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
   golang:
     versions:
       1.12:
@@ -56,6 +72,12 @@ runtimes:
       1.14:
         commands:
           - echo "Installing Go version 1.14 ..."
+      default:
+        commands:
+          - echo "Installing custom Go version $VERSION ..."
+          - rm -rf /usr/local/go
+          - goenv install $VERSION && rm -rf /tmp/*
+          - goenv global $VERSION
   python:
     versions:
       3.9:
@@ -70,6 +92,11 @@ runtimes:
         commands:
           - echo "Installing Python version 3.7 ..."
           - pyenv global  $PYTHON_37_VERSION
+      default:
+        commands:
+          - echo "Installing custom Python version $VERSION ..."
+          - pyenv install $VERSION && rm -rf /tmp/*
+          - pyenv global $VERSION
   php:
     versions:
       7.4:
@@ -80,6 +107,11 @@ runtimes:
         commands:
           - echo "Installing PHP version 7.3 ..."
           - phpenv global $PHP_73_VERSION
+      default:
+        commands:
+          - echo "Installing custom PHP version $VERSION ..."
+          - phpenv install $VERSION && rm -rf /tmp/*
+          - phpenv global $VERSION
   ruby:
     versions:
       2.6:
@@ -90,6 +122,11 @@ runtimes:
         commands:
           - echo "Installing Ruby version 2.7 ..."
           - rbenv global $RUBY_27_VERSION
+      default:
+        commands:
+          - echo "Installing custom Ruby version $VERSION ..."
+          - rbenv install $VERSION && rm -rf /tmp/*
+          - rbenv global $VERSION
   nodejs:
     versions:
       10:
@@ -100,13 +137,22 @@ runtimes:
         commands:
           - echo "Installing Node.js version 12 ..."
           - n $NODE_12_VERSION
+      default:
+        commands:
+          - echo "Installing custom Node.js version $VERSION ..."
+          - n $VERSION && rm -rf /tmp/*
   docker:
     versions:
       19:
         commands:
-          - echo "Using Docker 19"
+          - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION"
   dotnet:
     versions:
       3.1:
         commands:
           - echo "Installing .NET version 3.1 ..."
+      default:
+        commands:
+          - echo "Installing custom .Net version $VERSION ..."
+          - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $VERSION
