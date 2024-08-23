@@ -16,7 +16,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
-    && apt install -y -qq apt-transport-https gnupg ca-certificates \
+    && apt install -y -qq apt-transport-https gnupg ca-certificates sudo \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
