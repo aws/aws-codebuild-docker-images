@@ -16,7 +16,7 @@ ARG DEBIAN_FRONTEND="noninteractive"
 RUN set -ex \
     && echo 'Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/99use-gzip-compression \
     && apt-get update \
-    && apt install -y -qq apt-transport-https gnupg ca-certificates \
+    && apt install -y -qq apt-transport-https gnupg ca-certificates sudo \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
@@ -43,7 +43,7 @@ RUN set -ex \
           netbase openssl patch pkg-config procps python3-configobj \
           python3-openssl rsync sgml-base sgml-data \
           tar tcl tcl8.6 tk tk-dev unzip wget xfsprogs xml-core xmlto xsltproc \
-          libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs \
+          libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs acl \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_CTYPE="C.UTF-8"
@@ -56,7 +56,7 @@ FROM core AS tools
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.42.1 \
+   && GIT_VERSION=2.45.2 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -124,12 +124,12 @@ RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pac
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="2.23.1"
-ARG DOCKER_BUILDX_VERSION="0.11.0"
+ARG DOCKER_COMPOSE_VERSION="2.27.0"
+ARG DOCKER_BUILDX_VERSION="0.14.1"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="544262F4A3621222AFB79960BFAD4D486935DAB80893478B5CC9CF8EBAF409AE"
-ARG DOCKER_VERSION="23.0.6"
+ARG DOCKER_SHA256="a9cede81aa3337f310132c2c920dba2edc8d29b7d97065b63ba41cf47ae1ca4f"
+ARG DOCKER_VERSION="26.1.4"
 
 # Install Docker
 RUN set -ex \
@@ -168,6 +168,14 @@ RUN set -ex \
 VOLUME /var/lib/docker
 #*********************** END  DOCKER  ****************************
 
+# Install gh
+# Instruction: https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian-ubuntu-linux-raspberry-pi-os-apt
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+    && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update \
+    && apt install gh -y
 #=======================End of stage: tools  =================
 FROM tools AS runtimes
 
@@ -179,8 +187,8 @@ RUN set -ex  \
 && wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
 && chmod +x /usr/local/bin/dotnet-install.sh
 
-ENV DOTNET_6_SDK_VERSION="6.0.420"
-ENV DOTNET_8_SDK_VERSION="8.0.203"
+ENV DOTNET_6_SDK_VERSION="6.0.423"
+ENV DOTNET_8_SDK_VERSION="8.0.301"
 ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
@@ -230,14 +238,19 @@ ARG N_SRC_DIR="$SRC_DIR/n"
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
      && cd $N_SRC_DIR && make install
 
-ENV NODE_18_VERSION="18.19.1"
-ENV NODE_20_VERSION="20.11.1"
+ENV NODE_18_VERSION="18.20.3"
+ENV NODE_20_VERSION="20.14.0"
+ENV NODE_22_VERSION="22.2.0"
 
 RUN  n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
      && npm install --save-dev -g -f grunt-cli \
      && npm install --save-dev -g -f webpack \
      && npm install --save-dev -g -f yarn \
      && n $NODE_20_VERSION && npm install --save-dev -g -f grunt \
+     && npm install --save-dev -g -f grunt-cli \
+     && npm install --save-dev -g -f webpack \
+     && npm install --save-dev -g -f yarn \
+     && n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
      && npm install --save-dev -g -f grunt-cli \
      && npm install --save-dev -g -f webpack \
      && npm install --save-dev -g -f yarn \
@@ -259,9 +272,9 @@ RUN set -ex \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
-ENV RUBY_33_VERSION="3.3.0"
-ENV RUBY_32_VERSION="3.2.3"
-ENV RUBY_31_VERSION="3.1.4"
+ENV RUBY_33_VERSION="3.3.2"
+ENV RUBY_32_VERSION="3.2.4"
+ENV RUBY_31_VERSION="3.1.6"
 
 RUN rbenv install $RUBY_33_VERSION \
     && rbenv install $RUBY_32_VERSION \
@@ -277,10 +290,10 @@ RUN rbenv install $RUBY_33_VERSION \
 RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-ENV PYTHON_311_VERSION="3.11.8" \
-    PYTHON_312_VERSION="3.12.2" \
-    PYTHON_310_VERSION="3.10.13" \
-    PYTHON_39_VERSION="3.9.18" \
+ENV PYTHON_311_VERSION="3.11.9" \
+    PYTHON_312_VERSION="3.12.4" \
+    PYTHON_310_VERSION="3.10.14" \
+    PYTHON_39_VERSION="3.9.19" \
     PYTHON_PIP_VERSION="24.0" \
     PYYAML_VERSION="5.4.1" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
@@ -334,8 +347,8 @@ RUN set -ex \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_83_VERSION="8.3.4"
-ENV PHP_82_VERSION="8.2.17"
+ENV PHP_83_VERSION="8.3.8"
+ENV PHP_82_VERSION="8.2.20"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
 # Set make arguments to use 4 parallel jobs.
@@ -359,9 +372,9 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-ENV GOLANG_22_VERSION="1.22.1"
-ENV GOLANG_21_VERSION="1.21.8"
-ENV GOLANG_20_VERSION="1.20.13"
+ENV GOLANG_22_VERSION="1.22.4"
+ENV GOLANG_21_VERSION="1.21.11"
+ENV GOLANG_20_VERSION="1.20.14"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 

@@ -11,8 +11,6 @@
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2 AS core
 
-ENV EPEL_REPO="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-
 # Install git, SSH, and other utilities
 RUN set -ex \
     && yum install -yq openssh-clients \
@@ -21,7 +19,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && yum install -yq $EPEL_REPO \
+    && amazon-linux-extras install epel -y \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && amazon-linux-extras enable corretto8 \
@@ -36,7 +34,7 @@ RUN set -ex \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
            libyaml-devel libzip-devel mariadb-devel mlocate \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
-           perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
+           perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML perl perl-FindBin \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
            amazon-ecr-credential-helper runc
@@ -120,6 +118,12 @@ ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
+##go
+RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
+ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
+ENV GOENV_DISABLE_GOPATH=1
+ENV GOPATH="/go"
+
 #=======================End of layer: tools  =================
 
 FROM tools AS runtimes_1
@@ -149,6 +153,9 @@ ENV JAVA_HOME="$JAVA_11_HOME" \
     JRE_HOME="$JRE_11_HOME"
 
 RUN set -ex \
+    && yum -y install sudo \
+    && sudo rpm --import https://yum.corretto.aws/corretto.key \
+    && sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
     # Install Amazon Corretto 8
     && yum install -yq java-1.8.0-amazon-corretto-devel \
     # Ensure Java cacerts symlink points to valid location
