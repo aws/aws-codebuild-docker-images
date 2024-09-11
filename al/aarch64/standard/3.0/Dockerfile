@@ -377,10 +377,12 @@ RUN phpenv update \
 ENV GOLANG_20_VERSION="1.20.14"
 ENV GOLANG_21_VERSION="1.21.11"
 ENV GOLANG_22_VERSION="1.22.4"
+ENV GOLANG_23_VERSION="1.23.1"
 
 RUN goenv install $GOLANG_20_VERSION && \
     goenv install $GOLANG_21_VERSION && \
-    goenv install $GOLANG_22_VERSION && rm -rf /tmp/*
+    goenv install $GOLANG_22_VERSION && \
+    goenv install $GOLANG_23_VERSION && rm -rf /tmp/*
 
 #****************      END GOLANG     ****************************************************
 
