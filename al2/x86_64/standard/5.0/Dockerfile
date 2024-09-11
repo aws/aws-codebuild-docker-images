@@ -390,13 +390,15 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
+ENV GOLANG_23_VERSION="1.23.1"
 ENV GOLANG_22_VERSION="1.22.4"
 ENV GOLANG_21_VERSION="1.21.11"
 ENV GOLANG_20_VERSION="1.20.14"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_22_VERSION \
+RUN goenv install $GOLANG_23_VERSION \
+    && goenv install $GOLANG_22_VERSION \
     && goenv install $GOLANG_21_VERSION \
     && goenv install $GOLANG_20_VERSION \
     && goenv global $GOLANG_20_VERSION \
