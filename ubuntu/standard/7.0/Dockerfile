@@ -483,8 +483,7 @@ RUN set -ex \
 ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version -Dsbt.rootdir=true
 # Cleanup
-RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && apt-get clean
+RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* && apt-get clean && apt-get update
 #****************     END JAVA     ****************************************************
 
 #=======================End of stage: runtimes  =================

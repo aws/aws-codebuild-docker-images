@@ -25,14 +25,11 @@ runtimes:
           - |
             if [ "$VERSION" = "8" ]; then
               JAVA_VERSION="1.8.0"
-              JAVA_HOME="/usr/lib/jvm/java-$JAVA_VERSION-amazon-corretto.x86_64"
-            else
-              JAVA_HOME="/usr/lib/jvm/java-$JAVA_VERSION-amazon-corretto"
             fi
-          - export JAVA_HOME
+          - export JAVA_HOME="/usr/lib/jvm/java-$JAVA_VERSION-amazon-corretto"
           - export JRE_HOME=$JAVA_HOME
           - export JDK_HOME=$JAVA_HOME
-          - yum -y install java-$JAVA_VERSION-amazon-corretto-devel
+          - yum --disablerepo="*" --enablerepo="AmazonCorretto" -y install java-$JAVA_VERSION-amazon-corretto-devel
           - |
             for tool_path in "$JAVA_HOME"/bin/*; do
               tool=`basename "$tool_path"`

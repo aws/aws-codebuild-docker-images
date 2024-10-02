@@ -66,10 +66,10 @@ runtimes:
       default:
         commands:
           - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
-          - yum -y install java-$VERSION-amazon-corretto-devel.x86_64
           - export JAVA_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
-          - export JRE_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
-          - export JDK_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JRE_HOME=$JAVA_HOME
+          - export JDK_HOME=$JAVA_HOME
+          - yum --disablerepo="*" --enablerepo="AmazonCorretto" -y install java-$VERSION-amazon-corretto-devel
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
