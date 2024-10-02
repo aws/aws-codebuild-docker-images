@@ -3,7 +3,6 @@ version: 0.1
 runtimes:
   java:
     versions:
-
       corretto21:
         commands:
           - echo "Installing corretto(OpenJDK) version 21 ..."
@@ -85,6 +84,10 @@ runtimes:
             done
   golang:
     versions:
+      1.23:
+        commands:
+          - echo "Installing Go version 1.23 ..."
+          - goenv global $GOLANG_23_VERSION
       1.22:
         commands:
           - echo "Installing Go version 1.22 ..."
