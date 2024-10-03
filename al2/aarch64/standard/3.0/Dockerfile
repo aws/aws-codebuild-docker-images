@@ -36,7 +36,9 @@ RUN set -ex \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            patch pkg-config procps python3-configobj llvm rsync sqlite-devel \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper git-lfs runc acl
+           amazon-ecr-credential-helper git-lfs runc acl \
+    && mkdir ~/.docker \
+    && echo '{"credsStore": "ecr-login"}' > ~/.docker/config.json
 
 RUN useradd codebuild-user
 
