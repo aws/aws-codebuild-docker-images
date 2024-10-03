@@ -37,7 +37,9 @@ RUN set -ex \
            perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML perl perl-FindBin \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper runc
+           amazon-ecr-credential-helper runc \
+    && mkdir ~/.docker \
+    && echo '{"credsStore": "ecr-login"}' > ~/.docker/config.json
 
 RUN useradd codebuild-user
 

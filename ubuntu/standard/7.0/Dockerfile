@@ -26,7 +26,7 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && apt-get install -y -qq --no-install-recommends \
-          apt-utils asciidoc autoconf automake build-essential bzip2 \
+          amazon-ecr-credential-helper apt-utils asciidoc autoconf automake build-essential bzip2 \
           bzr curl dirmngr docbook-xml docbook-xsl dpkg-dev \
           e2fsprogs expect fakeroot file g++ gcc gettext gettext-base \
           groff gzip iptables jq less libapr1 libaprutil1 \
@@ -44,6 +44,8 @@ RUN set -ex \
           python3-openssl rsync sgml-base sgml-data \
           tar tcl tcl8.6 tk tk-dev unzip wget xfsprogs xml-core xmlto xsltproc \
           libzip-dev vim xvfb xz-utils zip zlib1g-dev git-lfs acl \
+    && mkdir ~/.docker \
+    && echo '{"credsStore": "ecr-login"}' > ~/.docker/config.json \
     && rm -rf /var/lib/apt/lists/*
 
 ENV LC_CTYPE="C.UTF-8"
