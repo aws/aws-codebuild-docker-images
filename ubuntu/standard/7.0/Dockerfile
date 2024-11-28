@@ -11,6 +11,7 @@
 FROM public.ecr.aws/ubuntu/ubuntu:22.04 AS core
 
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG BUILDARCH
 
 # Install git, SSH, and other utilities
 RUN set -ex \
@@ -102,13 +103,15 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazon
 RUN set -ex \
     && mkdir /tmp/ssm \
     && cd /tmp/ssm \
-    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/latest/debian_amd64/amazon-ssm-agent.deb \
+    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/latest/debian_$BUILDARCH/amazon-ssm-agent.deb \
     && dpkg -i amazon-ssm-agent.deb
 
 # Install AWS CLI v2
 # https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
-RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip \
-    && unzip -q /tmp/awscliv2.zip -d /opt \
+RUN [ "$BUILDARCH" = "arm64" ] \
+    &&  curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip \
+    ||  curl https://awscli.amazonaws.com/awscli-exe-linux-$BUILDARCH.zip -o /tmp/awscliv2.zip \
+    &&  unzip -q /tmp/awscliv2.zip -d /opt \
     && /opt/aws/install --update -i /usr/local/aws-cli -b /usr/local/bin \
     && rm /tmp/awscliv2.zip \
     && rm -rf /opt/aws \
@@ -434,7 +437,7 @@ RUN set -ex \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
-    && dpkg --add-architecture i386 \
+    && dpkg --add-architecture $BUILDARCH \
     && apt-get update \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
