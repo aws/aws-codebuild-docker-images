@@ -87,6 +87,10 @@ runtimes:
             done
   golang:
     versions:
+      1.23:
+        commands:
+          - echo "Installing Go version 1.23 ..."
+          - goenv global $GOLANG_23_VERSION
       1.22:
         commands:
           - echo "Installing Go version 1.22 ..."
