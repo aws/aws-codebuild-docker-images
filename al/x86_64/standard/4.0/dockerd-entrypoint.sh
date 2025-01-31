@@ -1,6 +1,16 @@
 #!/bin/sh
 set -e
 
+if [ "$CODEBUILD_GPU_BUILD" = "true" ]; then
+  mkdir -p /etc/docker
+  echo "{}" >> /etc/docker/daemon.json
+  curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+  yum install -y nvidia-container-toolkit
+  nvidia-ctk runtime configure --runtime=docker
+  export NVIDIA_VISIBLE_DEVICES=all
+  export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+fi
+
 /usr/local/bin/dockerd \
 	--host=unix:///var/run/docker.sock \
 	--host=tcp://127.0.0.1:2375 \

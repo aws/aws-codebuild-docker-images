@@ -81,6 +81,10 @@ runtimes:
             done
   golang:
     versions:
+      1.23:
+        commands:
+          - echo "Installing Go version 1.23 ..."
+          - goenv global $GOLANG_23_VERSION
       1.22:
         commands:
           - echo "Installing Go version 1.22 ..."
@@ -100,6 +104,10 @@ runtimes:
           - goenv global $VERSION
   python:
     versions:
+      3.13:
+        commands:
+          - echo "Installing Python version 3.13 ..."
+          - pyenv global $PYTHON_313_VERSION
       3.12:
         commands:
           - echo "Installing Python version 3.12 ..."
@@ -138,6 +146,10 @@ runtimes:
           - phpenv global $VERSION
   ruby:
     versions:
+      3.4:
+        commands:
+          - echo "Installing Ruby version 3.4 ..."
+          - rbenv global $RUBY_34_VERSION
       3.3:
         commands:
           - echo "Installing Ruby version 3.3 ..."
@@ -160,7 +172,7 @@ runtimes:
       22:
         commands:
           - echo "Installing Node.js version 22 ..."
-          - n $NODE_22_VERSION      
+          - n $NODE_22_VERSION
       20:
         commands:
           - echo "Installing Node.js version 20 ..."
@@ -172,7 +184,7 @@ runtimes:
       default:
         commands:
           - echo "Installing custom Node.js version $VERSION ..."
-          - n $VERSION && rm -rf /tmp/*
+          - n --no-preserve $VERSION && rm -rf /tmp/*
   dotnet:
     versions:
       8.0:

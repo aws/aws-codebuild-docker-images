@@ -7,19 +7,29 @@ ImageMagick : ImageMagick
 ----------------
 asciidoc : GPL+ and GPLv2+
 ----------------
+bison : GPL
+----------------
+brotli : MIT
+----------------
 bzip2-devel : BSD
 ----------------
 bzr : GPLv2+
 ----------------
 bzrtools : GPLv2+
 ----------------
+chromedriver : 3-clause BSD
+----------------
 chromium : BSD and LGPLv2+ and ASL 2.0 and IJG and MIT and GPLv2+ and ISC and OpenSSL and (MPLv1.1 or GPLv2 or LGPLv2)
+----------------
+coreutils : GPL
 ----------------
 cvs : BSD and GPL+ and GPLv2+ and LGPLv2+ and zlib and Public Domain
 ----------------
 cvsps : GPL+
 ----------------
 dbus-glib-devel : AFL and GPLv2+
+----------------
+dnsutils : MPL-2.0 and ISC and BSD-2-clause and BSD-3-clause
 ----------------
 docbook-dtds : Copyright only
 ----------------
@@ -35,9 +45,19 @@ expect : Public Domain
 ----------------
 fakeroot : GPLv3+ and LGPLv2+ and (GPL+ or Artistic)
 ----------------
+flex : BSD
+----------------
+ftp : GPL
+----------------
+geckodriver : Mozilla Public License 2.0 https://github.com/mozilla/geckodriver/blob/master/LICENSE
+----------------
 glib2-devel : LGPLv2+
 ----------------
+glibc-all-langpacks : LGPLv2+ and LGPLv2+ with exceptions and GPLv2+ and GPLv2+ with exceptions and BSD and Inner-Net and ISC and Public Domain and GFDL
+----------------
 git-lfs : /usr/share/doc/git-lfs/copyright
+----------------
+gnupg2 : GPL-3+
 ----------------
 groff : GPLv3+ and GFDL and BSD and MIT
 ----------------
@@ -48,6 +68,8 @@ gzip : GPLv3+ and GFDL
 icu : MIT and UCD and Public Domain
 ----------------
 iptables : GPLv2
+----------------
+iputils : BSD-3-Clause and GPLv2+
 ----------------
 pack: https://github.com/buildpacks/pack/blob/main/LICENSE
 ----------------
@@ -77,6 +99,8 @@ libicu-devel : MIT and UCD and Public Domain
 ----------------
 libpng-devel : zlib
 ----------------
+libsecret-devel : LGPLv2+
+----------------
 libserf : ASL 2.0
 ----------------
 libsqlite3x-devel : zlib
@@ -86,6 +110,8 @@ libtidy-devel : W3C
 libunwind : BSD
 ----------------
 libwebp-devel : BSD
+----------------
+libxkbfile-devel : MIT-open-group AND HPND AND SMLNJ
 ----------------
 libxml2-devel : MIT
 ----------------
@@ -97,13 +123,23 @@ libyaml-devel : MIT
 ----------------
 libzip-devel : BSD
 ----------------
+lz4 : GPLv2+ and BSD
+----------------
+m4 : GPLv3+
+----------------
+make : GPLv3+
+----------------
 mariadb-devel : GPLv2 with exceptions and LGPLv2 and BSD
 ----------------
 mercurial : GPLv2+
 ----------------
+mesa-libgbm-devel : MIT AND BSD-3-Clause AND SGI-B-2.0
+----------------
 mlocate : GPLv2
 ----------------
 mono-devel : LGPL-2.1
+----------------
+net-tools : GPLv2+
 ----------------
 ncurses-devel : MIT
 ----------------
@@ -114,6 +150,12 @@ openssh-clients : BSD
 openssl : OpenSSL
 ----------------
 openssl-devel : OpenSSL
+----------------
+p7zip p7zip-plugins : LGPLv2 and (LGPLv2+ or CPL)
+----------------
+parallel : GPLv3+
+----------------
+patchelf : GPLv3+
 ----------------
 perl-DBD-SQLite : GPL+ or Artistic
 ----------------
@@ -127,6 +169,8 @@ perl-TimeDate : GPL+ or Artistic
 ----------------
 perl-YAML-LibYAML : GPL+ or Artistic
 ----------------
+pigz : zlib
+----------------
 postgresql-devel : PostgreSQL
 ----------------
 procps-ng : GPL+ and GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+
@@ -135,17 +179,37 @@ python-configobj : BSD
 ----------------
 readline-devel : GPLv3+
 ----------------
+rpm : GPLv2+
+----------------
 rsync : GPLv3+
 ----------------
 sbt : BSD
 ----------------
+selenium : Apache License 2.0 https://github.com/SeleniumHQ/selenium/blob/trunk/LICENSE
+----------------
 sgml-common : GPL+
 ----------------
+sphinx : GPLv2+
+----------------
+sshpass : GPLv2
+----------------
+subversion : ASL 2.0
+----------------
 subversion-perl : ASL 2.0
+----------------
+sudo : ISC
+----------------
+swig : GPL-3.0-or-later AND BSD-3-Clause
 ----------------
 tar : GPLv3+
 ----------------
 tcl : TCL
+----------------
+telnet : BSD
+----------------
+texinfo : GPLv3+
+----------------
+time : GPLv3+ and GFDL
 ----------------
 tk : TCL
 ----------------
@@ -159,9 +223,15 @@ xmlto : GPLv2+
 ----------------
 xorg-x11-server-Xvfb : MIT and GPLv2
 ----------------
+xorriso : GPL-2.0-or-later
+----------------
+xz : GPLv2+ and Public Domain
+----------------
 xz-devel : LGPLv2+
 ----------------
 yarn : BSD
+----------------
+zip : BSD
 ----------------
 ruby	:https://www.ruby-lang.org/en/about/license.txt
 ----------------
