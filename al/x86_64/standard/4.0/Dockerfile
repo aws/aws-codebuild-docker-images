@@ -133,9 +133,9 @@ FROM tools AS runtimes_1
 #****************     Pack CLI     *************************************************
 RUN (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.32.1/pack-v0.32.1-linux.tgz" \
     | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
- 
+
 #****************     END Pack CLI     *********************************************
- 
+
 #****************      JAVA     ****************************************************
 
 ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
@@ -143,14 +143,14 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.13 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.2 \
-    INSTALLED_GRADLE_VERSIONS="7.6.1" \
-    GRADLE_VERSION=7.6.1 \
+    MAVEN_VERSION=3.9.5 \
+    INSTALLED_GRADLE_VERSIONS="7.6.2" \
+    GRADLE_VERSION=7.6.2 \
     SBT_VERSION=1.8.3 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9" \
-    MAVEN_DOWNLOAD_SHA512="900bdeeeae550d2d2b3920fe0e00e41b0069f32c019d566465015bdd1b3866395cbe016e22d95d25d51d3a5e614af2c83ec9b282d73309f644859bbad08b63db" \
-    GRADLE_DOWNLOADS_SHA256="518a863631feb7452b8f1b3dc2aaee5f388355cc3421bbd0275fbeadd77e84b2 7.6.1" \
+    MAVEN_DOWNLOAD_SHA512="4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b" \
+    GRADLE_DOWNLOADS_SHA256="5861dcc093556fef71cdde8cbae9887be70a8bf40e0f5856b61181ae92dccf33 7.6.2" \
     SBT_DOWNLOAD_SHA256="21F4210786FD68FD15DCA3F4C8EE9CAE0DB249C54E1B0EF6E829E9FA4936423A" \
     LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 

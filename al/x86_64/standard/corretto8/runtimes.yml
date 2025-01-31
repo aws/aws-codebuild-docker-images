@@ -6,4 +6,3 @@ runtimes:
       corretto8:
         commands:
           - echo "Installing corretto(OpenJDK) version 8 ..."
-
