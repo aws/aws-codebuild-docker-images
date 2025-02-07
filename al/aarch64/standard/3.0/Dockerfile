@@ -290,11 +290,13 @@ RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
 ENV RUBY_31_VERSION="3.1.6"
 ENV RUBY_32_VERSION="3.2.4"
 ENV RUBY_33_VERSION="3.3.2"
+ENV RUBY_34_VERSION="3.4.1"
 
-RUN rbenv install $RUBY_33_VERSION \
+RUN rbenv install $RUBY_34_VERSION \
+    && rbenv install $RUBY_33_VERSION \
     && rbenv install $RUBY_32_VERSION \
     && rbenv install $RUBY_31_VERSION \
-    && rbenv global $RUBY_32_VERSION && ruby -v \
+    && rbenv global $RUBY_34_VERSION && ruby -v \
     && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
