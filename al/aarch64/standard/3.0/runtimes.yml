@@ -146,6 +146,10 @@ runtimes:
           - phpenv global $VERSION
   ruby:
     versions:
+      3.4:
+        commands:
+          - echo "Installing Ruby version 3.4 ..."
+          - rbenv global $RUBY_34_VERSION
       3.3:
         commands:
           - echo "Installing Ruby version 3.3 ..."
