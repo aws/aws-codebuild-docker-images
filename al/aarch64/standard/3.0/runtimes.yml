@@ -3,7 +3,6 @@ version: 0.1
 runtimes:
   java:
     versions:
-
       corretto21:
         commands:
           - echo "Installing corretto(OpenJDK) version 21 ..."
@@ -19,9 +18,9 @@ runtimes:
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
-          - export GRADLE_VERSION=$GRADLE_85_VERSION
+          - export GRADLE_VERSION=$GRADLE_812_VERSION
           - unlink /usr/bin/gradle
-          - ln -s /usr/local/gradle-$GRADLE_85_VERSION/bin/gradle /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_812_VERSION/bin/gradle /usr/bin/gradle
       corretto17:
         commands:
           - echo "Installing corretto(OpenJDK) version 17 ..."
@@ -85,6 +84,10 @@ runtimes:
             done
   golang:
     versions:
+      1.23:
+        commands:
+          - echo "Installing Go version 1.23 ..."
+          - goenv global $GOLANG_23_VERSION
       1.22:
         commands:
           - echo "Installing Go version 1.22 ..."
@@ -104,6 +107,10 @@ runtimes:
           - goenv global $VERSION
   python:
     versions:
+      3.13:
+        commands:
+          - echo "Installing Python version 3.13 ..."
+          - pyenv global $PYTHON_313_VERSION
       3.12:
         commands:
           - echo "Installing Python version 3.12 ..."
@@ -146,6 +153,10 @@ runtimes:
           - phpenv global $VERSION
   ruby:
     versions:
+      3.4:
+        commands:
+          - echo "Installing Ruby version 3.4 ..."
+          - rbenv global $RUBY_34_VERSION
       3.3:
         commands:
           - echo "Installing Ruby version 3.3 ..."
@@ -180,7 +191,7 @@ runtimes:
       default:
         commands:
           - echo "Installing custom Node.js version $VERSION ..."
-          - n $VERSION && rm -rf /tmp/*
+          - n --no-preserve $VERSION && rm -rf /tmp/*
   docker:
     versions:
       23:

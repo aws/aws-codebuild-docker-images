@@ -10,14 +10,16 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2 AS core
+{{{ imagebuilder:environments }}}
+{{{ imagebuilder:components }}}
 
 # Install git, SSH, and other utilities
 RUN set -ex \
     && yum install -yq openssh-clients \
     && mkdir ~/.ssh \
     && touch ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H github.com >> ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa,dsa -H bitbucket.org >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
     && amazon-linux-extras install epel -y \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
@@ -47,7 +49,7 @@ FROM core AS tools
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.27.0 \
+   && GIT_VERSION=2.39.1 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -60,10 +62,10 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.56 \
+   && STUNNEL_VERSION=5.68 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="7384bfb356b9a89ddfee70b5ca494d187605bb516b4fff597e167f97e2236b22" \
-   && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR \
+   && STUNNEL_SHA256="dcd895ab088b043d4e0bafa8b934e7ab3e697293828dbe9fce46cb7609a7dacf" \
+   && curl -o $STUNNEL_TAR https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/$STUNNEL_TAR \
    && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum -c - \
    && tar xvfz $STUNNEL_TAR \
    && cd stunnel-$STUNNEL_VERSION \
@@ -135,14 +137,14 @@ ENV JAVA_11_HOME="/usr/lib/jvm/java-11-amazon-corretto.aarch64" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64/jre" \
-    ANT_VERSION=1.10.8 \
+    ANT_VERSION=1.10.13 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.6.3 \
     INSTALLED_GRADLE_VERSIONS="5.6.4 6.5" \
     GRADLE_VERSION=6.5 \
     SBT_VERSION=1.3.13 \
     GRADLE_PATH="$SRC_DIR/gradle" \
-    ANT_DOWNLOAD_SHA512="4d80dc6ba23eeec7769085ddb00261b7480b596b56c6e69aa221391acbfb7338eb5855179c88222c8021095ef1f64f43caf2b4f90e8305d7c3128026d4258d06" \
+    ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9" \
     MAVEN_DOWNLOAD_SHA512="c35a1803a6e70a126e80b2b3ae33eed961f83ed74d18fcd16909b2d44d7dada3203f1ffe726c17ef8dcca2dcaa9fca676987befeadc9b9f759967a8cb77181c0" \
     GRADLE_DOWNLOADS_SHA256="c9910513d0eed63cd8f5c7fec4cb4a05731144770104a0871234a4edc3ba3cef 6.5\nabc10bcedb58806e8654210f96031db541bcd2d6fc3161e81cb0572d6a15e821 5.6.4" \
     SBT_DOWNLOAD_SHA256="854154de27a7d8c13b5a0f9a297cd1f254cc13b44588dae507e5d4fb2741bd22"
@@ -213,16 +215,16 @@ ENV PATH "/usr/local/bin/sbt/bin:$PATH"
 RUN sbt version
 # Cleanup
 RUN rm -fr /tmp/* /var/tmp/* \
-    && yum clean all
+     && yum clean all
 #****************     END JAVA     ****************************************************
 
 
 #****************     PowerShell     *******************************************************
 
 # Install Powershell Core
-ENV POWERSHELL_VERSION 7.0.2
+ENV POWERSHELL_VERSION 7.0.13
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-arm64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA 8677301996b5335b872d267d41f588c145eeffa6b9736962530480b4d15cc295
+ENV POWERSHELL_DOWNLOAD_SHA 033A7858954F9BD9A8E15116FC5AC5F2526FDCE7CEC5A5BC51D5751B87B249E7
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -250,19 +252,19 @@ RUN  n $NODE_10_VERSION && npm install --save-dev -g -f grunt && npm install --s
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_26_VERSION="2.6.6"
+ENV RUBY_26_VERSION="2.6.10"
 
 RUN rbenv install $RUBY_26_VERSION; rm -rf /tmp/*; rbenv global $RUBY_26_VERSION;ruby -v
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_37_VERSION="3.7.10"
+ENV PYTHON_37_VERSION="3.7.16"
 ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
-ENV DOCKER_COMPOSE_VERSION="1.26.0"
+ENV DOCKER_COMPOSE_VERSION="1.26.2"
 
-COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
+RUN cat tools/runtime_configs/python/$PYTHON_37_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
@@ -275,9 +277,9 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
-ENV PHP_73_VERSION="7.3.19"
+ENV PHP_73_VERSION="7.3.33"
 
-COPY tools/runtime_configs/php/$PHP_73_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
+RUN cat tools/runtime_configs/php/$PHP_73_VERSION > /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
 RUN phpenv install $PHP_73_VERSION; rm -rf /tmp/*; phpenv global $PHP_73_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_73_VERSION/etc/conf.d/memory.ini"
 
@@ -290,8 +292,8 @@ ENV GOPATH="/go" \
     DEP_VERSION="0.5.4" \
     DEP_BINARY="dep-linux-arm64"
 
-ENV GOLANG_14_VERSION="1.14.7"
-ENV GOLANG_14_DOWNLOAD_SHA256="fe5b6f6e441f3cb7b53ebf1a010bbebcb720ac98124984cfe2e51d72b8a58c71"
+ENV GOLANG_14_VERSION="1.14.15"
+ENV GOLANG_14_DOWNLOAD_SHA256="4d964166a189c22032521c63935437c304bb7f01673b196898cff525897a1c27"
 
 RUN set -ex \
     && mkdir -p "$GOPATH/src" "$GOPATH/bin" \
@@ -342,8 +344,8 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7"
-ENV DOCKER_VERSION="20.10.9"
+ENV DOCKER_SHA256="2C75CD6C3DC9B81CB5BDE664C882E4339A2054E09CF09606F9F7DD6970E7F078"
+ENV DOCKER_VERSION="20.10.22"
 
 VOLUME /var/lib/docker
 
@@ -367,9 +369,9 @@ RUN set -ex \
     && chmod +x /usr/local/bin/dind
 
 #Python 3.8
-ENV PYTHON_38_VERSION="3.8.10"
+ENV PYTHON_38_VERSION="3.8.16"
 
-COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
+RUN cat tools/runtime_configs/python/$PYTHON_38_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
@@ -380,9 +382,11 @@ RUN set -ex \
     && docker-compose version
 
 #Python 3.9
-ENV PYTHON_39_VERSION="3.9.5"
+ENV PYTHON_39_VERSION="3.9.16"
 
-COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+RUN set -ex \
+    && ls -la
+RUN cat tools/runtime_configs/python/$PYTHON_39_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
@@ -402,7 +406,7 @@ RUN  n $NODE_12_VERSION && npm install --save-dev -g -f grunt && npm install --s
 FROM runtimes_2 AS runtimes_3
 
 #DotNet 3.1
-ENV DOTNET_31_SDK_VERSION="3.1.301"
+ENV DOTNET_31_SDK_VERSION="3.1.426"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_31_SDK_VERSION \
@@ -421,12 +425,12 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 #Ruby 2.7
-ENV RUBY_27_VERSION="2.7.1"
+ENV RUBY_27_VERSION="2.7.7"
 RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION;ruby -v
 
 #Php 7.4
-ENV PHP_74_VERSION="7.4.7"
-COPY tools/runtime_configs/php/$PHP_74_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
+ENV PHP_74_VERSION="7.4.33"
+RUN cat tools/runtime_configs/php/$PHP_74_VERSION > /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
 RUN phpenv install $PHP_74_VERSION; rm -rf /tmp/*; phpenv global $PHP_74_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/conf.d/memory.ini"
 
@@ -435,17 +439,18 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 #****************      END PHP     ****************************************************
 
 #===================END of runtimes_3 ==============
+
 FROM runtimes_3 AS aarch64_v2
 
 # Configure SSH
-COPY ssh_config /root/.ssh/config
-COPY runtimes.yml /codebuild/image/config/runtimes.yml
-COPY dockerd-entrypoint.sh /usr/local/bin/
-COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
-COPY legal/bill_of_material.txt     /usr/share/doc
-COPY amazon-ssm-agent.json          /etc/amazon/ssm/
+RUN cat ssh_config > /root/.ssh/config
+RUN mkdir -p /codebuild/image/config && cat runtimes.yml > /codebuild/image/config/runtimes.yml
+RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
+RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
+RUN cat legal/bill_of_material.txt > /usr/share/doc/bill_of_material.txt
+RUN cat amazon-ssm-agent.json > /etc/amazon/ssm/amazon-ssm-agent.json
 
-ENTRYPOINT ["dockerd-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
 #=======================End of layer: aarch64_v2  =================
-
