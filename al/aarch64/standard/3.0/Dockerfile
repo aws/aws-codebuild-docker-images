@@ -11,7 +11,6 @@
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS core
 
-
 # Install git, SSH, php, and other utilities
 RUN set -ex \
     && yum install -yq openssh-clients \
@@ -23,20 +22,22 @@ RUN set -ex \
     && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && yum groupinstall -yq "Development tools" \
-    && yum install -yq \
-           ImageMagick asciidoc bzip2 bzip2-devel cvs cvsps \
+    && yum install -yq --allowerasing \
+           ImageMagick asciidoc bzip2 bzip2-devel cvs cvsps automake \
            docbook-dtds docbook-style-xsl e2fsprogs expat-devel expect fakeroot \
-           glib2-devel groff gzip icu iptables jq krb5-server libargon2-devel \
+           glib2-devel groff gzip icu iptables-legacy jq krb5-server libargon2-devel \
            libcurl-devel libdb-devel libedit-devel libevent-devel libffi-devel \
            libicu-devel libjpeg-devel libpng-devel libserf \
-           libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
+           libtidy libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
            libyaml-devel libzip-devel mlocate \
            ncurses-devel oniguruma-devel openssl openssl-devel perl-DBD-SQLite \
            perl-DBI perl-HTTP-Date perl-TimeDate perl-YAML-LibYAML perl perl-FindBin \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            patch pkg-config procps python3-configobj llvm rsync sqlite-devel \
-           subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
-           amazon-ecr-credential-helper git-lfs runc acl
+           subversion-perl tar tcl tk telnet texinfo time tzdata vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
+           amazon-ecr-credential-helper git-lfs runc acl unzip \
+           automake binutils bison brotli file findutils flex gnupg2 libsecret-devel libtool \
+           libxkbfile-devel lz4 m4 make mesa-libgbm-devel mariadb105-devel mercurial net-tools pigz pkg-config xorriso xz zip
 
 RUN useradd codebuild-user
 
@@ -54,7 +55,7 @@ RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.45.2 \
+   && GIT_VERSION=2.48.1 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -63,13 +64,14 @@ RUN set -ex \
    && make -j4 prefix=/usr \
    && make install prefix=/usr \
    && cd .. && rm -rf git-$GIT_VERSION \
-   && rm -rf $GIT_TAR_FILE /tmp/*
+   && rm -rf $GIT_TAR_FILE /tmp/* \
+   && git --version
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.71 \
+   && STUNNEL_VERSION=5.74 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="f023aae837c2d32deb920831a5ee1081e11c78a5d57340f8e6f0829f031017f5" \
+   && STUNNEL_SHA256="9bef235ab5d24a2a8dff6485dfd782ed235f4407e9bc8716deb383fc80cd6230" \
    && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR \
    && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum -c - \
    && tar xvfz $STUNNEL_TAR \
@@ -80,15 +82,42 @@ RUN set -ex \
    && openssl genrsa -out key.pem 2048 \
    && openssl req -new -x509 -key key.pem -out cert.pem -days 1095 -subj "/C=US/ST=Washington/L=Seattle/O=Amazon/OU=Codebuild/CN=codebuild.amazon.com" \
    && cat key.pem cert.pem >> /usr/local/etc/stunnel/stunnel.pem \
-   && cd .. ; rm -rf stunnel-${STUNNEL_VERSION}*
+   && cd .. ; rm -rf stunnel-${STUNNEL_VERSION}* \
+   && stunnel -version
 
 # AWS Tools
-# https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
-RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.25.6/2023-01-30/bin/linux/arm64/aws-iam-authenticator \
-    && curl -sS -o /usr/local/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.25.6/2023-01-30/bin/linux/arm64/kubectl \
+# aws-iam-authenticator: https://github.com/kubernetes-sigs/aws-iam-authenticator/releases
+# kubectl: https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+# eksctl: https://eksctl.io/installation/
+# ecs-cli: https://github.com/aws/amazon-ecs-cli?tab=readme-ov-file#installing
+RUN set -ex \
+    && KUBERNETES_VERSION=1.32.0 \
+    && AMAZON_EKS_S3_PATH=2024-12-20 \
+    && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/arm64/aws-iam-authenticator \
+    && chmod +x /usr/local/bin/aws-iam-authenticator \
+    && aws-iam-authenticator version \
+    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/arm64/kubectl \
+    && chmod +x /usr/local/bin/kubectl \
+    && kubectl version --client \
+    && curl -sS -L https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz | tar xz -C /usr/local/bin \
+    && chmod +x /usr/local/bin/eksctl \
+    && eksctl version \
     && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-arm64-latest \
-    && curl -sS -L https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz | tar xz -C /usr/local/bin \
-    && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
+    && chmod +x /usr/local/bin/ecs-cli \
+    && ecs-cli --version
+
+# Install amazon-ecr-credential-helper
+# To configure: https://github.com/awslabs/amazon-ecr-credential-helper?tab=readme-ov-file#configuration
+# ecr-login is not configured because it conflicts with docker login commands https://github.com/awslabs/amazon-ecr-credential-helper/issues/102
+RUN set -ex \
+    && yum install -y -q amazon-ecr-credential-helper \
+    && docker-credential-ecr-login -v
+
+# Install Pack
+RUN set -ex \
+    && PACK_VERSION=0.36.0 \
+    && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux-arm64.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
+    && pack --version
 
 # Configure SSM
 RUN set -ex \
@@ -162,19 +191,18 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
     JDK_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
     JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
-    ANT_VERSION=1.10.14 \
+    ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.5 \
-    INSTALLED_GRADLE_VERSIONS="8.0.2 8.5" \
-    GRADLE_85_VERSION=8.5 \
-    GRADLE_80_VERSION=8.0.2 \
+    MAVEN_VERSION=3.9.9 \
+    INSTALLED_GRADLE_VERSIONS="8.0.2 8.12.1" \
+    GRADLE_812_VERSION=8.12.1 \
     GRADLE_VERSION=8.0.2 \
-    SBT_VERSION=1.4.9 \
+    SBT_VERSION=1.10.7 \
     GRADLE_PATH="$SRC_DIR/gradle" \
-    ANT_DOWNLOAD_SHA512="4e74b382dd8271f9eac9fef69ba94751fb8a8356dbd995c4d642f2dad33de77bd37d4001d6c8f4f0ef6789529754968f0c1b6376668033c8904c6ec84543332a" \
-    MAVEN_DOWNLOAD_SHA512="4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b" \
-    GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\nc16d517b50dd28b3f5838f0e844b7520b8f1eb610f2f29de7e4e04a1b7c9c79b 8.5" \
-    SBT_DOWNLOAD_SHA256="95468119f7641499367330a60a4b8a6211e6ea7f8bde7d647c67b19dd8fddb6e"
+    ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
+    MAVEN_DOWNLOAD_SHA512="a555254d6b53d267965a3404ecb14e53c3827c09c3b94b5678835887ab404556bfaf78dcfe03ba76fa2508649dca8531c74bca4d5846513522404d48e8c4ac8b" \
+    GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\n296742a352f0b20ec14b143fb684965ad66086c7810b7b255dee216670716175 8.12.1" \
+    SBT_DOWNLOAD_SHA256="32c15233c636c233ee25a2c31879049db7021cfef70807c187515c39b96b0fe6"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_17_HOME" \
@@ -221,10 +249,10 @@ RUN set -ex \
        && echo -e "$GRADLE_DOWNLOADS_SHA256" | grep "$version" | sed "s|$version|$GRADLE_PATH/gradle-$version-all.zip|" | sha256sum -c - \
        && rm "$GRADLE_PATH/gradle-$version-all.zip" \
        && mkdir "/tmp/gradle-$version" \
-       && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" init \
+       && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" init --overwrite \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
        && perl -pi -e "s/gradle-$version-bin.zip/gradle-$version-all.zip/" "/tmp/gradle-$version/gradle/wrapper/gradle-wrapper.properties" \
-       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init \
+       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite\
        && rm -rf "/tmp/gradle-$version"; \
      }; done \
     # Install default GRADLE_VERSION to path
@@ -235,7 +263,7 @@ RUN set -ex \
     && echo "${SBT_DOWNLOAD_SHA256} *sbt.tgz" | sha256sum -c - \
     && tar xzf sbt.tgz -C /usr/local/bin/ \
     && rm sbt.tgz
-ENV PATH "/usr/local/bin/sbt/bin:$PATH"
+ENV PATH="/usr/local/bin/sbt/bin:$PATH"
 
 # Cleanup
 RUN rm -fr /tmp/* /var/tmp/* \
@@ -246,9 +274,9 @@ RUN rm -fr /tmp/* /var/tmp/* \
 #****************     PowerShell     *******************************************************
 
 # Install Powershell Core
-ENV POWERSHELL_VERSION 7.3.10
+ENV POWERSHELL_VERSION 7.5.0
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-arm64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA E426969FD731B1D47BBCBB726692D7ED13638428FB5E2A93EA142E7CA6C67A25
+ENV POWERSHELL_DOWNLOAD_SHA a3b6a1d14897974aea732d82970c86dd17ffc57a5fc4f4bfabfe2dd272ff6c40
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -260,14 +288,13 @@ RUN set -ex \
 #****************     END Powershell     *******************************************************
 
 
-
 #****************      NODEJS     ****************************************************
 
-ENV NODE_22_VERSION="22.2.0"
-ENV NODE_20_VERSION="20.14.0"
-ENV NODE_18_VERSION="18.20.3"
+ENV NODE_22_VERSION="22.12.0" \
+    NODE_20_VERSION="20.18.2" \
+    NODE_18_VERSION="18.20.6"
 
-RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
+RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
@@ -287,11 +314,13 @@ RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_31_VERSION="3.1.6"
-ENV RUBY_32_VERSION="3.2.4"
-ENV RUBY_33_VERSION="3.3.2"
+ENV RUBY_34_VERSION="3.4.1" \
+    RUBY_33_VERSION="3.3.7" \
+    RUBY_32_VERSION="3.2.6" \
+    RUBY_31_VERSION="3.1.6"
 
-RUN rbenv install $RUBY_33_VERSION \
+RUN rbenv install $RUBY_34_VERSION \
+    && rbenv install $RUBY_33_VERSION \
     && rbenv install $RUBY_32_VERSION \
     && rbenv install $RUBY_31_VERSION \
     && rbenv global $RUBY_32_VERSION && ruby -v \
@@ -300,15 +329,16 @@ RUN rbenv install $RUBY_33_VERSION \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_39_VERSION="3.9.19"
-ENV PYTHON_310_VERSION="3.10.14"
-ENV PYTHON_311_VERSION="3.11.9"
-ENV PYTHON_312_VERSION="3.12.4"
-ENV PYTHON_PIP_VERSION=24.0
-ENV PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
+ENV PYTHON_313_VERSION="3.13.1" \
+    PYTHON_312_VERSION="3.12.8" \
+    PYTHON_311_VERSION="3.11.11" \
+    PYTHON_310_VERSION="3.10.16" \
+    PYTHON_39_VERSION="3.9.21" \
+    PYTHON_PIP_VERSION="25.0" \
+    PYYAML_VERSION="6.0.2" \
+    PYTHON_SETUPTOOLS_VERSION="75.8.0" \
+    PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
-# Pin PyYAML at this version while installing aws-sam-cli via pip
-ENV PYYAML_VERSION=5.4.1
 
 RUN set -ex \
     && pyenv install $PYTHON_39_VERSION \
@@ -316,7 +346,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
     && pip3 uninstall cython --yes
 
 RUN set -ex \
@@ -325,7 +355,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
     && pip3 uninstall cython --yes
 
 RUN set -ex \
@@ -334,7 +364,7 @@ RUN set -ex \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
     && pip3 uninstall cython --yes
 
 RUN set -ex \
@@ -342,7 +372,16 @@ RUN set -ex \
     && pyenv global $PYTHON_312_VERSION \
     && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
     && pip3 install wheel \
-    && pip3 install --no-cache-dir --upgrade 'setuptools==67.7.2' boto3 pipenv virtualenv \
+    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
+    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+    && pip3 uninstall cython --yes
+
+RUN set -ex \
+    && pyenv install $PYTHON_313_VERSION \
+    && pyenv global $PYTHON_313_VERSION \
+    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+    && pip3 install wheel \
+    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
     && pip3 uninstall cython --yes
 
@@ -351,9 +390,9 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_81_VERSION="8.1.28"
-ENV PHP_82_VERSION="8.2.20"
-ENV PHP_83_VERSION="8.3.8"
+ENV PHP_81_VERSION="8.1.30"
+ENV PHP_82_VERSION="8.2.25"
+ENV PHP_83_VERSION="8.3.13"
 
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -374,13 +413,15 @@ RUN phpenv update \
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_20_VERSION="1.20.14"
-ENV GOLANG_21_VERSION="1.21.11"
-ENV GOLANG_22_VERSION="1.22.4"
+ENV GOLANG_23_VERSION="1.23.5" \
+    GOLANG_22_VERSION="1.22.11" \
+    GOLANG_21_VERSION="1.21.13" \
+    GOLANG_20_VERSION="1.20.14"
 
 RUN goenv install $GOLANG_20_VERSION && \
     goenv install $GOLANG_21_VERSION && \
-    goenv install $GOLANG_22_VERSION && rm -rf /tmp/*
+    goenv install $GOLANG_22_VERSION && \
+    goenv install $GOLANG_23_VERSION && rm -rf /tmp/*
 
 #****************      END GOLANG     ****************************************************
 
@@ -393,10 +434,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="6f1a5fb161aef875d305ee4f79e65492b3c13e90dbe0a339df2ad6515e4f6849"
-ENV DOCKER_VERSION="26.1.4"
-ENV DOCKER_COMPOSE_VERSION="2.27.0"
-ARG DOCKER_BUILDX_VERSION="0.14.1"
+ENV DOCKER_SHA256="e6b53725a73763ab3f988c73f8772eaed429754c1a579db5ff11f21990fd1817"
+ENV DOCKER_VERSION="27.5.1"
+ENV DOCKER_COMPOSE_VERSION="2.32.4"
+ARG DOCKER_BUILDX_VERSION="0.20.1"
 
 VOLUME /var/lib/docker
 
@@ -433,14 +474,18 @@ RUN set -ex \
     && docker-buildx version \
     && docker buildx version
 
+# Install Finch
+RUN dnf install -y runfinch-finch \
+    && finch --version
+
 #=======================End of layer: runtimes_2  =================
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_6_SDK_VERSION="6.0.423"
-ENV DOTNET_8_SDK_VERSION="8.0.301"
-ENV DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
-ENV DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
+ENV DOTNET_8_SDK_VERSION="8.0.405" \
+    DOTNET_6_SDK_VERSION="6.0.428" \
+    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
+    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 8 Global Tools install folder to PATH
@@ -466,13 +511,19 @@ RUN set -ex \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
 
+# Install GitVersion
+ENV GITVERSION_VERSION="6.1.0"
+RUN set -ex \
+    && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
+    && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion \
+    && rm -rf /tmp/*
 #****************      END DotNet     ****************************************************
 
 #===================END of runtimes_3 ==============
 FROM runtimes_3 AS aarch64_v3
 
 # Activate runtime versions specific to image version.
-RUN n $NODE_18_VERSION
+RUN n --preserve $NODE_18_VERSION
 RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_81_VERSION
 RUN rbenv global $RUBY_32_VERSION

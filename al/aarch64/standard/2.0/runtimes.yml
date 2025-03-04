@@ -6,13 +6,9 @@ runtimes:
       corretto11:
         commands:
           - echo "Installing corretto (OpenJDK) version 11 ..."
-
           - export JAVA_HOME="$JAVA_11_HOME"
-
           - export JRE_HOME="$JRE_11_HOME"
-
           - export JDK_HOME="$JDK_11_HOME"
-
           - |-
             for tool_path in "$JAVA_HOME"/bin/*; 
              do tool=`basename "$tool_path"`;
@@ -25,13 +21,9 @@ runtimes:
       corretto8:
         commands:
           - echo "Installing corretto (OpenJDK) version 8 ..."
-
           - export JAVA_HOME="$JAVA_8_HOME"
-
           - export JRE_HOME="$JRE_8_HOME"
-
           - export JDK_HOME="$JDK_8_HOME"
-
           - |-
             for tool_path in "$JAVA_8_HOME"/bin/* "$JRE_8_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
