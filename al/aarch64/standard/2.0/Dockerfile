@@ -386,7 +386,7 @@ ENV PYTHON_39_VERSION="3.9.16"
 
 RUN set -ex \
     && ls -la
-RUN cat tools/runtime_configs/python/$PYTHON_39_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
+COPY tools/runtime_configs/python/$PYTHON_39_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_39_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_39_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_39_VERSION
 RUN set -ex \
@@ -430,7 +430,7 @@ RUN rbenv install $RUBY_27_VERSION; rm -rf /tmp/*; rbenv global $RUBY_27_VERSION
 
 #Php 7.4
 ENV PHP_74_VERSION="7.4.33"
-RUN cat tools/runtime_configs/php/$PHP_74_VERSION > /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
+COPY tools/runtime_configs/php/$PHP_74_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_74_VERSION
 RUN phpenv install $PHP_74_VERSION; rm -rf /tmp/*; phpenv global $PHP_74_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_74_VERSION/etc/conf.d/memory.ini"
 
@@ -443,14 +443,13 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 FROM runtimes_3 AS aarch64_v2
 
 # Configure SSH
-RUN cat ssh_config > /root/.ssh/config
-RUN mkdir -p /codebuild/image/config && cat runtimes.yml > /codebuild/image/config/runtimes.yml
-RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
-RUN cat legal/bill_of_material.txt > /usr/share/doc/bill_of_material.txt
-RUN cat amazon-ssm-agent.json > /etc/amazon/ssm/amazon-ssm-agent.json
+COPY ssh_config /root/.ssh/config
+COPY runtimes.yml /codebuild/image/config/runtimes.yml
+COPY dockerd-entrypoint.sh /usr/local/bin/
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc
+COPY legal/bill_of_material.txt     /usr/share/doc
+COPY amazon-ssm-agent.json          /etc/amazon/ssm/
 
-ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
+ENTRYPOINT ["dockerd-entrypoint.sh"]
 
 #=======================End of layer: aarch64_v2  =================
