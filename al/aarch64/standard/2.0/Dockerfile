@@ -10,8 +10,6 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2 AS core
-{{{ imagebuilder:environments }}}
-{{{ imagebuilder:components }}}
 
 # Install git, SSH, and other utilities
 RUN set -ex \
@@ -264,7 +262,7 @@ ENV PYTHON_PIP_VERSION=21.1.2
 ENV PYYAML_VERSION=5.4.1
 ENV DOCKER_COMPOSE_VERSION="1.26.2"
 
-RUN cat tools/runtime_configs/python/$PYTHON_37_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
+COPY tools/runtime_configs/python/$PYTHON_37_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_37_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_37_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_37_VERSION
 RUN set -ex \
@@ -279,7 +277,7 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 ENV PHP_73_VERSION="7.3.33"
 
-RUN cat tools/runtime_configs/php/$PHP_73_VERSION > /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
+COPY tools/runtime_configs/php/$PHP_73_VERSION /root/.phpenv/plugins/php-build/share/php-build/definitions/$PHP_73_VERSION
 RUN phpenv install $PHP_73_VERSION; rm -rf /tmp/*; phpenv global $PHP_73_VERSION
 RUN echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_73_VERSION/etc/conf.d/memory.ini"
 
@@ -371,7 +369,7 @@ RUN set -ex \
 #Python 3.8
 ENV PYTHON_38_VERSION="3.8.16"
 
-RUN cat tools/runtime_configs/python/$PYTHON_38_VERSION > /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
+COPY tools/runtime_configs/python/$PYTHON_38_VERSION /root/.pyenv/plugins/python-build/share/python-build/$PYTHON_38_VERSION
 RUN   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $PYTHON_38_VERSION; rm -rf /tmp/*
 RUN   pyenv global  $PYTHON_38_VERSION
 RUN set -ex \
