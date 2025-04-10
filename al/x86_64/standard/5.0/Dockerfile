@@ -223,8 +223,8 @@ RUN set -ex \
 
 # Install Mozilla Firefox
 RUN set -ex \
-    && curl -L "https://download.mozilla.org/?product=firefox-latest&os=linux64" --output /tmp/FirefoxSetup.tar.bz2 \
-    && tar xjf /tmp/FirefoxSetup.tar.bz2 -C /opt/ \
+    && curl -L "https://download.mozilla.org/?product=firefox-latest&os=linux64" --output /tmp/FirefoxSetup.tar.xz \
+    && tar xvf /tmp/FirefoxSetup.tar.xz -C /opt/ \
     && ln -s /opt/firefox/firefox /usr/local/bin/firefox \
     && rm -rf /tmp/* \
     && firefox --version
