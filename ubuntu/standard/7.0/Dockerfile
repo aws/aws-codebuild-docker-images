@@ -437,6 +437,11 @@ RUN set -ex \
     && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
     && pip3 uninstall cython --yes \
     && rm -rf /tmp/*
+
+# Python uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************

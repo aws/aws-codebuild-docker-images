@@ -130,6 +130,31 @@ runtimes:
         commands:
           - echo "Installing Python version 3.9 ..."
           - pyenv global $PYTHON_39_VERSION
+      3.13-uv:
+        commands:
+          - echo "Installing Python version $PYTHON_313_VERSION via uv ..."
+          - echo "Please use virtualenv via 'uv venv -p $PYTHON_313_VERSION'"
+          - uv python install $PYTHON_313_VERSION
+      3.12-uv:
+        commands:
+          - echo "Installing Python version $PYTHON_312_VERSION via uv ..."
+          - echo "Please use virtualenv via 'uv venv -p $PYTHON_312_VERSION'"
+          - uv python install $PYTHON_312_VERSION
+      3.11-uv:
+        commands:
+          - echo "Installing Python version $PYTHON_311_VERSION via uv ..."
+          - echo "Please use virtualenv via 'uv venv -p $PYTHON_311_VERSION'"
+          - uv python install $PYTHON_311_VERSION
+      3.10-uv:
+        commands:
+          - echo "Installing Python version $PYTHON_310_VERSION via uv ..."
+          - echo "Please use virtualenv via 'uv venv -p $PYTHON_310_VERSION'"
+          - uv python install $PYTHON_310_VERSION
+      3.9-uv:
+        commands:
+          - echo "Installing Python version $PYTHON_39_VERSION via uv ..."
+          - echo "Please use virtualenv via 'uv venv -p $PYTHON_39_VERSION'"
+          - uv python install $PYTHON_39_VERSION
       default:
         commands:
           - echo "Installing custom Python version $VERSION ..."
