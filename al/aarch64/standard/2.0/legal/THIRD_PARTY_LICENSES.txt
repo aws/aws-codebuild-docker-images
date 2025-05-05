@@ -1,0 +1,6 @@
+Third Party Licenses
+====================
+
+Stunnel:
+We include unmodified version of stunnel softwares in the docker images.  The source code for the current version can be downloaded from https://www.usenix.org.uk/mirrors/stunnel/archive/5.x/stunnel-5.56.tar.gz
+

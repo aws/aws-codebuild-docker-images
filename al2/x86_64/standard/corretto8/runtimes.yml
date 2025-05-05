@@ -1,9 +1,0 @@
-version: 0.1
-
-runtimes:
-  java:
-    versions:
-      corretto8:
-        commands:
-          - echo "Installing corretto(OpenJDK) version 8 ..."
-
