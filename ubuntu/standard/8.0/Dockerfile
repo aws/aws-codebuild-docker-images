@@ -11,6 +11,7 @@
 FROM public.ecr.aws/ubuntu/ubuntu:24.04 AS core
 
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG BUILDARCH
 
 # Install SSH, and other utilities
 RUN set -ex \
@@ -19,7 +20,6 @@ RUN set -ex \
     && apt install -y -qq apt-transport-https gnupg ca-certificates sudo \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-get install -y -qq --no-install-recommends openssh-client \
-    && mkdir ~/.ssh \
     && mkdir -p /codebuild/image/config \
     && touch ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
@@ -32,11 +32,11 @@ RUN set -ex \
         e2fsprogs expect fakeroot file findutils flex fonts-noto-color-emoji ftp \
         g++ gcc git-lfs gettext gettext-base gnupg2 groff gzip \
         haveged imagemagick iproute2 iptables jq less \
-        lib32z1 libapr1 libaprutil1 libargon2-0-dev libbz2-dev \
+        libapr1 libaprutil1 libargon2-dev libbz2-dev \
         libc++-dev libc++abi-dev libc6-dev libcurl4-openssl-dev \
         libdb-dev libdbd-sqlite3-perl libdbi-perl libdpkg-perl \
         libedit-dev liberror-perl libevent-dev libffi-dev  \
-        libgeoip-dev libgbm-dev libgconf-2-4 libglib2.0-dev libgsl-dev libgtk-3-0 \
+        libgeoip-dev libgbm-dev libglib2.0-dev libgsl-dev libgtk-3-0 \
         libhttp-date-perl libio-pty-perl libjpeg-dev libkrb5-dev liblzma-dev \
         libmagic-dev libmagickcore-dev libmagickwand-dev libmysqlclient-dev \
         libncurses5-dev libncursesw5-dev libonig-dev libpq-dev libreadline-dev \
@@ -44,7 +44,7 @@ RUN set -ex \
         libsvn1 libsvn-perl libtcl8.6 libtidy-dev libtimedate-perl libtool libunwind8 \
         libwebp-dev libxkbfile-dev libxml2-dev libxml2-utils libxslt1-dev libxss1 \
         libyaml-dev libyaml-perl libzip-dev llvm locales lz4 \
-        m4 make mediainfo mercurial mlocate net-tools netbase netcat \
+        m4 make mediainfo mercurial plocate net-tools netbase netcat-traditional \
         openssl patch p7zip-full p7zip-rar parallel pass patchelf pigz pkg-config pollinate procps \
         python-is-python3 python3-configobj python3-openssl rpm rsync \
         sgml-base sgml-data shellcheck sphinxsearch sqlite3 ssh sshpass subversion sudo swig systemd-coredump \
@@ -80,7 +80,7 @@ RUN set -ex \
     && git --version
 
 # Install AWS SAM CLI
-RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip -O /tmp/samcli.zip \
+RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-$BUILDARCH.zip -O /tmp/samcli.zip \
     && unzip -q /tmp/samcli.zip -d /opt/samcli \
     && /opt/samcli/install --update -i /usr/local/sam-cli -b /usr/local/bin \
     && rm -rf /opt/samcli /tmp/* \
@@ -88,7 +88,9 @@ RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam
 
 # Install AWS CLI v2
 # https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
-RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip \
+RUN [ "$BUILDARCH" = "arm64" ] \
+    &&  curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip \
+    ||  curl https://awscli.amazonaws.com/awscli-exe-linux-$BUILDARCH.zip -o /tmp/awscliv2.zip \
     && unzip -q /tmp/awscliv2.zip -d /opt/awscli \
     && /opt/awscli/aws/install --update -i /usr/local/aws-cli -b /usr/local/bin \
     && rm -rf /opt/awscli /tmp/* \
@@ -118,16 +120,16 @@ RUN set -ex \
 RUN set -ex \
     && KUBERNETES_VERSION=1.32.0 \
     && AMAZON_EKS_S3_PATH=2024-12-20 \
-    && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/aws-iam-authenticator \
+    && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/$BUILDARCH/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
-    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/kubectl \
+    && curl -sS -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/$BUILDARCH/kubectl \
     && chmod +x /usr/local/bin/kubectl \
     && kubectl version --client \
-    && curl -sS -L https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz | tar xz -C /usr/local/bin \
+    && curl -sS -L https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_$BUILDARCH.tar.gz | tar xz -C /usr/local/bin \
     && chmod +x /usr/local/bin/eksctl \
     && eksctl version \
-    && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest \
+    && curl -sS -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-$BUILDARCH-latest \
     && chmod +x /usr/local/bin/ecs-cli \
     && ecs-cli --version
 
@@ -143,7 +145,7 @@ RUN set -ex \
 RUN set -ex \
     && mkdir /tmp/ssm \
     && cd /tmp/ssm \
-    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/latest/debian_amd64/amazon-ssm-agent.deb \
+    && wget -q https://s3.amazonaws.com/amazon-ssm-us-east-1/latest/debian_$BUILDARCH/amazon-ssm-agent.deb \
     && dpkg -i amazon-ssm-agent.deb
 
 # Install Pack
@@ -160,12 +162,17 @@ ARG DOCKER_COMPOSE_VERSION="2.29.7"
 ARG DOCKER_BUILDX_VERSION="0.17.1"
 ARG SRC_DIR="/usr/src"
 
+# use 4da6a6c7502b7ab561675a5ff5ac192d9b49d76d0b8847cf17ade246122279f4 for aarch64
 ARG DOCKER_SHA256="9b4f6fe406e50f9085ee474c451e2bb5adb119a03591f467922d3b4e2ddf31d3"
 ARG DOCKER_VERSION="27.3.1"
 
 # Install Docker
 RUN set -ex \
-    && curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/x86_64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz \
+    && if [ "$BUILDARCH" = "arm64" ]; then \
+         curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/aarch64/docker-${DOCKER_VERSION}.tgz" -o docker.tgz ; \
+       else \
+         curl -fSL "https://${DOCKER_BUCKET}/linux/static/${DOCKER_CHANNEL}/${BUILDARCH}/docker-${DOCKER_VERSION}.tgz" -o docker.tgz ; \
+       fi \
     && echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
@@ -180,14 +187,18 @@ RUN set -ex \
     && wget -q "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /usr/local/bin/dind \
     # Install docker compose as docker plugin and maintain docker-compose usage
     && mkdir -p /usr/local/lib/docker/cli-plugins \
-    && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
+    && if [ "$BUILDARCH" = "arm64" ]; then \
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 -o /usr/local/lib/docker/cli-plugins/docker-compose ; \
+       else \
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-$BUILDARCH -o /usr/local/lib/docker/cli-plugins/docker-compose ; \
+        fi \
     && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
     # Ensure docker-compose and docker compose work
     && docker-compose version \
     && docker compose version \
     # Add docker buildx tool
-    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
+    && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-$BUILDARCH -o /usr/local/lib/docker/cli-plugins/docker-buildx \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
     # Ensure docker-buildx works
@@ -206,36 +217,50 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && apt update \
     && apt install gh -y
 
-# Install Chrome
+# Install Chrome (Google does not ship linux arm64 version of Chrome)
 RUN set -ex \
-    && curl -L https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb --output /tmp/google-chrome-stable_current_amd64.deb \
-    && dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y \
-    && rm -rf /tmp/* \
-    && google-chrome --version
+    && if [ "$BUILDARCH" != "arm64" ]; then \
+         curl -L "https://dl.google.com/linux/direct/google-chrome-stable_current_${BUILDARCH}.deb" --output /tmp/google-chrome.deb && \
+         dpkg -i /tmp/google-chrome.deb || apt-get install -f -y && \
+         rm -rf /tmp/* && \
+         google-chrome --version ; \
+       else \
+         echo "Skipping Chrome install for $BUILDARCH" ; \
+       fi
 
-# Install ChromeDriver
-# https://googlechromelabs.github.io/chrome-for-testing/
-# https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints
+# Install ChromeDriver (skipping arm64, see above)
 RUN set -ex \
-    && CHROME_DRIVER_DOWNLOAD_URL=$(curl -sL https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json | jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url') \
-    && curl -L $CHROME_DRIVER_DOWNLOAD_URL --output /tmp/chromedriver-linux64.zip \
-    && unzip -q /tmp/chromedriver-linux64.zip -d /opt/chromedriver \
-    && ln -s /opt/chromedriver/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
-    && rm -rf /tmp/* \
-    && chromedriver --version
+    && if [ "$BUILDARCH" != "arm64" ]; then \
+         CHROME_DRIVER_DOWNLOAD_URL=$(curl -sL https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json \
+           | jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url') && \
+         curl -L "$CHROME_DRIVER_DOWNLOAD_URL" --output /tmp/chromedriver-linux64.zip && \
+         unzip -q /tmp/chromedriver-linux64.zip -d /opt/chromedriver && \
+         ln -s /opt/chromedriver/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
+         rm -rf /tmp/* && \
+         chromedriver --version ; \
+       else \
+         echo "Skipping ChromeDriver install for $BUILDARCH" ; \
+       fi
 
 # Install Chromium
 # See instruction: https://www.chromium.org/getting-involved/download-chromium/
+# Install Chromium with arch-specific download logic
 RUN set -ex \
-    && CHROMIUM_VERSION=$(curl -sL https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2FLAST_CHANGE?alt=media) \
-    && CHROMIUM_DOWNLOAD_URL=https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F$CHROMIUM_VERSION%2Fchrome-linux.zip?alt=media \
-    && curl -L $CHROMIUM_DOWNLOAD_URL --output /tmp/chromium-linux.zip \
-    && unzip -q /tmp/chromium-linux.zip -d /opt/chromium \
-    && ln -s /opt/chromium/chrome-linux/chrome /usr/local/bin/chromium \
-    && ln -s /opt/chromium/chrome-linux/chrome /usr/local/bin/chromium-browser \
-    && rm -rf /tmp/* \
-    && chromium --version \
-    && chromium-browser --version
+    && if [ "$BUILDARCH" != "arm64" ]; then \
+         CHROMIUM_PLATFORM="Linux_${BUILDARCH}" \
+         CHROMIUM_VERSION=$(curl -sL "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/${CHROMIUM_PLATFORM}%2FLAST_CHANGE?alt=media") && \
+         CHROMIUM_DOWNLOAD_URL="https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/${CHROMIUM_PLATFORM}%2F${CHROMIUM_VERSION}%2Fchrome-linux.zip?alt=media" && \
+         curl -L "$CHROMIUM_DOWNLOAD_URL" --output /tmp/chromium-linux.zip && \
+         unzip -q /tmp/chromium-linux.zip -d /opt/chromium && \
+         ln -s /opt/chromium/chrome-linux/chrome /usr/local/bin/chromium && \
+         ln -s /opt/chromium/chrome-linux/chrome /usr/local/bin/chromium-browser && \
+         rm -rf /tmp/* && \
+         chromium --version && \
+         chromium-browser --version ; \
+       else \
+         echo "Skipping Chromium install for $BUILDARCH" ; \
+       fi
+
 
 # Install Mozilla Firefox
 RUN set -ex \
@@ -295,7 +320,8 @@ RUN set -ex \
 # Install Powershell Core
 # See instructions at https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.4#installation-using-a-binary-archive-file
 ARG POWERSHELL_VERSION=7.4.6
-ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
+ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-$BUILDARCH.tar.gz
+# SHA256 checksum for ARM64 : C0159B03E85F44AE1E7697818A011558DA6C813D0AAE848BF5AC13BF435D8624
 ARG POWERSHELL_DOWNLOAD_SHA=6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e157561
 
 RUN set -ex \
@@ -531,7 +557,7 @@ RUN set -ex \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
     # Ensure Java cacerts symlink points to valid location
     && update-ca-certificates -f \
-    && dpkg --add-architecture i386 \
+    && dpkg --add-architecture $BUILDARCH \
     && apt-get update \
     && for tool_path in $JAVA_HOME/bin/*; do \
           tool=`basename $tool_path`; \
