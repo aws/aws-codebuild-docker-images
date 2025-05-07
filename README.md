@@ -28,6 +28,17 @@ $ docker build -t aws/codebuild/standard:8.0 .
 $ docker run -it --entrypoint sh aws/codebuild/standard:8.0 -c bash
 ```
 
+### Notice about ARM64/AArch64 Builds
+
+* Some package providers (Google) do not ship ARM64 builds for Linux. If Dockerfile is built for ARM64, those packages are skipped
+* SHA1 checksums for ARM64 artifacts are obviously different from the ones specified in the Dockerfile. The current version of Ubuntu standard 8.0 can
+be built with the following command:
+```bash
+docker build . \
+    --build-arg DOCKER_SHA256=4da6a6c7502b7ab561675a5ff5ac192d9b49d76d0b8847cf17ade246122279f4 \
+    --build-arg POWERSHELL_DOWNLOAD_SHA=C0159B03E85F44AE1E7697818A011558DA6C813D0AAE848BF5AC13BF435D8624
+```
+
 ### Image maintenance
 
 Some of the images in this repository are no longer actively maintained by AWS CodeBuild and may no longer build successfully.  These images will not receive any further updates.  They remain in this repository as a reference for the contents of these images that were previously released by CodeBuild.
