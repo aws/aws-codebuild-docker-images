@@ -438,7 +438,7 @@ RUN rbenv  uninstall -f $RUBY_27_VERSION
 # Docker 18
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DIND_COMMIT="65cfcc28ab37cb75e1560e4b4738719c07c6618e" \
     DOCKER_COMPOSE_VERSION="1.24.0" \
     SRC_DIR="/usr/src"
 

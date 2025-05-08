@@ -437,7 +437,7 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 #****************        DOCKER    *********************************************
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DIND_COMMIT="65cfcc28ab37cb75e1560e4b4738719c07c6618e" \
     DOCKER_COMPOSE_VERSION="1.26.2" \
     SRC_DIR="/usr/src"
 
