@@ -155,7 +155,7 @@ RUN set -ex \
 #****************        DOCKER    *********************************************
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
-ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
+ARG DIND_COMMIT="65cfcc28ab37cb75e1560e4b4738719c07c6618e"
 ARG DOCKER_COMPOSE_VERSION="2.29.7"
 ARG DOCKER_BUILDX_VERSION="0.17.1"
 ARG SRC_DIR="/usr/src"

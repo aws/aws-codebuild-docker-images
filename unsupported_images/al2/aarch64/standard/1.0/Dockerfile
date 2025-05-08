@@ -30,7 +30,7 @@ ARG CHINA_REGION
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DOCKER_SHA256="0259f8b6572f02cf0dafd7388ca0e4adfdbbfaba81cfb1b7443e89fccbed22c7" \
-    DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
+    DIND_COMMIT="65cfcc28ab37cb75e1560e4b4738719c07c6618e" \
     DEBIAN_FRONTEND="noninteractive" \
     SRC_DIR="/usr/src" \
     EPEL_REPO="https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
