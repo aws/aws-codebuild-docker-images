@@ -137,6 +137,10 @@ runtimes:
           - pyenv global $VERSION
   php:
     versions:
+      8.4:
+        commands:
+          - echo "Installing PHP version 8.4 ..."
+          - phpenv global $PHP_84_VERSION
       8.3:
         commands:
           - echo "Installing PHP version 8.3 ..."

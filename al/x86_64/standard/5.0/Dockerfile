@@ -468,7 +468,8 @@ RUN set -ex \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_83_VERSION="8.3.13" \
+ENV PHP_84_VERSION="8.4.7" \
+    PHP_83_VERSION="8.3.13" \
     PHP_82_VERSION="8.2.25"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -476,10 +477,12 @@ ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsq
 ENV PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
 
 RUN phpenv update \
+    && phpenv install $PHP_84_VERSION \
     && phpenv install $PHP_83_VERSION \
     && phpenv install $PHP_82_VERSION \
     && phpenv global $PHP_82_VERSION \
     && php -v \
+    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_84_VERSION/etc/conf.d/memory.ini" \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_83_VERSION/etc/conf.d/memory.ini" \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini" \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
