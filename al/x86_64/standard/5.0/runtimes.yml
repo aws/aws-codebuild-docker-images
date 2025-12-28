@@ -81,6 +81,10 @@ runtimes:
             done
   golang:
     versions:
+      1.24:
+        commands:
+          - echo "Installing Go version 1.24 ..."
+          - goenv global $GOLANG_24_VERSION
       1.23:
         commands:
           - echo "Installing Go version 1.23 ..."
@@ -190,11 +194,11 @@ runtimes:
       8.0:
         commands:
           - echo "Installing .NET version 8.0 ..."
-          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
       6.0:
         commands:
           - echo "Installing .NET version 6.0 ..."
-          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
       default:
         commands:
           - echo "Installing custom .Net version $VERSION ..."

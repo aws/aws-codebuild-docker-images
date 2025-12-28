@@ -81,24 +81,21 @@ RUN set -ex \
     && geckodriver --version
 
 # Install Chrome
-ENV CHROME_VERSION="126.0.6478.55-1"
-
 RUN set -ex \
-    && wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
-    && (dpkg -i /tmp/chrome.deb || apt-get -fy install) \
-    && rm /tmp/chrome.deb \
-    && sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' "/opt/google/chrome/google-chrome" \
+    && curl -L https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb --output /tmp/google-chrome-stable_current_amd64.deb \
+    && dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y \
+    && rm -rf /tmp/* \
     && google-chrome --version
 
 # Install ChromeDriver
+# https://googlechromelabs.github.io/chrome-for-testing/
+# https://github.com/GoogleChromeLabs/chrome-for-testing#json-api-endpoints
 RUN set -ex \
-    && CHROME_VERSION=`google-chrome --version | awk -F '[ .]' '{print $3"."$4"."$5"."$6}'` \
-    && wget -qO /tmp/chromedriver_linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip \
-    && unzip -q /tmp/chromedriver_linux64.zip -d /opt \
-    && rm /tmp/chromedriver_linux64.zip \
-    && mv /opt/chromedriver-linux64 /opt/chromedriver-${CHROME_VERSION} \
-    && chmod 755 /opt/chromedriver-${CHROME_VERSION} \
-    && ln -s /opt/chromedriver-${CHROME_VERSION}/chromedriver /usr/bin/chromedriver \
+    && CHROME_DRIVER_DOWNLOAD_URL=$(curl -sL https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json | jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform == "linux64") | .url') \
+    && curl -L $CHROME_DRIVER_DOWNLOAD_URL --output /tmp/chromedriver-linux64.zip \
+    && unzip -q /tmp/chromedriver-linux64.zip -d /opt/chromedriver \
+    && ln -s /opt/chromedriver/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    && rm -rf /tmp/* \
     && chromedriver --version
 
 # Install stunnel

@@ -55,7 +55,7 @@ RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.48.1 \
+   && GIT_VERSION=2.51.0 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -91,8 +91,8 @@ RUN set -ex \
 # eksctl: https://eksctl.io/installation/
 # ecs-cli: https://github.com/aws/amazon-ecs-cli?tab=readme-ov-file#installing
 RUN set -ex \
-    && KUBERNETES_VERSION=1.32.0 \
-    && AMAZON_EKS_S3_PATH=2024-12-20 \
+    && KUBERNETES_VERSION=1.34.1 \
+    && AMAZON_EKS_S3_PATH=2025-09-19 \
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/arm64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -115,7 +115,7 @@ RUN set -ex \
 
 # Install Pack
 RUN set -ex \
-    && PACK_VERSION=0.36.0 \
+    && PACK_VERSION=0.38.2 \
     && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux-arm64.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
     && pack --version
 
@@ -193,16 +193,16 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.9 \
+    MAVEN_VERSION=3.9.11 \
     INSTALLED_GRADLE_VERSIONS="8.0.2 8.12.1" \
     GRADLE_812_VERSION=8.12.1 \
     GRADLE_VERSION=8.0.2 \
-    SBT_VERSION=1.10.7 \
+    SBT_VERSION=1.11.7 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
-    MAVEN_DOWNLOAD_SHA512="a555254d6b53d267965a3404ecb14e53c3827c09c3b94b5678835887ab404556bfaf78dcfe03ba76fa2508649dca8531c74bca4d5846513522404d48e8c4ac8b" \
+    MAVEN_DOWNLOAD_SHA512="bcfe4fe305c962ace56ac7b5fc7a08b87d5abd8b7e89027ab251069faebee516b0ded8961445d6d91ec1985dfe30f8153268843c89aa392733d1a3ec956c9978" \
     GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\n296742a352f0b20ec14b143fb684965ad66086c7810b7b255dee216670716175 8.12.1" \
-    SBT_DOWNLOAD_SHA256="32c15233c636c233ee25a2c31879049db7021cfef70807c187515c39b96b0fe6"
+    SBT_DOWNLOAD_SHA256="1232818f91c39639a93bbe1108e12d94c7044a646a7847f1a3977b9e46716cd6"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_17_HOME" \
@@ -274,9 +274,9 @@ RUN rm -fr /tmp/* /var/tmp/* \
 #****************     PowerShell     *******************************************************
 
 # Install Powershell Core
-ENV POWERSHELL_VERSION 7.5.0
+ENV POWERSHELL_VERSION 7.5.3
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-arm64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA a3b6a1d14897974aea732d82970c86dd17ffc57a5fc4f4bfabfe2dd272ff6c40
+ENV POWERSHELL_DOWNLOAD_SHA 4a6b656dd0e751e82c5df9b9a4245bd1ec7d21de5334afbbd802dfd009595599
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -290,9 +290,9 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_22_VERSION="22.12.0" \
-    NODE_20_VERSION="20.18.2" \
-    NODE_18_VERSION="18.20.6"
+ENV NODE_22_VERSION="22.20.0" \
+    NODE_20_VERSION="20.19.5" \
+    NODE_18_VERSION="18.20.8"
 
 RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
@@ -314,10 +314,10 @@ RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_34_VERSION="3.4.1" \
-    RUBY_33_VERSION="3.3.7" \
-    RUBY_32_VERSION="3.2.6" \
-    RUBY_31_VERSION="3.1.6"
+ENV RUBY_34_VERSION="3.4.7" \
+    RUBY_33_VERSION="3.3.9" \
+    RUBY_32_VERSION="3.2.9" \
+    RUBY_31_VERSION="3.1.7"
 
 RUN rbenv install $RUBY_34_VERSION \
     && rbenv install $RUBY_33_VERSION \
@@ -329,12 +329,12 @@ RUN rbenv install $RUBY_34_VERSION \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_313_VERSION="3.13.1" \
-    PYTHON_312_VERSION="3.12.8" \
-    PYTHON_311_VERSION="3.11.11" \
-    PYTHON_310_VERSION="3.10.16" \
-    PYTHON_39_VERSION="3.9.21" \
-    PYTHON_PIP_VERSION="25.0" \
+ENV PYTHON_313_VERSION="3.13.8" \
+    PYTHON_312_VERSION="3.12.12" \
+    PYTHON_311_VERSION="3.11.14" \
+    PYTHON_310_VERSION="3.10.19" \
+    PYTHON_39_VERSION="3.9.24" \
+    PYTHON_PIP_VERSION="25.2" \
     PYYAML_VERSION="6.0.2" \
     PYTHON_SETUPTOOLS_VERSION="75.8.0" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
@@ -390,9 +390,9 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_81_VERSION="8.1.30"
-ENV PHP_82_VERSION="8.2.25"
-ENV PHP_83_VERSION="8.3.13"
+ENV PHP_81_VERSION="8.1.33"
+ENV PHP_82_VERSION="8.2.29"
+ENV PHP_83_VERSION="8.3.26"
 
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -413,8 +413,8 @@ RUN phpenv update \
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_23_VERSION="1.23.5" \
-    GOLANG_22_VERSION="1.22.11" \
+ENV GOLANG_23_VERSION="1.23.12" \
+    GOLANG_22_VERSION="1.22.12" \
     GOLANG_21_VERSION="1.21.13" \
     GOLANG_20_VERSION="1.20.14"
 
@@ -434,10 +434,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="e6b53725a73763ab3f988c73f8772eaed429754c1a579db5ff11f21990fd1817"
-ENV DOCKER_VERSION="27.5.1"
-ENV DOCKER_COMPOSE_VERSION="2.32.4"
-ARG DOCKER_BUILDX_VERSION="0.20.1"
+ENV DOCKER_SHA256="de54e37157f45a43f42f6271302372d95c0eb992cc35ecaee74989bb14058c94"
+ENV DOCKER_VERSION="28.5.1"
+ENV DOCKER_COMPOSE_VERSION="2.39.4"
+ARG DOCKER_BUILDX_VERSION="0.28.0"
 
 VOLUME /var/lib/docker
 
@@ -482,7 +482,7 @@ RUN dnf install -y runfinch-finch \
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_8_SDK_VERSION="8.0.405" \
+ENV DOTNET_8_SDK_VERSION="8.0.411" \
     DOTNET_6_SDK_VERSION="6.0.428" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
     DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
@@ -512,7 +512,7 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 # Install GitVersion
-ENV GITVERSION_VERSION="6.1.0"
+ENV GITVERSION_VERSION="6.4.0"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion \

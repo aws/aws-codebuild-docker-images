@@ -35,8 +35,9 @@ RUN set -ex \
            libicu-devel libjpeg-devel libpng-devel libserf libsqlite3x-devel \
            libtidy-devel libunwind libwebp-devel libxml2-devel libxslt libxslt-devel \
            libyaml-devel libzip-devel mariadb-devel mercurial mlocate mono-devel \
-           ncurses-devel oniguruma-devel openssl openssl-devel perl perl-FindBin perl-DBD-SQLite \
-           perl-DBI perl-HTTP-Date perl-IO-Pty-Easy perl-TimeDate perl-YAML-LibYAML \
+           ncurses-devel oniguruma-devel openssl openssl-devel perl perl-DBD-SQLite \
+           perl-DBI perl-FindBin perl-HTTP-Date perl-IO-Pty-Easy perl-IPC-Cmd \
+           perl-TimeDate perl-YAML-LibYAML \
            postgresql-devel procps-ng python-configobj readline-devel rsync sgml-common \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
            amazon-ecr-credential-helper \
@@ -311,7 +312,7 @@ ENV GOLANG_18_VERSION="1.18.10"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
-RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \
+RUN goenv install $GOLANG_18_VERSION && rm -rf /tmp/* && \ 
     goenv global $GOLANG_18_VERSION && \
     go env -w GO111MODULE=auto
 

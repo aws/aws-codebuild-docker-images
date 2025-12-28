@@ -43,6 +43,8 @@ RUN set -ex \
         xfsprogs xmlto xorg-x11-server-Xvfb xorriso xz xz-devel zip \
     && rm /etc/yum.repos.d/mono-centos7-stable.repo
 
+RUN dnf update -y --security
+
 # Set locale
 ENV LC_ALL="en_US.utf8"
 ENV LANG="en_US.utf-8"
@@ -70,7 +72,7 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
 
 # Install Git
 RUN set -ex \
-    && GIT_VERSION=2.47.1 \
+    && GIT_VERSION=2.49.0 \
     && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
     && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
     && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -84,9 +86,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-    && STUNNEL_VERSION=5.73 \
+    && STUNNEL_VERSION=5.75 \
     && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-    && STUNNEL_SHA256="bc917c3bcd943a4d632360c067977a31e85e385f5f4845f69749bce88183cb38" \
+    && STUNNEL_SHA256="0c1ef0ed85240974dccb94fe74fb92d6383474c7c0d10e8796d1f781a3ba5683" \
     && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
     && cd stunnel-$STUNNEL_VERSION \
     && ./configure \
@@ -104,8 +106,8 @@ RUN set -ex \
 # eksctl: https://eksctl.io/installation/
 # ecs-cli: https://github.com/aws/amazon-ecs-cli?tab=readme-ov-file#installing
 RUN set -ex \
-    && KUBERNETES_VERSION=1.32.0 \
-    && AMAZON_EKS_S3_PATH=2024-12-20 \
+    && KUBERNETES_VERSION=1.33.0 \
+    && AMAZON_EKS_S3_PATH=2025-05-01 \
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -132,7 +134,7 @@ RUN set -ex \
 
 # Install Pack
 RUN set -ex \
-    && PACK_VERSION=0.36.0 \
+    && PACK_VERSION=0.38.0 \
     && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
     && pack --version
 
@@ -140,11 +142,11 @@ RUN set -ex \
 ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034" \
-    DOCKER_COMPOSE_VERSION="2.29.7" \
-    DOCKER_BUILDX_VERSION="0.17.1"
+    DOCKER_COMPOSE_VERSION="2.37.1" \
+    DOCKER_BUILDX_VERSION="0.24.0"
 
-ENV DOCKER_SHA256="9b4f6fe406e50f9085ee474c451e2bb5adb119a03591f467922d3b4e2ddf31d3" \
-    DOCKER_VERSION="27.3.1"
+ENV DOCKER_SHA256="4f798b3ee1e0140eab5bf30b0edc4e84f4cdb53255a429dc3bbae9524845d640" \
+    DOCKER_VERSION="27.5.1"
 
 VOLUME /var/lib/docker
 
@@ -223,8 +225,8 @@ RUN set -ex \
 
 # Install Mozilla Firefox
 RUN set -ex \
-    && curl -L "https://download.mozilla.org/?product=firefox-latest&os=linux64" --output /tmp/FirefoxSetup.tar.bz2 \
-    && tar xjf /tmp/FirefoxSetup.tar.bz2 -C /opt/ \
+    && curl -L "https://download.mozilla.org/?product=firefox-latest&os=linux64" --output /tmp/FirefoxSetup.tar.xz \
+    && tar xf /tmp/FirefoxSetup.tar.xz -C /opt/ \
     && ln -s /opt/firefox/firefox /usr/local/bin/firefox \
     && rm -rf /tmp/* \
     && firefox --version
@@ -262,14 +264,14 @@ ENV JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.x86_64" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.9 \
-    GRADLE_VERSION=8.11.1 \
-    SBT_VERSION=1.10.6 \
+    MAVEN_VERSION=3.9.10 \
+    GRADLE_VERSION=8.14.2 \
+    SBT_VERSION=1.11.2 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
-    MAVEN_DOWNLOAD_SHA512="a555254d6b53d267965a3404ecb14e53c3827c09c3b94b5678835887ab404556bfaf78dcfe03ba76fa2508649dca8531c74bca4d5846513522404d48e8c4ac8b" \
-    GRADLE_DOWNLOADS_SHA256="89d4e70e4e84e2d2dfbb63e4daa53e21b25017cc70c37e4eea31ee51fb15098a 8.11.1" \
-    SBT_DOWNLOAD_SHA256="7e1b098effec80614e838aa61b753a8b46237b24b706ec9b37609030800c111a"
+    MAVEN_DOWNLOAD_SHA512="4ef617e421695192a3e9a53b3530d803baf31f4269b26f9ab6863452d833da5530a4d04ed08c36490ad0f141b55304bceed58dbf44821153d94ae9abf34d0e1b" \
+    GRADLE_DOWNLOADS_SHA256="443c9c8ee2ac1ee0e11881a40f2376d79c66386264a44b24a9f8ca67e633375f 8.14.2" \
+    SBT_DOWNLOAD_SHA256="84c7b9d8e20c5dc8356154a5b7146c0a8b86aba97268ce9fe1a585d2c8908f4f"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_17_HOME" \
@@ -329,7 +331,7 @@ RUN set -ex \
     && rm sbt.tgz
 
 ENV PATH="/usr/local/bin/sbt/bin:$PATH"
-RUN sbt version -Dsbt.rootdir=true \
+RUN sbt --allow-empty version -Dsbt.rootdir=true \
     # Clean up
     && rm -rf /tmp/* /var/tmp/*
 #****************     END JAVA     ****************************************************
@@ -337,9 +339,10 @@ RUN sbt version -Dsbt.rootdir=true \
 #****************      NODEJS     *****************************************************
 
 ENV N_SRC_DIR="$SRC_DIR/n"
-ENV NODE_18_VERSION="18.20.6" \
-    NODE_20_VERSION="20.18.2" \
-    NODE_22_VERSION="22.13.1"
+ENV NODE_18_VERSION="18.20.8" \
+    NODE_20_VERSION="20.19.2" \
+    NODE_22_VERSION="22.16.0" \
+    NODE_24_VERSION="24.2.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
@@ -357,10 +360,14 @@ RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
+    && n $NODE_24_VERSION && npm install --save-dev -g -f grunt \
+    && npm install --save-dev -g -f grunt-cli \
+    && npm install --save-dev -g -f webpack \
+    && npm install --save-dev -g -f yarn \
     && cd / && rm -rf $N_SRC_DIR \
     && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
 
-RUN npm install -g npm@10.9.2
+RUN npm install -g npm@11.4.2
 
 # Preserve latest npm version
 ENV N_PRESERVE_NPM=1 \
@@ -381,9 +388,9 @@ RUN set -ex \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
-ENV RUBY_34_VERSION="3.4.1" \
-    RUBY_33_VERSION="3.3.6" \
-    RUBY_32_VERSION="3.2.6" \
+ENV RUBY_34_VERSION="3.4.2" \
+    RUBY_33_VERSION="3.3.7" \
+    RUBY_32_VERSION="3.2.7" \
     RUBY_31_VERSION="3.1.6"
 
 RUN rbenv install $RUBY_34_VERSION \
@@ -400,14 +407,14 @@ RUN rbenv install $RUBY_34_VERSION \
 RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-ENV PYTHON_313_VERSION="3.13.1" \
-    PYTHON_312_VERSION="3.12.8" \
-    PYTHON_311_VERSION="3.11.11" \
-    PYTHON_310_VERSION="3.10.16" \
-    PYTHON_39_VERSION="3.9.21" \
-    PYTHON_PIP_VERSION="24.3.1" \
+ENV PYTHON_313_VERSION="3.13.5" \
+    PYTHON_312_VERSION="3.12.11" \
+    PYTHON_311_VERSION="3.11.13" \
+    PYTHON_310_VERSION="3.10.18" \
+    PYTHON_39_VERSION="3.9.23" \
+    PYTHON_PIP_VERSION="25.1.1" \
     PYYAML_VERSION="6.0.2" \
-    PYTHON_SETUPTOOLS_VERSION="75.6.0" \
+    PYTHON_SETUPTOOLS_VERSION="80.9.0" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
 # Python313
@@ -468,8 +475,8 @@ RUN set -ex \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_83_VERSION="8.3.13" \
-    PHP_82_VERSION="8.2.25"
+ENV PHP_83_VERSION="8.3.22" \
+    PHP_82_VERSION="8.2.28"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
 # Set make arguments to use 4 parallel jobs.
@@ -492,14 +499,16 @@ RUN phpenv update \
 RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
 ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
-ENV GOLANG_23_VERSION="1.23.4" \
-    GOLANG_22_VERSION="1.22.10" \
+ENV GOLANG_24_VERSION="1.24.4" \
+    GOLANG_23_VERSION="1.23.10" \
+    GOLANG_22_VERSION="1.22.12" \
     GOLANG_21_VERSION="1.21.13" \
     GOLANG_20_VERSION="1.20.14"
 ENV GOENV_DISABLE_GOPATH=1 \
     GOPATH="/go"
 
-RUN goenv install $GOLANG_23_VERSION \
+RUN goenv install $GOLANG_24_VERSION \
+    && goenv install $GOLANG_23_VERSION \
     && goenv install $GOLANG_22_VERSION \
     && goenv install $GOLANG_21_VERSION \
     && goenv install $GOLANG_20_VERSION \
@@ -517,17 +526,17 @@ RUN set -ex  \
     && wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
-ENV DOTNET_8_SDK_VERSION="8.0.404" \
+ENV DOTNET_8_SDK_VERSION="8.0.411" \
     DOTNET_6_SDK_VERSION="6.0.428" \
-    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
-    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
+    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
+    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 8 Global Tools install folder to PATH
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
     && /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
     && dotnet --list-sdks \
-    && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+    && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 ## Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE skip
@@ -540,7 +549,7 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 # Install GitVersion
-ENV GITVERSION_VERSION="6.0.5"
+ENV GITVERSION_VERSION="6.3.0"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion \
@@ -548,9 +557,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.4#installation-using-a-binary-archive-file
-ARG POWERSHELL_VERSION=7.4.6
+ARG POWERSHELL_VERSION=7.4.10
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=6f6015203c47806c5cc444c19d8ed019695e610fbd948154264bf9ca8e157561
+ARG POWERSHELL_DOWNLOAD_SHA=d91b9172668f4b6aef4abce8c780cd298872c7a0f4487cc47444d26877ba49f6
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -573,16 +582,16 @@ RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_82_VERSION
 RUN rbenv global $RUBY_32_VERSION
 RUN goenv global $GOLANG_20_VERSION
-RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH
-COPY ssh_config /root/.ssh/config
-COPY runtimes.yml /codebuild/image/config/runtimes.yml
-COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+RUN cat ssh_config > /root/.ssh/config
+RUN cat runtimes.yml > /codebuild/image/config/runtimes.yml
+RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
-COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
-COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
+RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
+RUN cat legal/bill_of_material.txt > /usr/share/doc/bill_of_material.txt
+RUN cat amazon-ssm-agent.json > /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
