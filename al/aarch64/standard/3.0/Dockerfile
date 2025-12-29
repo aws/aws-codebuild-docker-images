@@ -523,7 +523,7 @@ RUN set -ex \
 FROM runtimes_3 AS aarch64_v3
 
 # Activate runtime versions specific to image version.
-RUN n --preserve $NODE_18_VERSION
+RUN n --preserve $NODE_22_VERSION
 RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_81_VERSION
 RUN rbenv global $RUBY_32_VERSION

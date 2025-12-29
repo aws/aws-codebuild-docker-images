@@ -601,7 +601,7 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* && apt-get clean && apt-get up
 FROM runtimes AS std_v7
 
 # Activate runtime versions specific to image version.
-RUN n --preserve $NODE_18_VERSION
+RUN n --preserve $NODE_22_VERSION
 RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_82_VERSION
 RUN rbenv global $RUBY_32_VERSION
