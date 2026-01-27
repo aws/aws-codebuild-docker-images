@@ -340,9 +340,9 @@ RUN sbt --allow-empty version -Dsbt.rootdir=true \
 
 ENV N_SRC_DIR="$SRC_DIR/n"
 ENV NODE_18_VERSION="18.20.8" \
-    NODE_20_VERSION="20.19.2" \
-    NODE_22_VERSION="22.16.0" \
-    NODE_24_VERSION="24.2.0"
+    NODE_20_VERSION="20.20.0" \
+    NODE_22_VERSION="22.22.0" \
+    NODE_24_VERSION="24.13.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
