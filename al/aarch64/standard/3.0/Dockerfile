@@ -290,7 +290,8 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_22_VERSION="22.20.0" \
+ENV NODE_24_VERSION="24.13.0" \
+    NODE_22_VERSION="22.20.0" \
     NODE_20_VERSION="20.19.5" \
     NODE_18_VERSION="18.20.8"
 
@@ -304,6 +305,10 @@ RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f yarn \
     && dnf install -y -v libuv-1.44* \
     && n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
+    && npm install --save-dev -g -f grunt-cli \
+    && npm install --save-dev -g -f webpack \
+    && npm install --save-dev -g -f yarn \
+    && n $NODE_24_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
