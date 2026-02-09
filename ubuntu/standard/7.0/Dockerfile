@@ -500,7 +500,10 @@ RUN goenv install $GOLANG_24_VERSION \
 #****************      END GOLANG     *******************************
 
 #****************      JAVA     ****************************************************
-ENV JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
+ENV JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto" \
+    JDK_25_HOME="/usr/lib/jvm/java-25-amazon-corretto" \
+    JRE_25_HOME="/usr/lib/jvm/java-25-amazon-corretto" \
+    JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
     JDK_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
     JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto" \
     JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
@@ -537,6 +540,7 @@ RUN set -ex \
     && wget -O - https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list \
     && apt-get update \
+    && apt-get install -y -qq java-25-amazon-corretto-jdk \
     && apt-get install -y -qq java-21-amazon-corretto-jdk \
     && apt-get install -y -qq java-17-amazon-corretto-jdk \
     && apt-get install -y -qq java-11-amazon-corretto-jdk \

@@ -3,6 +3,22 @@ version: 0.1
 runtimes:
   java:
     versions:
+      corretto25:
+        commands:
+          - echo "Installing Corretto(OpenJDK) version 25 ..."
+          - export JAVA_HOME="$JAVA_25_HOME"
+          - export JRE_HOME="$JRE_25_HOME"
+          - export JDK_HOME="$JDK_25_HOME"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
+                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+                update-alternatives --set $tool $tool_path;
+              fi;
+            done
       corretto21:
         commands:
           - echo "Installing Corretto(OpenJDK) version 21 ..."
