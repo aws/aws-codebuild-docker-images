@@ -11,7 +11,6 @@
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS core
 
-# Install git, SSH, php, and other utilities
 RUN set -ex \
     && yum install -yq openssh-clients \
     && mkdir ~/.ssh \
@@ -90,6 +89,8 @@ RUN set -ex \
 # kubectl: https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
 # eksctl: https://eksctl.io/installation/
 # ecs-cli: https://github.com/aws/amazon-ecs-cli?tab=readme-ov-file#installing
+# Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
+# https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_arm64_kubectl
 RUN set -ex \
     && KUBERNETES_VERSION=1.34.1 \
     && AMAZON_EKS_S3_PATH=2025-09-19 \
@@ -191,17 +192,21 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
     JDK_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
     JRE_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.aarch64" \
+    JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
+    JDK_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
+    JRE_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.9.11 \
-    INSTALLED_GRADLE_VERSIONS="8.0.2 8.12.1" \
+    INSTALLED_GRADLE_VERSIONS="8.0.2 8.12.1 9.2.1" \
     GRADLE_812_VERSION=8.12.1 \
+    GRADLE_921_VERSION=9.2.1\
     GRADLE_VERSION=8.0.2 \
     SBT_VERSION=1.11.7 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
     MAVEN_DOWNLOAD_SHA512="bcfe4fe305c962ace56ac7b5fc7a08b87d5abd8b7e89027ab251069faebee516b0ded8961445d6d91ec1985dfe30f8153268843c89aa392733d1a3ec956c9978" \
-    GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\n296742a352f0b20ec14b143fb684965ad66086c7810b7b255dee216670716175 8.12.1" \
+    GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\n296742a352f0b20ec14b143fb684965ad66086c7810b7b255dee216670716175 8.12.1\nf86344275d1b194688dd330abf9f6f2344cd02872ffee035f2d1ea2fd60cf7f3 9.2.1" \
     SBT_DOWNLOAD_SHA256="1232818f91c39639a93bbe1108e12d94c7044a646a7847f1a3977b9e46716cd6"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -214,7 +219,8 @@ RUN set -x \
     && rpm --import https://yum.corretto.aws/corretto.key \
     && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
     # Install Amazon Corretto 17
-    # Note: We will use update-alternatives to make sure JDK17 has higher priority for all the tools
+    # Note: We will use update-alternatives to make sure JDK17 has higher priority for all the tools \
+    && yum install -y -q java-25-amazon-corretto java-25-amazon-corretto-devel \
     && yum install -y -q java-21-amazon-corretto java-21-amazon-corretto-devel \
     && yum install -y -q java-17-amazon-corretto java-17-amazon-corretto-devel \
     && yum install -y -q java-11-amazon-corretto java-11-amazon-corretto-devel \
@@ -252,10 +258,9 @@ RUN set -ex \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" init --overwrite \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
        && perl -pi -e "s/gradle-$version-bin.zip/gradle-$version-all.zip/" "/tmp/gradle-$version/gradle/wrapper/gradle-wrapper.properties" \
-       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite\
+       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite \
        && rm -rf "/tmp/gradle-$version"; \
      }; done \
-    # Install default GRADLE_VERSION to path
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
     # Install SBT
@@ -269,7 +274,6 @@ ENV PATH="/usr/local/bin/sbt/bin:$PATH"
 RUN rm -fr /tmp/* /var/tmp/* \
      && yum clean all
 #****************     END JAVA     ****************************************************
-
 
 #****************     PowerShell     *******************************************************
 
@@ -286,7 +290,6 @@ RUN set -ex \
     && rm powershell.tar.gz \
     && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
 #****************     END Powershell     *******************************************************
-
 
 #****************      NODEJS     ****************************************************
 
@@ -314,27 +317,25 @@ RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f yarn \
     && cd / && rm -rf $N_SRC_DIR \
     && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
-
 #****************      END NODEJS     ****************************************************
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_34_VERSION="3.4.7" \
+ENV RUBY_VERSIONS="3.4.7 3.3.9 3.2.9 3.1.7" \
+    RUBY_34_VERSION="3.4.7" \
     RUBY_33_VERSION="3.3.9" \
     RUBY_32_VERSION="3.2.9" \
     RUBY_31_VERSION="3.1.7"
 
-RUN rbenv install $RUBY_34_VERSION \
-    && rbenv install $RUBY_33_VERSION \
-    && rbenv install $RUBY_32_VERSION \
-    && rbenv install $RUBY_31_VERSION \
-    && rbenv global $RUBY_32_VERSION && ruby -v \
+RUN for version in $RUBY_VERSIONS; do rbenv install $version; done \
+    && rbenv global $RUBY_32_VERSION \
     && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_313_VERSION="3.13.8" \
+ENV PYTHON_314_VERSION="3.14.2" \
+    PYTHON_313_VERSION="3.13.8" \
     PYTHON_312_VERSION="3.12.12" \
     PYTHON_311_VERSION="3.11.14" \
     PYTHON_310_VERSION="3.10.19" \
@@ -346,58 +347,28 @@ ENV PYTHON_313_VERSION="3.13.8" \
 
 
 RUN set -ex \
-    && pyenv install $PYTHON_39_VERSION \
-    && pyenv global $PYTHON_39_VERSION \
-    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install wheel \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
-    && pip3 uninstall cython --yes
-
-RUN set -ex \
-    && pyenv install $PYTHON_310_VERSION \
-    && pyenv global $PYTHON_310_VERSION \
-    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install wheel \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
-    && pip3 uninstall cython --yes
-
-RUN set -ex \
-    && pyenv install $PYTHON_311_VERSION \
-    && pyenv global $PYTHON_311_VERSION \
-    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install wheel \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
-    && pip3 uninstall cython --yes
-
-RUN set -ex \
-    && pyenv install $PYTHON_312_VERSION \
-    && pyenv global $PYTHON_312_VERSION \
-    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install wheel \
-    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 uninstall cython --yes
-
-RUN set -ex \
-    && pyenv install $PYTHON_313_VERSION \
-    && pyenv global $PYTHON_313_VERSION \
-    && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-    && pip3 install wheel \
-    && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
-    && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-    && pip3 uninstall cython --yes
+    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION $PYTHON_39_VERSION; do \
+        pyenv install $version \
+        && pyenv global $version \
+        && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
+        && pip3 install wheel \
+        && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
+        && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
+        && pip3 uninstall cython --yes; \
+    done \
+    && rm -rf /tmp/*
 
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_81_VERSION="8.1.33"
-ENV PHP_82_VERSION="8.2.29"
-ENV PHP_83_VERSION="8.3.26"
+ENV PHP_VERSIONS="8.5.1 8.4.16 8.3.26 8.2.29 8.1.33" \
+    PHP_85_VERSION="8.5.1" \
+    PHP_84_VERSION="8.4.16" \
+    PHP_83_VERSION="8.3.26" \
+    PHP_82_VERSION="8.2.29" \
+    PHP_81_VERSION="8.1.33"
 
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -405,32 +376,23 @@ ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsq
 ENV PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
 
 RUN phpenv update \
-    && phpenv install $PHP_83_VERSION \
-    && phpenv install $PHP_82_VERSION \
-    && phpenv install $PHP_81_VERSION \
+    && for version in $PHP_VERSIONS; do phpenv install $version; done \
     && phpenv global $PHP_81_VERSION \
-    && php -v \
-    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_81_VERSION/etc/conf.d/memory.ini" \
-    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_82_VERSION/etc/conf.d/memory.ini" \
-    && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_83_VERSION/etc/conf.d/memory.ini" \
+    && for version in $PHP_VERSIONS; do echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$version/etc/conf.d/memory.ini"; done \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
     && rm -rf /tmp/*
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_23_VERSION="1.23.12" \
+ENV GOLANG_VERSIONS="1.20.14 1.21.13 1.22.12 1.23.12" \
+    GOLANG_23_VERSION="1.23.12" \
     GOLANG_22_VERSION="1.22.12" \
     GOLANG_21_VERSION="1.21.13" \
     GOLANG_20_VERSION="1.20.14"
 
-RUN goenv install $GOLANG_20_VERSION && \
-    goenv install $GOLANG_21_VERSION && \
-    goenv install $GOLANG_22_VERSION && \
-    goenv install $GOLANG_23_VERSION && rm -rf /tmp/*
+RUN for version in $GOLANG_VERSIONS; do goenv install $version; done && rm -rf /tmp/*
 
 #****************      END GOLANG     ****************************************************
-
-
 #=======================End of layer: runtimes_1  =================
 FROM runtimes_1 AS runtimes_2
 
@@ -468,14 +430,12 @@ RUN set -ex \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
-    # Ensure docker-compose and docker compose work
     && docker-compose version \
     && docker compose version \
     # Add docker buildx tool
     && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
-    # Ensure docker-buildx works
     && docker-buildx version \
     && docker buildx version
 
@@ -487,23 +447,30 @@ RUN dnf install -y runfinch-finch \
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_8_SDK_VERSION="8.0.411" \
+ENV DOTNET_10_SDK_VERSION="10.0.101" \
+    DOTNET_8_SDK_VERSION="8.0.411" \
     DOTNET_6_SDK_VERSION="6.0.428" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
-    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0"
+    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
+    DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
+
+# Add .NET Core 10 Global Tools install folder to PATH
+RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_10_SDK_VERSION \
+    && dotnet --list-sdks \
+    && rm -rf /tmp/*
 
 # Add .NET Core 8 Global Tools install folder to PATH
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
     && dotnet --list-sdks \
     && rm -rf /tmp/*
 
-# Add .NET Core 6.0 Global Tools install folder to PATH
+# Add .NET Core 6.0 Global Tools install folder to PATH and set as default
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
     && dotnet --list-sdks \
     && rm -rf /tmp/* \
     && mkdir /codebuild && cd /codebuild \
-    && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+    && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 ## Trigger the population of the local package cache
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT true
@@ -528,12 +495,12 @@ RUN set -ex \
 FROM runtimes_3 AS aarch64_v3
 
 # Activate runtime versions specific to image version.
-RUN n --preserve $NODE_18_VERSION
+RUN n $NODE_18_VERSION
 RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_81_VERSION
 RUN rbenv global $RUBY_32_VERSION
 RUN goenv global $GOLANG_20_VERSION
-RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward feature
+RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config
@@ -544,5 +511,4 @@ COPY legal/bill_of_material.txt /usr/share/doc
 COPY amazon-ssm-agent.json /etc/amazon/ssm/
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
-
 #=======================End of layer: aarch64_v3  =================
