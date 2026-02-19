@@ -262,6 +262,9 @@ ENV JAVA_21_HOME="/usr/lib/jvm/java-21-amazon-corretto.x86_64" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64" \
+    JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
+    JDK_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
+    JRE_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.9.10 \
@@ -281,6 +284,7 @@ ENV JAVA_HOME="$JAVA_17_HOME" \
 RUN set -ex \
     && rpm --import https://yum.corretto.aws/corretto.key \
     && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
+    && yum install -y -q java-25-amazon-corretto java-25-amazon-corretto-devel \
     && yum install -y -q java-21-amazon-corretto java-21-amazon-corretto-devel \
     && yum install -y -q java-17-amazon-corretto java-17-amazon-corretto-devel \
     && yum install -y -q java-11-amazon-corretto java-11-amazon-corretto-devel \
