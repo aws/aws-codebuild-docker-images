@@ -18,9 +18,9 @@ runtimes:
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
-          - export GRADLE_VERSION=$GRADLE_921_VERSION
+          - export GRADLE_VERSION=$GRADLE_9_VERSION
           - unlink /usr/bin/gradle
-          - ln -s /usr/local/gradle-$GRADLE_921_VERSION/bin/gradle /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_9_VERSION/bin/gradle /usr/bin/gradle
       corretto21:
         commands:
           - echo "Installing corretto(OpenJDK) version 21 ..."
@@ -36,9 +36,9 @@ runtimes:
                 && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
-          - export GRADLE_VERSION=$GRADLE_812_VERSION
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
           - unlink /usr/bin/gradle
-          - ln -s /usr/local/gradle-$GRADLE_812_VERSION/bin/gradle /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto17:
         commands:
           - echo "Installing corretto(OpenJDK) version 17 ..."
@@ -102,6 +102,18 @@ runtimes:
             done
   golang:
     versions:
+      1.26:
+        commands:
+          - echo "Installing Go version 1.26 ..."
+          - goenv global $GOLANG_26_VERSION
+      1.25:
+        commands:
+          - echo "Installing Go version 1.25 ..."
+          - goenv global $GOLANG_25_VERSION
+      1.24:
+        commands:
+          - echo "Installing Go version 1.24 ..."
+          - goenv global $GOLANG_24_VERSION
       1.23:
         commands:
           - echo "Installing Go version 1.23 ..."
@@ -123,6 +135,17 @@ runtimes:
           - echo "Installing custom Go version $VERSION ..."
           - goenv install $VERSION && rm -rf /tmp/*
           - goenv global $VERSION
+  rust:
+    versions:
+      1.94:
+        commands:
+          - echo "Installing Rust version 1.94 ..."
+          - rustup default $RUST_94_VERSION
+      default:
+        commands:
+          - echo "Installing custom Rust version $VERSION ..."
+          - rustup install $VERSION && rm -rf /tmp/*
+          - rustup default $VERSION
   python:
     versions:
       3.14:
@@ -183,6 +206,10 @@ runtimes:
           - phpenv global $VERSION
   ruby:
     versions:
+      4.0:
+        commands:
+          - echo "Installing Ruby version 4.0 ..."
+          - rbenv global $RUBY_40_VERSION
       3.4:
         commands:
           - echo "Installing Ruby version 3.4 ..."

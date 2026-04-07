@@ -54,7 +54,7 @@ RUN wget -nv https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam
 
 # Install Git
 RUN set -ex \
-   && GIT_VERSION=2.51.0 \
+   && GIT_VERSION=2.53.0 \
    && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
    && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
@@ -68,9 +68,9 @@ RUN set -ex \
 
 # Install stunnel
 RUN set -ex \
-   && STUNNEL_VERSION=5.74 \
+   && STUNNEL_VERSION=5.77 \
    && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-   && STUNNEL_SHA256="9bef235ab5d24a2a8dff6485dfd782ed235f4407e9bc8716deb383fc80cd6230" \
+   && STUNNEL_SHA256="ec026f4fae4e0d25b940cc7a9451d925e359e7fd59e9edad20baea66ce45f263" \
    && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR \
    && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum -c - \
    && tar xvfz $STUNNEL_TAR \
@@ -92,8 +92,8 @@ RUN set -ex \
 # Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
 # https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_arm64_kubectl
 RUN set -ex \
-    && KUBERNETES_VERSION=1.34.1 \
-    && AMAZON_EKS_S3_PATH=2025-09-19 \
+    && KUBERNETES_VERSION=1.35.2 \
+    && AMAZON_EKS_S3_PATH=2026-02-27 \
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/arm64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -162,6 +162,10 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
 
+##rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+ENV PATH="/root/.cargo/bin:$PATH"
+
 ##awscliv2
 RUN curl https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscliv2.zip \
      && unzip /tmp/awscliv2.zip -d /opt \
@@ -197,17 +201,17 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     JRE_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.aarch64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
-    MAVEN_VERSION=3.9.11 \
-    INSTALLED_GRADLE_VERSIONS="8.0.2 8.12.1 9.2.1" \
-    GRADLE_812_VERSION=8.12.1 \
-    GRADLE_921_VERSION=9.2.1\
-    GRADLE_VERSION=8.0.2 \
-    SBT_VERSION=1.11.7 \
+    MAVEN_VERSION=3.9.12 \
+    INSTALLED_GRADLE_VERSIONS="8.14.4 9.4.0" \
+    GRADLE_8_VERSION=8.14.4 \
+    GRADLE_9_VERSION=9.4.0\
+    GRADLE_VERSION=8.14.4 \
+    SBT_VERSION=1.12.5 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
-    MAVEN_DOWNLOAD_SHA512="bcfe4fe305c962ace56ac7b5fc7a08b87d5abd8b7e89027ab251069faebee516b0ded8961445d6d91ec1985dfe30f8153268843c89aa392733d1a3ec956c9978" \
-    GRADLE_DOWNLOADS_SHA256="47a5bfed9ef814f90f8debcbbb315e8e7c654109acd224595ea39fca95c5d4da 8.0.2\n296742a352f0b20ec14b143fb684965ad66086c7810b7b255dee216670716175 8.12.1\nf86344275d1b194688dd330abf9f6f2344cd02872ffee035f2d1ea2fd60cf7f3 9.2.1" \
-    SBT_DOWNLOAD_SHA256="1232818f91c39639a93bbe1108e12d94c7044a646a7847f1a3977b9e46716cd6"
+    MAVEN_DOWNLOAD_SHA512="0a1be79f02466533fc1a80abbef8796e4f737c46c6574ede5658b110899942a94db634477dfd3745501c80aef9aac0d4f841d38574373f7e2d24cce89d694f70" \
+    GRADLE_DOWNLOADS_SHA256="e571f9dc2cafeabaf6319756838042bb27c3c1aad307d41c1400cb12dec7b9e0 8.14.4\nb21468753cb43c167738ee04f10c706c46459cf8f8ae6ea132dc9ce589a261f2 9.4.0" \
+    SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f979f289be0"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 ENV JAVA_HOME="$JAVA_17_HOME" \
@@ -278,9 +282,9 @@ RUN rm -fr /tmp/* /var/tmp/* \
 #****************     PowerShell     *******************************************************
 
 # Install Powershell Core
-ENV POWERSHELL_VERSION 7.5.3
+ENV POWERSHELL_VERSION 7.5.4
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-arm64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA 4a6b656dd0e751e82c5df9b9a4245bd1ec7d21de5334afbbd802dfd009595599
+ENV POWERSHELL_DOWNLOAD_SHA 4b32d4cb86a43dfb83d5602d0294295bf22fafbf9e0785d1aaef81938cda92f8
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -293,9 +297,9 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_24_VERSION="24.10.0" \
-    NODE_22_VERSION="22.20.0" \
-    NODE_20_VERSION="20.19.5" \
+ENV NODE_24_VERSION="24.14.0" \
+    NODE_22_VERSION="22.22.1" \
+    NODE_20_VERSION="20.20.1" \
     NODE_18_VERSION="18.20.8"
 
 RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
@@ -321,10 +325,11 @@ RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_VERSIONS="3.4.7 3.3.9 3.2.9 3.1.7" \
-    RUBY_34_VERSION="3.4.7" \
-    RUBY_33_VERSION="3.3.9" \
-    RUBY_32_VERSION="3.2.9" \
+ENV RUBY_VERSIONS="4.0.1 3.4.8 3.3.10 3.2.10 3.1.7" \
+    RUBY_40_VERSION="4.0.1" \
+    RUBY_34_VERSION="3.4.8" \
+    RUBY_33_VERSION="3.3.10" \
+    RUBY_32_VERSION="3.2.10" \
     RUBY_31_VERSION="3.1.7"
 
 RUN for version in $RUBY_VERSIONS; do rbenv install $version; done \
@@ -334,15 +339,15 @@ RUN for version in $RUBY_VERSIONS; do rbenv install $version; done \
 #**************** END RUBY *****************************************************
 
 #**************** PYTHON *****************************************************
-ENV PYTHON_314_VERSION="3.14.2" \
-    PYTHON_313_VERSION="3.13.8" \
-    PYTHON_312_VERSION="3.12.12" \
-    PYTHON_311_VERSION="3.11.14" \
-    PYTHON_310_VERSION="3.10.19" \
-    PYTHON_39_VERSION="3.9.24" \
-    PYTHON_PIP_VERSION="25.2" \
-    PYYAML_VERSION="6.0.2" \
-    PYTHON_SETUPTOOLS_VERSION="75.8.0" \
+ENV PYTHON_314_VERSION="3.14.3" \
+    PYTHON_313_VERSION="3.13.12" \
+    PYTHON_312_VERSION="3.12.13" \
+    PYTHON_311_VERSION="3.11.15" \
+    PYTHON_310_VERSION="3.10.20" \
+    PYTHON_39_VERSION="3.9.25" \
+    PYTHON_PIP_VERSION="26.0.1" \
+    PYYAML_VERSION="6.0.3" \
+    PYTHON_SETUPTOOLS_VERSION="82.0.0" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
 
@@ -363,12 +368,12 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_VERSIONS="8.5.1 8.4.16 8.3.26 8.2.29 8.1.33" \
-    PHP_85_VERSION="8.5.1" \
-    PHP_84_VERSION="8.4.16" \
-    PHP_83_VERSION="8.3.26" \
-    PHP_82_VERSION="8.2.29" \
-    PHP_81_VERSION="8.1.33"
+ENV PHP_VERSIONS="8.5.3 8.4.18 8.3.30 8.2.30 8.1.34" \
+    PHP_85_VERSION="8.5.3" \
+    PHP_84_VERSION="8.4.18" \
+    PHP_83_VERSION="8.3.30" \
+    PHP_82_VERSION="8.2.30" \
+    PHP_81_VERSION="8.1.34"
 
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -384,7 +389,10 @@ RUN phpenv update \
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_VERSIONS="1.20.14 1.21.13 1.22.12 1.23.12" \
+ENV GOLANG_VERSIONS="1.20.14 1.21.13 1.22.12 1.23.12 1.24.13 1.25.8 1.26.1" \
+    GOLANG_26_VERSION="1.26.1" \
+    GOLANG_25_VERSION="1.25.8" \
+    GOLANG_24_VERSION="1.24.13" \
     GOLANG_23_VERSION="1.23.12" \
     GOLANG_22_VERSION="1.22.12" \
     GOLANG_21_VERSION="1.21.13" \
@@ -393,6 +401,12 @@ ENV GOLANG_VERSIONS="1.20.14 1.21.13 1.22.12 1.23.12" \
 RUN for version in $GOLANG_VERSIONS; do goenv install $version; done && rm -rf /tmp/*
 
 #****************      END GOLANG     ****************************************************
+
+#****************     RUST     ****************************************************
+ENV RUST_94_VERSION="1.94.0"
+RUN rustup install $RUST_94_VERSION && rm -rf /tmp/*
+RUN rustc --version
+#****************      END RUST     ****************************************************
 #=======================End of layer: runtimes_1  =================
 FROM runtimes_1 AS runtimes_2
 
@@ -401,10 +415,10 @@ ENV DOCKER_BUCKET="download.docker.com" \
     DOCKER_CHANNEL="stable" \
     DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
 
-ENV DOCKER_SHA256="de54e37157f45a43f42f6271302372d95c0eb992cc35ecaee74989bb14058c94"
-ENV DOCKER_VERSION="28.5.1"
-ENV DOCKER_COMPOSE_VERSION="2.39.4"
-ARG DOCKER_BUILDX_VERSION="0.28.0"
+ENV DOCKER_SHA256="9e4f82996ab790724094475ebed33a736434bfe5d45231b676fef22ffb80044d"
+ENV DOCKER_VERSION="28.5.2"
+ENV DOCKER_COMPOSE_VERSION="5.1.0"
+ARG DOCKER_BUILDX_VERSION="0.32.1"
 
 VOLUME /var/lib/docker
 
@@ -447,8 +461,8 @@ RUN dnf install -y runfinch-finch \
 FROM runtimes_2 AS runtimes_3
 
 #DotNet
-ENV DOTNET_10_SDK_VERSION="10.0.101" \
-    DOTNET_8_SDK_VERSION="8.0.411" \
+ENV DOTNET_10_SDK_VERSION="10.0.103" \
+    DOTNET_8_SDK_VERSION="8.0.418" \
     DOTNET_6_SDK_VERSION="6.0.428" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
     DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
@@ -484,7 +498,7 @@ RUN set -ex \
     && rm -rf /tmp/NuGetScratch
 
 # Install GitVersion
-ENV GITVERSION_VERSION="6.4.0"
+ENV GITVERSION_VERSION="6.6.0"
 RUN set -ex \
     && dotnet tool install --global GitVersion.Tool --version $GITVERSION_VERSION \
     && ln -s ~/.dotnet/tools/dotnet-gitversion /usr/local/bin/gitversion \
@@ -500,6 +514,7 @@ RUN pyenv global $PYTHON_311_VERSION
 RUN phpenv global $PHP_81_VERSION
 RUN rbenv global $RUBY_32_VERSION
 RUN goenv global $GOLANG_20_VERSION
+RUN rustup default $RUST_94_VERSION
 RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH

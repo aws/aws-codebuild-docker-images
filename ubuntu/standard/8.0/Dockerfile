@@ -8,7 +8,8 @@
 # or in the "license" file accompanying this file.
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
-FROM public.ecr.aws/ubuntu/ubuntu:22.04 AS core
+
+FROM public.ecr.aws/ubuntu/ubuntu:24.04 AS core
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -19,7 +20,7 @@ RUN set -ex \
     && apt install -y -qq apt-transport-https gnupg ca-certificates sudo \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
     && apt-get install -y -qq --no-install-recommends openssh-client \
-    && mkdir ~/.ssh \
+    && mkdir -p ~/.ssh \
     && mkdir -p /codebuild/image/config \
     && touch ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
@@ -32,11 +33,11 @@ RUN set -ex \
         e2fsprogs expect fakeroot file findutils flex fonts-noto-color-emoji ftp \
         g++ gcc git-lfs gettext gettext-base gnupg2 groff gzip \
         haveged imagemagick iproute2 iptables jq less \
-        lib32z1 libapr1 libaprutil1 libargon2-0-dev libbz2-dev \
+        lib32z1 libapr1 libaprutil1 libbz2-dev \
         libc++-dev libc++abi-dev libc6-dev libcurl4-openssl-dev \
         libdb-dev libdbd-sqlite3-perl libdbi-perl libdpkg-perl \
         libedit-dev liberror-perl libevent-dev libffi-dev  \
-        libgeoip-dev libgbm-dev libgconf-2-4 libglib2.0-dev libgsl-dev libgtk-3-0 \
+        libgeoip-dev libgbm-dev libglib2.0-dev libgsl-dev libgtk-3-0 \
         libhttp-date-perl libio-pty-perl libjpeg-dev libkrb5-dev liblzma-dev \
         libmagic-dev libmagickcore-dev libmagickwand-dev libmysqlclient-dev \
         libncurses5-dev libncursesw5-dev libonig-dev libpq-dev libreadline-dev \
@@ -44,7 +45,7 @@ RUN set -ex \
         libsvn1 libsvn-perl libtcl8.6 libtidy-dev libtimedate-perl libtool libunwind8 \
         libwebp-dev libxkbfile-dev libxml2-dev libxml2-utils libxslt1-dev libxss1 \
         libyaml-dev libyaml-perl libzip-dev llvm locales lz4 \
-        m4 make mediainfo mercurial mlocate net-tools netbase netcat \
+        m4 make mediainfo mercurial net-tools netbase netcat-openbsd \
         openssl patch p7zip-full p7zip-rar parallel pass patchelf pigz pkg-config pollinate procps \
         python-is-python3 python3-configobj python3-openssl rpm rsync \
         sgml-base sgml-data shellcheck sphinxsearch sqlite3 ssh sshpass subversion sudo swig systemd-coredump \
@@ -156,7 +157,7 @@ RUN set -ex \
 
 # Install Pack
 RUN set -ex \
-    && PACK_VERSION=0.38.0 \
+    && PACK_VERSION=0.39.1 \
     && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
     && pack --version
 
@@ -265,6 +266,15 @@ RUN set -ex \
 #=======================End of stage: tools  =================
 FROM tools AS runtimes
 
+#****************      RUST     ****************************************************
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+ENV PATH="/root/.cargo/bin:$PATH"
+ENV RUST_93_VERSION="1.93.1"
+
+RUN rustup install $RUST_93_VERSION && rm -rf /tmp/*
+RUN rustc --version
+#****************     END RUST     ****************************************************
+
 #****************     .NET-CORE     *******************************************************
 
 # Dotnet
@@ -274,28 +284,21 @@ RUN set -ex  \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
 ENV DOTNET_10_SDK_VERSION="10.0.101" \
-    DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0" \
-    DOTNET_8_SDK_VERSION="8.0.411" \
-    DOTNET_6_SDK_VERSION="6.0.428" \
-    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
-    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
+    DOTNET_8_SDK_VERSION="8.0.416" \
+    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
+    DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 10 Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_10_SDK_VERSION \
      && dotnet --list-sdks \
-     && rm -rf /tmp/*
+     && rm -rf /tmp/* \
+     && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Add .NET Core 8 Global Tools install folder to PATH
 RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
      && dotnet --list-sdks \
      && rm -rf /tmp/*
-
-# Add .NET Core 6 Global Tools install folder to PATH
-RUN  /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
-     && dotnet --list-sdks \
-     && rm -rf /tmp/* \
-     && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
 
 # Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE=skip
@@ -331,26 +334,23 @@ RUN set -ex \
 ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 
-ENV NODE_18_VERSION="18.20.8" \
-    NODE_20_VERSION="20.20.0" \
-    NODE_22_VERSION="22.22.0" \
+ENV NODE_22_VERSION="22.22.0" \
     NODE_24_VERSION="24.14.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
 
-RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
-    n $NODE_20_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
-    n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
+# Install all Node.js versions
+RUN n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
     n $NODE_24_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn
 
 # Install npm 11.7.0 globally and copy to Node 22 and 24 cache locations
-# Node 18 and 20 use their default bundled npm versions
 RUN npm install -g npm@11.7.0 && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_22_VERSION/lib/node_modules/ && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_24_VERSION/lib/node_modules/
 
-RUN cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
+# Clean up
+RUN cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/*
 
 ENV N_PRESERVE_COREPACK=1
 #****************      END NODEJS     ****************************************************
@@ -371,16 +371,12 @@ RUN set -ex \
 
 ENV RUBY_40_VERSION="4.0.1" \
     RUBY_34_VERSION="3.4.8" \
-    RUBY_33_VERSION="3.3.10" \
-    RUBY_32_VERSION="3.2.10" \
-    RUBY_31_VERSION="3.1.7"
+    RUBY_33_VERSION="3.3.10"
 
 RUN rbenv install $RUBY_40_VERSION \
     && rbenv install $RUBY_34_VERSION \
     && rbenv install $RUBY_33_VERSION \
-    && rbenv install $RUBY_32_VERSION \
-    && rbenv install $RUBY_31_VERSION \
-    && rbenv global $RUBY_32_VERSION && ruby -v \
+    && rbenv global $RUBY_40_VERSION && ruby -v \
     && rm -rf /tmp/*
 #**************** END RUBY *****************************************************
 
@@ -395,15 +391,14 @@ ENV PYTHON_314_VERSION="3.14.3" \
     PYTHON_312_VERSION="3.12.13" \
     PYTHON_311_VERSION="3.11.15" \
     PYTHON_310_VERSION="3.10.20" \
-    PYTHON_39_VERSION="3.9.25" \
     PYTHON_PIP_VERSION="26.0.1" \
     PYYAML_VERSION="6.0.3" \
     PYTHON_SETUPTOOLS_VERSION="82.0.0" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
-#Install python 14, 13, 12, 11, 10, 9
+#Install python 14, 13, 12, 11, 10
 RUN set -ex \
-    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION $PYTHON_39_VERSION; do \
+    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION; do \
         pyenv install $version \
         && pyenv global $version \
         && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -416,6 +411,9 @@ RUN set -ex \
 #**************** END PYTHON *****************************************************
 
 #****************      PHP     ****************************************************
+
+# Install PHP build dependencies
+RUN apt-get install -y -qq libargon2-dev && rm -rf /var/lib/apt/lists/*
 
 #phpenv
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
@@ -433,7 +431,7 @@ RUN phpenv update \
     && phpenv install $PHP_84_VERSION \
     && phpenv install $PHP_83_VERSION \
     && phpenv install $PHP_82_VERSION \
-    && phpenv global $PHP_82_VERSION \
+    && phpenv global $PHP_85_VERSION \
     && php -v \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_85_VERSION/etc/conf.d/memory.ini" \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_84_VERSION/etc/conf.d/memory.ini" \
@@ -451,24 +449,15 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
 ENV GOLANG_26_VERSION="1.26.0" \
     GOLANG_25_VERSION="1.25.7" \
-    GOLANG_24_VERSION="1.24.13" \
-    GOLANG_23_VERSION="1.23.12" \
-    GOLANG_22_VERSION="1.22.12" \
-    GOLANG_21_VERSION="1.21.13" \
-    GOLANG_20_VERSION="1.20.14"
+    GOLANG_24_VERSION="1.24.13"
+
 ENV GOENV_DISABLE_GOPATH=1 \
     GOPATH="/go"
 
 RUN goenv install $GOLANG_26_VERSION \
     && goenv install $GOLANG_25_VERSION \
     && goenv install $GOLANG_24_VERSION \
-    && goenv install $GOLANG_23_VERSION \
-    && goenv install $GOLANG_22_VERSION \
-    && goenv install $GOLANG_21_VERSION \
-    && goenv install $GOLANG_20_VERSION \
-    && goenv global $GOLANG_20_VERSION \
-    && go env -w GO111MODULE=auto \
-    && go get -u github.com/golang/dep/cmd/dep \
+    && goenv global $GOLANG_26_VERSION \
     && rm -rf /tmp/*
 #****************      END GOLANG     *******************************
 
@@ -492,9 +481,9 @@ ARG ANT_VERSION=1.10.15
 ARG MAVEN_HOME="/opt/maven"
 ARG MAVEN_VERSION=3.9.12
 ARG INSTALLED_GRADLE_VERSIONS="8.14.4 9.4.0"
-ARG GRADLE_9_VERSION=9.4.0
-ARG GRADLE_8_VERSION=8.14.4
-ARG GRADLE_VERSION=8.14.4
+ENV GRADLE_9_VERSION=9.4.0
+ENV GRADLE_8_VERSION=8.14.4
+ENV GRADLE_VERSION=$GRADLE_9_VERSION
 ARG SBT_VERSION=1.12.5
 ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c"
@@ -504,9 +493,9 @@ ARG SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f9
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 
-ENV JAVA_HOME="$JAVA_17_HOME" \
-    JDK_HOME="$JDK_17_HOME" \
-    JRE_HOME="$JRE_17_HOME"
+ENV JAVA_HOME="$JAVA_25_HOME" \
+    JDK_HOME="$JDK_25_HOME" \
+    JRE_HOME="$JRE_25_HOME"
 
 ENV PATH="${PATH}:/opt/tools"
 
@@ -559,7 +548,7 @@ RUN set -ex \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" init --overwrite \
        && "/usr/local/gradle-$version/bin/gradle" -p "/tmp/gradle-$version" wrapper \
        && perl -pi -e "s/gradle-$version-bin.zip/gradle-$version-all.zip/" "/tmp/gradle-$version/gradle/wrapper/gradle-wrapper.properties" \
-       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite \
+       && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite\
        && rm -rf "/tmp/gradle-$version"; \
      }; done \
     # Install default GRADLE_VERSION to path
@@ -582,12 +571,13 @@ RUN rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/* && apt-get clean && apt-get up
 FROM runtimes AS std_v7
 
 # Activate runtime versions specific to image version.
-RUN n $NODE_18_VERSION
-RUN pyenv global $PYTHON_311_VERSION
-RUN phpenv global $PHP_82_VERSION
-RUN rbenv global $RUBY_32_VERSION
-RUN goenv global $GOLANG_20_VERSION
-RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+RUN n $NODE_24_VERSION
+RUN pyenv global $PYTHON_314_VERSION
+RUN phpenv global $PHP_84_VERSION
+RUN rbenv global $RUBY_40_VERSION
+RUN goenv global $GOLANG_26_VERSION
+RUN rustup default $RUST_93_VERSION
+RUN dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config

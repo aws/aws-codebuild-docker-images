@@ -8,7 +8,6 @@
 # or in the "license" file accompanying this file.
 # This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
-
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023 AS core
 
 # Install SSH, and other utilities
@@ -21,8 +20,6 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
-    && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && yum groupinstall -y -q "Development tools" \
     && yum install -y -q --allowerasing \
         ImageMagick acl asciidoc automake binutils bison brotli bzip2-devel \
@@ -40,8 +37,7 @@ RUN set -ex \
         pigz pkg-config postgresql-devel procps-ng python-configobj \
         readline-devel rpm rsync sgml-common sphinx sqlite sqlite-devel sshpass subversion-perl sudo swig \
         tar tcl telnet texinfo time tk tzdata unzip vim wget which  \
-        xfsprogs xmlto xorg-x11-server-Xvfb xorriso xz xz-devel zip \
-    && rm /etc/yum.repos.d/mono-centos7-stable.repo
+        xfsprogs xmlto xorg-x11-server-Xvfb xorriso xz xz-devel zip
 
 RUN dnf update -y --security
 
@@ -105,11 +101,11 @@ RUN set -ex \
 # kubectl: https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
 # eksctl: https://eksctl.io/installation/
 # ecs-cli: https://github.com/aws/amazon-ecs-cli?tab=readme-ov-file#installing
+# Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
+# https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_amd64_kubectl
 RUN set -ex \
-    # Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
-    # https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_amd64_kubectl
     && KUBERNETES_VERSION=1.35.2 \
-    && AMAZON_EKS_S3_PATH=2026-02-27 \
+    && AMAZON_EKS_S3_PATH=2026-02-27\
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -250,6 +246,15 @@ RUN set -ex \
 
 FROM tools AS runtimes
 
+#****************      RUST     ****************************************************
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
+ENV PATH="/root/.cargo/bin:$PATH"
+ENV RUST_93_VERSION="1.93.1"
+
+RUN rustup install $RUST_93_VERSION && rm -rf /tmp/*
+RUN rustc --version
+#****************     END RUST     ****************************************************
+
 #****************      JAVA     ****************************************************
 
 ENV JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.x86_64" \
@@ -270,21 +275,21 @@ ENV JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto.x86_64" \
     ANT_VERSION=1.10.15 \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.9.12 \
-    INSTALLED_GRADLE_VERSIONS="8.14.4 9.4.0" \
+    INSTALLED_GRADLE_VERSIONS="9.4.0 8.14.4" \
     GRADLE_9_VERSION=9.4.0 \
     GRADLE_8_VERSION=8.14.4 \
-    GRADLE_VERSION=8.14.4 \
+    GRADLE_VERSION=9.4.0 \
     SBT_VERSION=1.12.5 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
     MAVEN_DOWNLOAD_SHA512="0a1be79f02466533fc1a80abbef8796e4f737c46c6574ede5658b110899942a94db634477dfd3745501c80aef9aac0d4f841d38574373f7e2d24cce89d694f70" \
-    GRADLE_DOWNLOADS_SHA256="e571f9dc2cafeabaf6319756838042bb27c3c1aad307d41c1400cb12dec7b9e0 8.14.4\nb21468753cb43c167738ee04f10c706c46459cf8f8ae6ea132dc9ce589a261f2 9.4.0" \
+    GRADLE_DOWNLOADS_SHA256="b21468753cb43c167738ee04f10c706c46459cf8f8ae6ea132dc9ce589a261f2 9.4.0\ne571f9dc2cafeabaf6319756838042bb27c3c1aad307d41c1400cb12dec7b9e0 8.14.4" \
     SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f979f289be0"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
-ENV JAVA_HOME="$JAVA_17_HOME" \
-    JDK_HOME="$JDK_17_HOME" \
-    JRE_HOME="$JRE_17_HOME"
+ENV JAVA_HOME="$JAVA_25_HOME" \
+    JDK_HOME="$JDK_25_HOME" \
+    JRE_HOME="$JRE_25_HOME"
 
 RUN set -ex \
     && rpm --import https://yum.corretto.aws/corretto.key \
@@ -317,7 +322,10 @@ RUN set -ex \
     && rm /var/tmp/apache-maven-$MAVEN_VERSION-bin.tar.gz \
     && update-alternatives --install /usr/bin/mvn mvn /opt/maven/bin/mvn 10000 \
     && mkdir -p $MAVEN_CONFIG_HOME \
-    # Install Gradle
+    # Install Gradle 9.2 8.14 - temporarily use Java 21 for compatibility
+    && export JAVA_HOME="$JAVA_21_HOME" \
+    && export JDK_HOME="$JDK_21_HOME" \
+    && export JRE_HOME="$JRE_21_HOME" \
     && mkdir -p $GRADLE_PATH \
     && for version in $INSTALLED_GRADLE_VERSIONS; do { \
        wget -q "https://services.gradle.org/distributions/gradle-$version-all.zip" -O "$GRADLE_PATH/gradle-$version-all.zip" \
@@ -331,6 +339,10 @@ RUN set -ex \
        && "/tmp/gradle-$version/gradlew" -p "/tmp/gradle-$version" init --overwrite \
        && rm -rf "/tmp/gradle-$version"; \
      }; done \
+    # Restore Java 25 as default
+    && export JAVA_HOME="$JAVA_25_HOME" \
+    && export JDK_HOME="$JDK_25_HOME" \
+    && export JRE_HOME="$JRE_25_HOME" \
     # Install default GRADLE_VERSION to path
     && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
     && rm -rf $GRADLE_PATH \
@@ -349,21 +361,17 @@ RUN sbt --allow-empty version -Dsbt.rootdir=true \
 #****************      NODEJS     *****************************************************
 
 ENV N_SRC_DIR="$SRC_DIR/n"
-ENV NODE_18_VERSION="18.20.8" \
-    NODE_20_VERSION="20.20.0" \
-    NODE_22_VERSION="22.22.0" \
+ENV NODE_22_VERSION="22.22.0" \
     NODE_24_VERSION="24.14.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
 
-RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
-    n $NODE_20_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && dnf install -y -v libuv-1.44* && \
-    n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
+# Install all Node.js versions
+RUN n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
     n $NODE_24_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn
 
 # Install npm 11.7.0 globally and copy to Node 22 and 24 cache locations
-# Node 18 and 20 use their default bundled npm versions
 RUN npm install -g npm@11.7.0 && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_22_VERSION/lib/node_modules/ && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_24_VERSION/lib/node_modules/
@@ -390,16 +398,12 @@ RUN set -ex \
 
 ENV RUBY_40_VERSION="4.0.1" \
     RUBY_34_VERSION="3.4.8" \
-    RUBY_33_VERSION="3.3.10" \
-    RUBY_32_VERSION="3.2.10" \
-    RUBY_31_VERSION="3.1.7"
+    RUBY_33_VERSION="3.3.10"
 
 RUN rbenv install $RUBY_40_VERSION \
     && rbenv install $RUBY_34_VERSION \
     && rbenv install $RUBY_33_VERSION \
-    && rbenv install $RUBY_32_VERSION \
-    && rbenv install $RUBY_31_VERSION \
-    && rbenv global $RUBY_32_VERSION && ruby -v \
+    && rbenv global $RUBY_40_VERSION && ruby -v \
     && rm -rf /tmp/*
 #**************** END RUBY *************************************************************
 
@@ -414,15 +418,14 @@ ENV PYTHON_314_VERSION="3.14.3" \
     PYTHON_312_VERSION="3.12.13" \
     PYTHON_311_VERSION="3.11.15" \
     PYTHON_310_VERSION="3.10.20" \
-    PYTHON_39_VERSION="3.9.25" \
     PYTHON_PIP_VERSION="26.0.1" \
     PYYAML_VERSION="6.0.3" \
     PYTHON_SETUPTOOLS_VERSION="82.0.0" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
-#Install python 14, 13, 12, 11, 10, 9
+#Install python 14, 13, 12, 11, 10,
 RUN set -ex \
-    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION $PYTHON_39_VERSION; do \
+    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION; do \
         pyenv install $version \
         && pyenv global $version \
         && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -452,7 +455,7 @@ RUN phpenv update \
     && phpenv install $PHP_84_VERSION \
     && phpenv install $PHP_83_VERSION \
     && phpenv install $PHP_82_VERSION \
-    && phpenv global $PHP_82_VERSION \
+    && phpenv global $PHP_85_VERSION \
     && php -v \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_85_VERSION/etc/conf.d/memory.ini" \
     && echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$PHP_84_VERSION/etc/conf.d/memory.ini" \
@@ -470,24 +473,15 @@ ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
 ENV GOLANG_26_VERSION="1.26.0" \
     GOLANG_25_VERSION="1.25.7" \
-    GOLANG_24_VERSION="1.24.13" \
-    GOLANG_23_VERSION="1.23.12" \
-    GOLANG_22_VERSION="1.22.12" \
-    GOLANG_21_VERSION="1.21.13" \
-    GOLANG_20_VERSION="1.20.14"
+    GOLANG_24_VERSION="1.24.13"
+
 ENV GOENV_DISABLE_GOPATH=1 \
     GOPATH="/go"
 
 RUN goenv install $GOLANG_26_VERSION \
     && goenv install $GOLANG_25_VERSION \
     && goenv install $GOLANG_24_VERSION \
-    && goenv install $GOLANG_23_VERSION \
-    && goenv install $GOLANG_22_VERSION \
-    && goenv install $GOLANG_21_VERSION \
-    && goenv install $GOLANG_20_VERSION \
-    && goenv global $GOLANG_20_VERSION \
-    && go env -w GO111MODULE=auto \
-    && go get -u github.com/golang/dep/cmd/dep \
+    && goenv global $GOLANG_26_VERSION \
     && rm -rf /tmp/*
 #****************      END GOLANG     ****************************************************
 
@@ -500,19 +494,16 @@ RUN set -ex  \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
 ENV DOTNET_10_SDK_VERSION="10.0.101" \
-    DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0" \
     DOTNET_8_SDK_VERSION="8.0.416" \
-    DOTNET_6_SDK_VERSION="6.0.428" \
-    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
-    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
+    DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
+    DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
 
-# Add .NET Core 8 Global Tools install folder to PATH
+# Add .NET Core 10,8 and 6 Global Tools install folder to PATH
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_10_SDK_VERSION \
     && /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
-    && /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
     && dotnet --list-sdks \
-    && cd /codebuild && dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+    && cd /codebuild && dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 ## Trigger the population of the local package cache
 ENV NUGET_XMLDOC_MODE=skip
@@ -553,21 +544,21 @@ RUN set -ex \
 FROM runtimes AS al2_v5
 
 # Activate runtime versions specific to image version.
-RUN n $NODE_18_VERSION
-RUN pyenv global $PYTHON_311_VERSION
-RUN phpenv global $PHP_82_VERSION
-RUN rbenv global $RUBY_32_VERSION
-RUN goenv global $GOLANG_20_VERSION
-RUN dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+RUN n $NODE_24_VERSION
+RUN pyenv global $PYTHON_314_VERSION
+RUN phpenv global $PHP_85_VERSION
+RUN rbenv global $RUBY_40_VERSION
+RUN goenv global $GOLANG_26_VERSION
+RUN rustup default $RUST_93_VERSION
+RUN dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH
-RUN cat ssh_config > /root/.ssh/config
-RUN cat runtimes.yml > /codebuild/image/config/runtimes.yml
-RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
-RUN cat legal/bill_of_material.txt > /usr/share/doc/bill_of_material.txt
-RUN cat amazon-ssm-agent.json > /etc/amazon/ssm/amazon-ssm-agent.json
+COPY ssh_config /root/.ssh/config
+COPY runtimes.yml /codebuild/image/config/runtimes.yml
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
+COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
+COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
