@@ -1,0 +1,388 @@
+The Amazon CodeBuild Product includes the following third-party software/licensing:
+
+----------------
+apt-transport-https : /usr/share/doc/apt-transport-https/copyright
+----------------
+apt-utils : /usr/share/doc/apt-utils/copyright
+----------------
+aria2 : /usr/share/doc/aria2/copyright
+----------------
+asciidoc : /usr/share/doc/asciidoc/copyright
+----------------
+autoconf : /usr/share/doc/autoconf/copyright
+----------------
+automake : /usr/share/doc/automake/copyright
+----------------
+bison : /usr/share/doc/bison/copyright
+----------------
+brotli : /usr/share/doc/brotli/copyright
+----------------
+build-essential : /usr/share/doc/build-essential/copyright
+----------------
+bzip2 : /usr/share/doc/bzip2/copyright
+----------------
+bzr : /usr/share/doc/bzr/copyright
+----------------
+ca-certificates-java : /usr/share/doc/ca-certificates-java/copyright
+----------------
+chromedriver : 3-clause BSD
+----------------
+chromium : BSD and LGPLv2+ and ASL 2.0 and IJG and MIT and GPLv2+ and ISC and OpenSSL and (MPLv1.1 or GPLv2 or LGPLv2)
+----------------
+coreutils : /usr/share/doc/coreutils/copyright
+----------------
+curl : /usr/share/doc/curl/copyright
+----------------
+dirmngr : /usr/share/doc/dirmngr/copyright
+----------------
+dnsutils : /usr/share/doc/dnsutils/copyright
+----------------
+docbook-xml : /usr/share/doc/docbook-xml/copyright
+----------------
+docbook-xsl : /usr/share/doc/docbook-xsl/copyright
+----------------
+dpkg-dev : /usr/share/doc/dpkg-dev/copyright
+----------------
+e2fsprogs : /usr/share/doc/e2fsprogs/copyright
+----------------
+expect : /usr/share/doc/expect/copyright
+----------------
+fakeroot : /usr/share/doc/fakeroot/copyright
+----------------
+file : /usr/share/doc/file/copyright
+----------------
+flex : /usr/share/doc/flex/copyright
+----------------
+fonts-noto-color-emoji : /usr/share/doc/fonts-noto-color-emoji/copyright
+----------------
+ftp : /usr/share/doc/ftp/copyright
+----------------
+g++ : /usr/share/doc/g++/copyright
+----------------
+gcc : /usr/share/doc/gcc/copyright
+----------------
+geckodriver : Mozilla Public License 2.0 https://github.com/mozilla/geckodriver/blob/master/LICENSE
+----------------
+gettext : /usr/share/doc/gettext/copyright
+----------------
+gettext-base : /usr/share/doc/gettext-base/copyright
+----------------
+git : /usr/share/doc/git/copyright
+----------------
+git-lfs : /usr/share/doc/git-lfs/copyright
+----------------
+gnupg2 : /usr/share/doc/gnupg2/copyright
+----------------
+groff : /usr/share/doc/groff/copyright
+----------------
+gzip : /usr/share/doc/gzip/copyright
+----------------
+haveged : /usr/share/doc/haveged/copyright
+----------------
+imagemagick : /usr/share/doc/imagemagick/copyright
+----------------
+iproute2 : /usr/share/doc/iproute2/copyright
+----------------
+iptables : /usr/share/doc/iptables/copyright
+----------------
+iputils-ping : /usr/share/doc/iputils-ping/copyright
+----------------
+jq : /usr/share/doc/jq/copyright
+----------------
+less : /usr/share/doc/less/copyright
+----------------
+lib32gcc1 : /usr/share/doc/lib32gcc1/copyright
+----------------
+lib32ncurses5 : /usr/share/doc/lib32ncurses5/copyright
+----------------
+lib32stdc++6 : /usr/share/doc/lib32stdc++6/copyright
+----------------
+lib32z1 : /usr/share/doc/lib32z1/copyright
+----------------
+libapr1 : /usr/share/doc/libapr1/copyright
+----------------
+libaprutil1 : /usr/share/doc/libaprutil1/copyright
+----------------
+libargon2-0-dev : /usr/share/doc/libargon2-0-dev/copyright
+----------------
+libasound2 : /usr/share/doc/libasound2/copyright
+----------------
+libbz2-dev : /usr/share/doc/libbz2-dev/copyright
+----------------
+libc++-dev : /usr/share/doc/libc++-dev/copyright
+----------------
+libc++abi-dev : /usr/share/doc/libc++abi-dev/copyright
+----------------
+libc6-dev : /usr/share/doc/libc6-dev/copyright
+----------------
+libc6-i386 : /usr/share/doc/libc6-i386/copyright
+----------------
+libcurl4-openssl-dev : /usr/share/doc/libcurl4-openssl-dev/copyright
+----------------
+libdb-dev : /usr/share/doc/libdb-dev/copyright
+----------------
+libdbd-sqlite3-perl : /usr/share/doc/libdbd-sqlite3-perl/copyright
+----------------
+libdbi-perl : /usr/share/doc/libdbi-perl/copyright
+----------------
+libdbus-1-3 : /usr/share/doc/libdbus-1-3/copyright
+----------------
+libdbus-glib-1-2 : /usr/share/doc/libdbus-glib-1-2/copyright
+----------------
+libdpkg-perl : /usr/share/doc/libdpkg-perl/copyright
+----------------
+libedit-dev : /usr/share/doc/libedit-dev/copyright
+----------------
+liberror-perl : /usr/share/doc/liberror-perl/copyright
+----------------
+libevent-dev : /usr/share/doc/libevent-dev/copyright
+----------------
+libffi-dev : /usr/share/doc/libffi-dev/copyright
+----------------
+libgbm-dev : /usr/share/doc/libgbm-dev/copyright
+----------------
+libgconf-2-4 : /usr/share/doc/libgconf-2-4/copyright
+----------------
+libgeoip-dev : /usr/share/doc/libgeoip-dev/copyright
+----------------
+libglib2.0-0 : /usr/share/doc/libglib2.0-0/copyright
+----------------
+libglib2.0-dev : /usr/share/doc/libglib2.0-dev/copyright
+----------------
+libgsl-dev : /usr/share/doc/libgsl-dev/copyright
+----------------
+libgtk-3-0 : /usr/share/doc/libgtk-3-0/copyright
+----------------
+libhttp-date-perl : /usr/share/doc/libhttp-date-perl/copyright
+----------------
+libio-pty-perl : /usr/share/doc/libio-pty-perl/copyright
+----------------
+libjpeg-dev : /usr/share/doc/libjpeg-dev/copyright
+----------------
+libkrb5-dev : /usr/share/doc/libkrb5-dev/copyright
+----------------
+liblzma-dev : /usr/share/doc/liblzma-dev/copyright
+----------------
+libmagic-dev : /usr/share/doc/libmagic-dev/copyright
+----------------
+libmagickcore-dev : /usr/share/doc/libmagickcore-dev/copyright
+----------------
+libmagickwand-dev : /usr/share/doc/libmagickwand-dev/copyright
+----------------
+libmysqlclient-dev : /usr/share/doc/libmysqlclient-dev/copyright
+----------------
+libncurses5-dev : /usr/share/doc/libncurses5-dev/copyright
+----------------
+libncursesw5-dev : /usr/share/doc/libncursesw5-dev/copyright
+----------------
+libonig-dev : /usr/share/doc/libonig-dev/copyright
+----------------
+libpq-dev : /usr/share/doc/libpq-dev/copyright
+----------------
+libqt5widgets5 : /usr/share/doc/libqt5widgets5/copyright
+----------------
+libreadline-dev : /usr/share/doc/libreadline-dev/copyright
+----------------
+libsecret-1-dev : /usr/share/doc/libsecret-1-dev/copyright
+----------------
+libserf-1-1 : /usr/share/doc/libserf-1-1/copyright
+----------------
+libsqlite3-dev : /usr/share/doc/libsqlite3-dev/copyright
+----------------
+libssl-dev : /usr/share/doc/libssl-dev/copyright
+----------------
+libsvn-perl : /usr/share/doc/libsvn-perl/copyright
+----------------
+libsvn1 : /usr/share/doc/libsvn1/copyright
+----------------
+libtcl8.6 : /usr/share/doc/libtcl8.6/copyright
+----------------
+libtidy-dev : /usr/share/doc/libtidy-dev/copyright
+----------------
+libtimedate-perl : /usr/share/doc/libtimedate-perl/copyright
+----------------
+libtool : /usr/share/doc/libtool/copyright
+----------------
+libunwind8 : /usr/share/doc/libunwind8/copyright
+----------------
+libwebp-dev : /usr/share/doc/libwebp-dev/copyright
+----------------
+libxkbfile-dev : /usr/share/doc/libxkbfile-dev/copyright
+----------------
+libxml2-dev : /usr/share/doc/libxml2-dev/copyright
+----------------
+libxml2-utils : /usr/share/doc/libxml2-utils/copyright
+----------------
+libxslt1-dev : /usr/share/doc/libxslt1-dev/copyright
+----------------
+libxss1 : /usr/share/doc/libxss1/copyright
+----------------
+libyaml-dev : /usr/share/doc/libyaml-dev/copyright
+----------------
+libyaml-perl : /usr/share/doc/libyaml-perl/copyright
+----------------
+libzip-dev : /usr/share/doc/libzip-dev/copyright
+----------------
+libzip4 : /usr/share/doc/libzip4/copyright
+----------------
+llvm : /usr/share/doc/llvm/copyright
+----------------
+locales : /usr/share/doc/locales/copyright
+----------------
+lz4 : /usr/share/doc/lz4/copyright
+----------------
+m4 : /usr/share/doc/m4/copyright
+----------------
+make : /usr/share/doc/make/copyright
+----------------
+mediainfo : /usr/share/doc/mediainfo/copyright
+----------------
+mercurial : /usr/share/doc/mercurial/copyright
+----------------
+mlocate : /usr/share/doc/mlocate/copyright
+----------------
+net-tools : /usr/share/doc/net-tools/copyright
+----------------
+netbase : /usr/share/doc/netbase/copyright
+----------------
+netcat : /usr/share/doc/netcat/copyright
+----------------
+openjdk-8-jdk : /usr/share/doc/openjdk-8-jdk/copyright
+----------------
+openjdk-11-jdk : /usr/share/doc/openjdk-11-jre-headless/copyright
+----------------
+openssh-client : /usr/share/doc/openssh-client/copyright
+----------------
+openssl : /usr/share/doc/openssl/copyright
+----------------
+p7zip-full : /usr/share/doc/p7zip-full/copyright
+----------------
+p7zip-rar : /usr/share/doc/p7zip-rar/copyright
+----------------
+pack: https://github.com/buildpacks/pack/blob/main/LICENSE
+----------------
+parallel : /usr/share/doc/parallel/copyright
+----------------
+pass : /usr/share/doc/pass/copyright
+----------------
+patch : /usr/share/doc/patch/copyright
+----------------
+patchelf : /usr/share/doc/patch/copyright
+----------------
+pigz : /usr/share/doc/pigz/copyright
+----------------
+pkg-config : /usr/share/doc/pkg-config/copyright
+----------------
+pollinate : /usr/share/doc/pollinate/copyright
+----------------
+procps : /usr/share/doc/procps/copyright
+----------------
+python-is-python3 : /usr/share/doc/python-is-python3/copyright
+----------------
+python-bzrlib : /usr/share/doc/python-bzrlib/copyright
+----------------
+python-configobj : /usr/share/doc/python-configobj/copyright
+----------------
+python-openssl : /usr/share/doc/python-openssl/copyright
+----------------
+python-setuptools : /usr/share/doc/python-setuptools/copyright
+----------------
+rpm : /usr/share/doc/rpm/copyright
+----------------
+rsync : /usr/share/doc/rsync/copyright
+----------------
+sbt : /usr/share/doc/sbt/copyright
+----------------
+selenium : Apache License 2.0 https://github.com/SeleniumHQ/selenium/blob/trunk/LICENSE
+----------------
+sgml-base : /usr/share/doc/sgml-base/copyright
+----------------
+sgml-data : /usr/share/doc/sgml-data/copyright
+----------------
+shellcheck : /usr/share/doc/shellcheck/copyright
+----------------
+sphinxsearch : /usr/share/doc/sphinxsearch/copyright
+----------------
+software-properties-common : /usr/share/doc/software-properties-common/copyright
+----------------
+sqlite3 : /usr/share/doc/sqlite3/copyright
+----------------
+ssh : /usr/share/doc/ssh/copyright
+----------------
+sshpass : /usr/share/doc/sshpass/copyright
+----------------
+subversion : /usr/share/doc/subversion/copyright
+----------------
+sudo : /usr/share/doc/sudo/copyright
+----------------
+swig : /usr/share/doc/swig/copyright
+----------------
+systemd-coredump : /usr/share/doc/systemd-coredump/copyright
+----------------
+tar : /usr/share/doc/tar/copyright
+----------------
+tcl : /usr/share/doc/tcl/copyright
+----------------
+tcl8.6 : /usr/share/doc/tcl8.6/copyright
+----------------
+telnet : /usr/share/doc/telnet/copyright
+----------------
+texinfo : /usr/share/doc/texinfo/copyright
+----------------
+time : /usr/share/doc/time/copyright
+----------------
+tk : /usr/share/doc/tk/copyright
+----------------
+tk-dev : /usr/share/doc/tk-dev/copyright
+----------------
+unzip : /usr/share/doc/unzip/copyright
+----------------
+upx : /usr/share/doc/upx-ucl/copyright
+----------------
+vim : /usr/share/doc/vim/copyright
+----------------
+wget : /usr/share/doc/wget/copyright
+----------------
+xfsprogs : /usr/share/doc/xfsprogs/copyright
+----------------
+xml-core : /usr/share/doc/xml-core/copyright
+----------------
+xmlto : /usr/share/doc/xmlto/copyright
+----------------
+xorriso : /usr/share/doc/xmlto/copyright
+----------------
+xsltproc : /usr/share/doc/xsltproc/copyright
+----------------
+xvfb : /usr/share/doc/xvfb/copyright
+----------------
+xz-utils : /usr/share/doc/xz-utils/copyright
+----------------
+zip : /usr/share/doc/zip/copyright
+----------------
+zlib1g-dev : /usr/share/doc/zlib1g-dev/copyright
+----------------
+zsync : /usr/share/doc/zsync/copyright
+----------------
+ruby : https://www.ruby-lang.org/en/about/license.txt
+----------------
+python : https://docs.python.org/3/license.html
+----------------
+php	: https://www.php.net/license/index.php
+----------------
+nodejs: https://github.com/nodejs/node/blob/master/LICENSE
+----------------
+golang : https://golang.org/LICENSE
+----------------
+dotnet : https://github.com/dotnet/core/blob/master/LICENSE.TXT
+----------------
+Firefox : https://www.mozilla.org/en-US/MPL/
+----------------
+Chrome : https://www.google.com/intl/en_pk/chrome/privacy/eula_text.html
+----------------
+stunnel	: https://www.stunnel.org/gpl.html
+----------------
+gitversion : https://github.com/GitTools/GitVersion/blob/master/LICENSE
+----------------
+docker : https://www.docker.com/legal/components-licenses
+----------------
+

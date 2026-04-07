@@ -9,7 +9,6 @@ runtimes:
           - export JAVA_HOME="$JAVA_25_HOME"
           - export JRE_HOME="$JRE_25_HOME"
           - export JDK_HOME="$JDK_25_HOME"
-          - export GRADLE_VERSION="$GRADLE_9_VERSION"
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
@@ -20,6 +19,9 @@ runtimes:
                 update-alternatives --set $tool $tool_path;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_9_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_9_VERSION/bin/gradle /usr/bin/gradle
       corretto21:
         commands:
           - echo "Installing Corretto(OpenJDK) version 21 ..."
@@ -36,6 +38,9 @@ runtimes:
                 update-alternatives --set $tool $tool_path;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto17:
         commands:
           - echo "Installing Corretto(OpenJDK) version 17 ..."
@@ -52,6 +57,9 @@ runtimes:
                 update-alternatives --set $tool $tool_path;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto11:
         commands:
           - echo "Installing Corretto(OpenJDK) version 11 ..."
@@ -68,6 +76,9 @@ runtimes:
                 update-alternatives --set $tool $tool_path;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto8:
         commands:
           - echo "Installing Corretto(OpenJDK) version 8 ..."
@@ -84,6 +95,9 @@ runtimes:
                 update-alternatives --set $tool $tool_path;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       default:
         commands:
           - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
@@ -116,27 +130,22 @@ runtimes:
         commands:
           - echo "Installing Go version 1.24 ..."
           - goenv global $GOLANG_24_VERSION
-      1.23:
-        commands:
-          - echo "Installing Go version 1.23 ..."
-          - goenv global $GOLANG_23_VERSION
-      1.22:
-        commands:
-          - echo "Installing Go version 1.22 ..."
-          - goenv global $GOLANG_22_VERSION
-      1.21:
-        commands:
-          - echo "Installing Go version 1.21 ..."
-          - goenv global $GOLANG_21_VERSION
-      1.20:
-        commands:
-          - echo "Installing Go version 1.20 ..."
-          - goenv global $GOLANG_20_VERSION
       default:
         commands:
           - echo "Installing custom Go version $VERSION ..."
           - goenv install $VERSION && rm -rf /tmp/*
           - goenv global $VERSION
+  rust:
+    versions:
+      1.93:
+        commands:
+          - echo "Installing Rust version 1.93 ..."
+          - rustup default $RUST_93_VERSION
+      default:
+        commands:
+          - echo "Installing custom Rust version $VERSION ..."
+          - rustup install $VERSION && rm -rf /tmp/*
+          - rustup default $VERSION
   python:
     versions:
       3.14:
@@ -159,10 +168,6 @@ runtimes:
         commands:
           - echo "Installing Python version 3.10 ..."
           - pyenv global $PYTHON_310_VERSION
-      3.9:
-        commands:
-          - echo "Installing Python version 3.9 ..."
-          - pyenv global $PYTHON_39_VERSION
       default:
         commands:
           - echo "Installing custom Python version $VERSION ..."
@@ -205,14 +210,6 @@ runtimes:
         commands:
           - echo "Installing Ruby version 3.3 ..."
           - rbenv global $RUBY_33_VERSION
-      3.2:
-        commands:
-          - echo "Installing Ruby version 3.2 ..."
-          - rbenv global $RUBY_32_VERSION
-      3.1:
-        commands:
-          - echo "Installing Ruby version 3.1 ..."
-          - rbenv global $RUBY_31_VERSION
       default:
         commands:
           - echo "Installing custom Ruby version $VERSION ..."
@@ -228,14 +225,6 @@ runtimes:
         commands:
           - echo "Installing Node.js version 22 ..."
           - n $NODE_22_VERSION
-      20:
-        commands:
-          - echo "Installing Node.js version 20 ..."
-          - n $NODE_20_VERSION
-      18:
-        commands:
-          - echo "Installing Node.js version 18 ..."
-          - n $NODE_18_VERSION
       default:
         commands:
           - echo "Installing custom Node.js version $VERSION ..."
@@ -245,17 +234,13 @@ runtimes:
       10.0:
         commands:
           - echo "Installing .NET version 10.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output ..
       8.0:
         commands:
           - echo "Installing .NET version 8.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
-      6.0:
-        commands:
-          - echo "Installing .NET version 6.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output ..
       default:
         commands:
           - echo "Installing custom .Net version $VERSION ..."
           - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
-          - dotnet new globaljson --sdk-version $VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $VERSION --roll-forward feature --output ..

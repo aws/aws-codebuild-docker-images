@@ -3,6 +3,22 @@ version: 0.1
 runtimes:
   java:
     versions:
+      corretto25:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 25 ..."
+          - export JAVA_HOME="$JAVA_25_HOME"
+          - export JRE_HOME="$JRE_25_HOME"
+          - export JDK_HOME="$JDK_25_HOME"
+          - export GRADLE_VERSION="$GRADLE_9_VERSION"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
       corretto21:
         commands:
           - echo "Installing corretto(OpenJDK) version 21 ..."
@@ -81,6 +97,14 @@ runtimes:
             done
   golang:
     versions:
+      1.26:
+        commands:
+          - echo "Installing Go version 1.26 ..."
+          - goenv global $GOLANG_26_VERSION
+      1.25:
+        commands:
+          - echo "Installing Go version 1.25 ..."
+          - goenv global $GOLANG_25_VERSION
       1.24:
         commands:
           - echo "Installing Go version 1.24 ..."
@@ -108,6 +132,10 @@ runtimes:
           - goenv global $VERSION
   python:
     versions:
+      3.14:
+        commands:
+          - echo "Installing Python version 3.14 ..."
+          - pyenv global $PYTHON_314_VERSION
       3.13:
         commands:
           - echo "Installing Python version 3.13 ..."
@@ -135,6 +163,14 @@ runtimes:
           - pyenv global $VERSION
   php:
     versions:
+      8.5:
+        commands:
+          - echo "Installing PHP version 8.5 ..."
+          - phpenv global $PHP_85_VERSION
+      8.4:
+        commands:
+          - echo "Installing PHP version 8.4 ..."
+          - phpenv global $PHP_84_VERSION
       8.3:
         commands:
           - echo "Installing PHP version 8.3 ..."
@@ -150,6 +186,10 @@ runtimes:
           - phpenv global $VERSION
   ruby:
     versions:
+      4.0:
+        commands:
+          - echo "Installing Ruby version 4.0 ..."
+          - rbenv global $RUBY_40_VERSION
       3.4:
         commands:
           - echo "Installing Ruby version 3.4 ..."
@@ -173,6 +213,10 @@ runtimes:
           - rbenv global $VERSION
   nodejs:
     versions:
+      24:
+        commands:
+          - echo "Installing Node.js version 24 ..."
+          - n $NODE_24_VERSION
       22:
         commands:
           - echo "Installing Node.js version 22 ..."
@@ -191,16 +235,20 @@ runtimes:
           - n --no-preserve $VERSION && rm -rf /tmp/*
   dotnet:
     versions:
+      10.0:
+        commands:
+          - echo "Installing .NET version 10.0 ..."
+          - dotnet new globaljson --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
       8.0:
         commands:
           - echo "Installing .NET version 8.0 ..."
-          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
+          - dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
       6.0:
         commands:
           - echo "Installing .NET version 6.0 ..."
-          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
+          - dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
       default:
         commands:
           - echo "Installing custom .Net version $VERSION ..."
           - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
-          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $VERSION --roll-forward feature
+          - dotnet new globaljson --sdk-version $VERSION --roll-forward latestFeature --output .

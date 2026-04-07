@@ -5,24 +5,22 @@ runtimes:
     versions:
       corretto25:
         commands:
-          - echo "Installing Corretto(OpenJDK) version 25 ..."
+          - echo "Installing corretto(OpenJDK) version 25 ..."
           - export JAVA_HOME="$JAVA_25_HOME"
           - export JRE_HOME="$JRE_25_HOME"
           - export JDK_HOME="$JDK_25_HOME"
-          - export GRADLE_VERSION="$GRADLE_9_VERSION"
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
       corretto21:
         commands:
-          - echo "Installing Corretto(OpenJDK) version 21 ..."
+          - echo "Installing corretto(OpenJDK) version 21 ..."
           - export JAVA_HOME="$JAVA_21_HOME"
           - export JRE_HOME="$JRE_21_HOME"
           - export JDK_HOME="$JDK_21_HOME"
@@ -31,14 +29,16 @@ runtimes:
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto17:
         commands:
-          - echo "Installing Corretto(OpenJDK) version 17 ..."
+          - echo "Installing corretto(OpenJDK) version 17 ..."
           - export JAVA_HOME="$JAVA_17_HOME"
           - export JRE_HOME="$JRE_17_HOME"
           - export JDK_HOME="$JDK_17_HOME"
@@ -47,14 +47,16 @@ runtimes:
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto11:
         commands:
-          - echo "Installing Corretto(OpenJDK) version 11 ..."
+          - echo "Installing corretto(OpenJDK) version 11 ..."
           - export JAVA_HOME="$JAVA_11_HOME"
           - export JRE_HOME="$JRE_11_HOME"
           - export JDK_HOME="$JDK_11_HOME"
@@ -63,14 +65,16 @@ runtimes:
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       corretto8:
         commands:
-          - echo "Installing Corretto(OpenJDK) version 8 ..."
+          - echo "Installing corretto(OpenJDK) version 8 ..."
           - export JAVA_HOME="$JAVA_8_HOME"
           - export JRE_HOME="$JRE_8_HOME"
           - export JDK_HOME="$JDK_8_HOME"
@@ -79,27 +83,27 @@ runtimes:
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
+          - export GRADLE_VERSION=$GRADLE_8_VERSION
+          - unlink /usr/bin/gradle
+          - ln -s /usr/local/gradle-$GRADLE_8_VERSION/bin/gradle /usr/bin/gradle
       default:
         commands:
           - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
-          - apt-get update
-          - apt-get install -y java-$VERSION-amazon-corretto-jdk
           - export JAVA_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
-          - export JRE_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
-          - export JDK_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JRE_HOME=$JAVA_HOME
+          - export JDK_HOME=$JAVA_HOME
+          - yum --disablerepo="*" --enablerepo="AmazonCorretto" -y install java-$VERSION-amazon-corretto-devel
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
-                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
-                update-alternatives --set $tool $tool_path;
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
               fi;
             done
   golang:
@@ -116,27 +120,22 @@ runtimes:
         commands:
           - echo "Installing Go version 1.24 ..."
           - goenv global $GOLANG_24_VERSION
-      1.23:
-        commands:
-          - echo "Installing Go version 1.23 ..."
-          - goenv global $GOLANG_23_VERSION
-      1.22:
-        commands:
-          - echo "Installing Go version 1.22 ..."
-          - goenv global $GOLANG_22_VERSION
-      1.21:
-        commands:
-          - echo "Installing Go version 1.21 ..."
-          - goenv global $GOLANG_21_VERSION
-      1.20:
-        commands:
-          - echo "Installing Go version 1.20 ..."
-          - goenv global $GOLANG_20_VERSION
       default:
         commands:
           - echo "Installing custom Go version $VERSION ..."
           - goenv install $VERSION && rm -rf /tmp/*
           - goenv global $VERSION
+  rust:
+    versions:
+      1.93:
+        commands:
+          - echo "Installing Rust version 1.93 ..."
+          - rustup default $RUST_93_VERSION
+      default:
+        commands:
+          - echo "Installing custom Rust version $VERSION ..."
+          - rustup install $VERSION && rm -rf /tmp/*
+          - rustup default $VERSION
   python:
     versions:
       3.14:
@@ -159,10 +158,6 @@ runtimes:
         commands:
           - echo "Installing Python version 3.10 ..."
           - pyenv global $PYTHON_310_VERSION
-      3.9:
-        commands:
-          - echo "Installing Python version 3.9 ..."
-          - pyenv global $PYTHON_39_VERSION
       default:
         commands:
           - echo "Installing custom Python version $VERSION ..."
@@ -205,14 +200,6 @@ runtimes:
         commands:
           - echo "Installing Ruby version 3.3 ..."
           - rbenv global $RUBY_33_VERSION
-      3.2:
-        commands:
-          - echo "Installing Ruby version 3.2 ..."
-          - rbenv global $RUBY_32_VERSION
-      3.1:
-        commands:
-          - echo "Installing Ruby version 3.1 ..."
-          - rbenv global $RUBY_31_VERSION
       default:
         commands:
           - echo "Installing custom Ruby version $VERSION ..."
@@ -228,14 +215,6 @@ runtimes:
         commands:
           - echo "Installing Node.js version 22 ..."
           - n $NODE_22_VERSION
-      20:
-        commands:
-          - echo "Installing Node.js version 20 ..."
-          - n $NODE_20_VERSION
-      18:
-        commands:
-          - echo "Installing Node.js version 18 ..."
-          - n $NODE_18_VERSION
       default:
         commands:
           - echo "Installing custom Node.js version $VERSION ..."
@@ -245,17 +224,13 @@ runtimes:
       10.0:
         commands:
           - echo "Installing .NET version 10.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output ..
       8.0:
         commands:
           - echo "Installing .NET version 8.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
-      6.0:
-        commands:
-          - echo "Installing .NET version 6.0 ..."
-          - dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $DOTNET_8_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output ..
       default:
         commands:
           - echo "Installing custom .Net version $VERSION ..."
           - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
-          - dotnet new globaljson --sdk-version $VERSION --roll-forward latestFeature --output .
+          - dotnet new globaljson --sdk-version $VERSION --roll-forward feature --output ..
