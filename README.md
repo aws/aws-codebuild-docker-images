@@ -34,15 +34,17 @@ Some of the images in this repository are no longer actively maintained by AWS C
 
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
-+ [standard 5.0](ubuntu/standard/5.0)
-+ [standard 6.0](ubuntu/standard/6.0)
+#### EC2 Compute
+
 + [standard 7.0](ubuntu/standard/7.0)
-+ [amazonlinux-x86_64-standard:4.0](al/x86_64/standard/4.0)
++ [standard 8.0](ubuntu/standard/8.0)
 + [amazonlinux-x86_64-standard:5.0](al/x86_64/standard/5.0)
-+ [amazonlinux-x86_64-standard:corretto8](al/x86_64/standard/corretto8)
-+ [amazonlinux-x86_64-standard:corretto11](al/x86_64/standard/corretto11)
-+ [amazonlinux-aarch64-standard:2.0](al/aarch64/standard/2.0)
++ [amazonlinux-x86_64-standard:6.0](al/x86_64/standard/6.0)
 + [amazonlinux-aarch64-standard:3.0](al/aarch64/standard/3.0)
++ [amazonlinux-aarch64-standard:4.0](al/aarch64/standard/4.0)
+
+#### Lambda Compute
+
 + [amazonlinux-x86_64-lambda-standard:corretto11](al-lambda/x86_64/corretto11)
 + [amazonlinux-x86_64-lambda-standard:corretto17](al-lambda/x86_64/corretto17)
 + [amazonlinux-x86_64-lambda-standard:corretto21](al-lambda/x86_64/corretto21)
