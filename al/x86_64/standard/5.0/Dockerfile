@@ -561,13 +561,13 @@ RUN goenv global $GOLANG_20_VERSION
 RUN dotnet new globaljson --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature --output .
 
 # Configure SSH
-RUN cat ssh_config > /root/.ssh/config
-RUN cat runtimes.yml > /codebuild/image/config/runtimes.yml
-RUN cat dockerd-entrypoint.sh > /usr/local/bin/dockerd-entrypoint.sh
+COPY ssh_config /root/.ssh/config
+COPY runtimes.yml /codebuild/image/config/runtimes.yml
+COPY dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-RUN cat legal/THIRD_PARTY_LICENSES.txt > /usr/share/doc/THIRD_PARTY_LICENSES.txt
-RUN cat legal/bill_of_material.txt > /usr/share/doc/bill_of_material.txt
-RUN cat amazon-ssm-agent.json > /etc/amazon/ssm/amazon-ssm-agent.json
+COPY legal/THIRD_PARTY_LICENSES.txt /usr/share/doc/THIRD_PARTY_LICENSES.txt
+COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt
+COPY amazon-ssm-agent.json /etc/amazon/ssm/amazon-ssm-agent.json
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
