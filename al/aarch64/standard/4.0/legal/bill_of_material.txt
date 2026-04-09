@@ -1,0 +1,306 @@
+The Amazon CodeBuild Product includes the following third-party software/licensing:
+
+----------------
+ImageMagick : ImageMagick
+----------------
+asciidoc : GPL+ and GPLv2+
+----------------
+bzip2-devel : BSD
+----------------
+cvs : BSD and GPL+ and GPLv2+ and LGPLv2+ and zlib and Public Domain
+----------------
+cvsps : GPL+
+----------------
+docbook-dtds : Copyright only
+----------------
+docbook-style-xsl : DMIT
+----------------
+e2fsprogs : GPLv2
+----------------
+expat-devel : MIT
+----------------
+expect : Public Domain
+----------------
+fakeroot : GPLv3+ and LGPLv2+ and (GPL+ or Artistic)
+----------------
+glib2-devel : LGPLv2+
+----------------
+git-lfs : /usr/share/doc/git-lfs/copyright
+----------------
+git 2.52.0 : GPLv2
+----------------
+groff : GPLv3+ and GFDL and BSD and MIT
+----------------
+gzip : GPLv3+ and GFDL
+----------------
+icu : MIT and UCD and Public Domain
+----------------
+iptables-legacy : GPLv2
+----------------
+java-1.8.0-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib
+----------------
+java-11-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib
+----------------
+java-17-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib
+----------------
+java-21-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib
+----------------
+java-25-amazon-corretto-devel : ASL 1.1 and ASL 2.0 and BSD and BSD with advertising and GPL+ and GPLv2 and GPLv2 with exceptions and IJG and LGPLv2+ and MIT and MPLv2.0 and Public Domain and W3C and zlib
+----------------
+jq : MIT and ASL 2.0 and CC-BY and GPLv3
+----------------
+krb5-server : MIT
+----------------
+libargon2-devel : Public Domain or ASL 2.0
+----------------
+libcurl-devel : MIT
+----------------
+libdb-devel : BSD and LGPLv2 and Sleepycat
+----------------
+libedit-devel : BSD
+----------------
+libevent-devel : BSD
+----------------
+libffi-devel : MIT and Public Domain
+----------------
+libicu-devel : MIT and UCD and Public Domain
+----------------
+libjpeg-devel : zlib
+----------------
+libpng-devel : zlib
+----------------
+libserf : ASL 2.0
+----------------
+libtidy : W3C
+----------------
+libtidy-devel : W3C
+----------------
+libunwind : BSD
+----------------
+libwebp-devel : BSD
+----------------
+libxml2-devel : MIT
+----------------
+libxslt : MIT
+----------------
+libxslt-devel : MIT
+----------------
+libyaml-devel : MIT
+----------------
+libzip-devel : BSD
+----------------
+mariadb105-devel : GPLv2 with exceptions and LGPLv2 and BSD
+----------------
+mlocate : GPLv2
+----------------
+ncurses-devel : MIT
+----------------
+oniguruma-devel : BSD
+----------------
+openssh-clients : BSD
+----------------
+openssl : OpenSSL
+----------------
+openssl-devel : OpenSSL
+----------------
+perl-DBD-SQLite : GPL+ or Artistic
+----------------
+perl-DBI : GPL+ or Artistic
+----------------
+perl-HTTP-Date : GPL+ or Artistic
+----------------
+perl-TimeDate : GPL+ or Artistic
+----------------
+perl-YAML-LibYAML : GPL+ or Artistic
+----------------
+perl-FindBin : GPL+ or Artistic
+----------------
+postgresql-devel : PostgreSQL
+----------------
+procps-ng : GPL+ and GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+
+----------------
+python3-configobj : BSD
+----------------
+readline-devel : GPLv3+
+----------------
+rsync : GPLv3+
+----------------
+sgml-common : GPL+
+----------------
+subversion-perl : ASL 2.0
+----------------
+tar : GPLv3+
+----------------
+tcl : TCL
+----------------
+tk : TCL
+----------------
+wget : GPLv3+
+----------------
+which : GPLv3
+----------------
+xfsprogs : GPL+ and LGPLv2+
+----------------
+xmlto : GPLv2+
+----------------
+xorg-x11-server-Xvfb : MIT and GPLv2
+----------------
+xz-devel : LGPLv2+
+----------------
+amazon-ecr-credential-helper : Apache 2.0
+----------------
+runc : Apache 2.0
+----------------
+acl : GPLv2+
+----------------
+unzip : BSD
+----------------
+automake : GPLv2+ and GFDL and Public Domain and MIT
+----------------
+binutils : GPLv3+
+----------------
+bison : GPLv3+
+----------------
+brotli : MIT
+----------------
+file : BSD
+----------------
+findutils : GPLv3+
+----------------
+flex : BSD
+----------------
+gnupg2 : GPLv3+
+----------------
+libsecret-devel : LGPLv2+
+----------------
+libtool : GPLv2+ and LGPLv2+ and GFDL
+----------------
+libxkbfile-devel : MIT
+----------------
+lz4 : GPLv2+ and BSD
+----------------
+m4 : GPLv3+
+----------------
+make : GPLv3+
+----------------
+mesa-libgbm-devel : MIT
+----------------
+mercurial : GPLv2+
+----------------
+net-tools : GPLv2+
+----------------
+pigz : zlib
+----------------
+pkg-config : GPLv2+
+----------------
+xorriso : GPLv3+
+----------------
+xz : Public Domain
+----------------
+zip : BSD
+----------------
+stunnel 5.74 : GPLv2+
+----------------
+aws-sam-cli : Apache 2.0
+----------------
+aws-iam-authenticator 1.34.1 : Apache 2.0
+----------------
+kubectl 1.34.1 : Apache 2.0
+----------------
+eksctl : Apache 2.0
+----------------
+ecs-cli : Apache 2.0
+----------------
+pack 0.38.2 : Apache 2.0
+----------------
+amazon-ssm-agent : Apache 2.0
+----------------
+ant 1.10.15 : Apache 2.0
+----------------
+maven 3.9.11 : Apache 2.0
+----------------
+gradle 8.14.3 : Apache 2.0
+----------------
+gradle 9.2.1 : Apache 2.0
+----------------
+sbt 1.11.7 : BSD
+----------------
+powershell 7.5.3 : MIT
+----------------
+nodejs 20.19.5 : MIT
+----------------
+nodejs 22.20.0 : MIT
+----------------
+nodejs 24.10.0 : MIT
+----------------
+grunt : MIT
+----------------
+grunt-cli : MIT
+----------------
+webpack : MIT
+----------------
+yarn : BSD
+----------------
+ruby 3.2.9 : https://www.ruby-lang.org/en/about/license.txt
+----------------
+ruby 3.3.9 : https://www.ruby-lang.org/en/about/license.txt
+----------------
+ruby 3.4.7 : https://www.ruby-lang.org/en/about/license.txt
+----------------
+ruby 4.0.0 : https://www.ruby-lang.org/en/about/license.txt
+----------------
+python 3.10.19 : https://docs.python.org/3/license.html
+----------------
+python 3.11.14 : https://docs.python.org/3/license.html
+----------------
+python 3.12.12 : https://docs.python.org/3/license.html
+----------------
+python 3.13.8 : https://docs.python.org/3/license.html
+----------------
+python 3.14.2 : https://docs.python.org/3/license.html
+----------------
+pip 25.3 : MIT
+----------------
+setuptools 80.9.0 : MIT
+----------------
+PyYAML 6.0.3 : MIT
+----------------
+boto3 : Apache 2.0
+----------------
+pipenv : MIT
+----------------
+virtualenv : MIT
+----------------
+php 8.2.30 : https://www.php.net/license/index.php
+----------------
+php 8.3.30 : https://www.php.net/license/index.php
+----------------
+php 8.4.17 : https://www.php.net/license/index.php
+----------------
+php 8.5.2 : https://www.php.net/license/index.php
+----------------
+composer : MIT
+----------------
+golang 1.24.8 : https://golang.org/LICENSE
+----------------
+golang 1.25.5 : https://golang.org/LICENSE
+----------------
+dotnet 8.0.411 : https://github.com/dotnet/core/blob/master/LICENSE.TXT
+----------------
+dotnet 10.0.100 : https://github.com/dotnet/core/blob/master/LICENSE.TXT
+----------------
+gitversion 6.4.0 : https://github.com/GitTools/GitVersion/blob/master/LICENSE
+----------------
+docker 28.5.1 : https://www.docker.com/legal/components-licenses
+----------------
+docker-compose 2.39.4 : Apache 2.0
+----------------
+docker-buildx 0.28.0 : Apache 2.0
+----------------
+finch : Apache 2.0
+----------------
+awscli v2 : Apache 2.0
+----------------
+gh : MIT
+----------------
+

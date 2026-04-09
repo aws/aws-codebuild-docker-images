@@ -18,7 +18,6 @@ RUN set -ex \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H github.com >> ~/.ssh/known_hosts \
     && ssh-keyscan -t rsa,dsa,ed25519,ecdsa -H bitbucket.org >> ~/.ssh/known_hosts \
     && chmod 600 ~/.ssh/known_hosts \
-    && rpm --import https://download.mono-project.com/repo/xamarin.gpg \
     && curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo \
     && yum groupinstall -yq "Development tools" \
     && yum install -yq --allowerasing \
@@ -116,7 +115,7 @@ RUN set -ex \
 
 # Install Pack
 RUN set -ex \
-    && PACK_VERSION=0.38.2 \
+    && PACK_VERSION=0.39.1 \
     && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux-arm64.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
     && pack --version
 
@@ -203,9 +202,9 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     MAVEN_HOME="/opt/maven" \
     MAVEN_VERSION=3.9.12 \
     INSTALLED_GRADLE_VERSIONS="8.14.4 9.4.0" \
+    GRADLE_9_VERSION=9.4.0 \
     GRADLE_8_VERSION=8.14.4 \
-    GRADLE_9_VERSION=9.4.0\
-    GRADLE_VERSION=8.14.4 \
+    GRADLE_VERSION=9.4.0 \
     SBT_VERSION=1.12.5 \
     GRADLE_PATH="$SRC_DIR/gradle" \
     ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c" \
@@ -214,16 +213,16 @@ ENV JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto.aarch64" \
     SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f979f289be0"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
-ENV JAVA_HOME="$JAVA_17_HOME" \
-    JDK_HOME="$JAVA_17_HOME" \
-    JRE_HOME="$JAVA_17_HOME"
+ENV JAVA_HOME="$JAVA_25_HOME" \
+    JDK_HOME="$JAVA_25_HOME" \
+    JRE_HOME="$JAVA_25_HOME"
 
 
 RUN set -x \
     && rpm --import https://yum.corretto.aws/corretto.key \
     && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
     # Install Amazon Corretto JDKs (8, 11, 17, 21, 25)
-    # Note: We will use update-alternatives to make sure JDK17 has higher priority for all the tools \
+    # Note: We will use update-alternatives to make sure JDK25 has higher priority for all the tools \
     && yum install -y -q java-25-amazon-corretto java-25-amazon-corretto-devel \
     && yum install -y -q java-21-amazon-corretto java-21-amazon-corretto-devel \
     && yum install -y -q java-17-amazon-corretto java-17-amazon-corretto-devel \
@@ -284,7 +283,7 @@ RUN rm -fr /tmp/* /var/tmp/* \
 # Install Powershell Core
 ENV POWERSHELL_VERSION 7.5.4
 ENV POWERSHELL_DOWNLOAD_URL https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-arm64.tar.gz
-ENV POWERSHELL_DOWNLOAD_SHA 4b32d4cb86a43dfb83d5602d0294295bf22fafbf9e0785d1aaef81938cda92f8
+ENV POWERSHELL_DOWNLOAD_SHA 4B32D4CB86A43DFB83D5602D0294295BF22FAFBF9E0785D1AAEF81938CDA92F8
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -297,21 +296,10 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_24_VERSION="24.14.0" \
-    NODE_22_VERSION="22.22.1" \
-    NODE_20_VERSION="20.20.1" \
-    NODE_18_VERSION="18.20.8"
+ENV NODE_24_VERSION="24.14.0"\
+    NODE_22_VERSION="22.22.1"
 
-RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
-    && npm install --save-dev -g -f grunt-cli \
-    && npm install --save-dev -g -f webpack \
-    && npm install --save-dev -g -f yarn \
-    && n $NODE_20_VERSION && npm install --save-dev -g -f grunt \
-    && npm install --save-dev -g -f grunt-cli \
-    && npm install --save-dev -g -f webpack \
-    && npm install --save-dev -g -f yarn \
-    && dnf install -y -v libuv-1.44* \
-    && n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
+RUN n $NODE_22_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f grunt-cli \
     && npm install --save-dev -g -f webpack \
     && npm install --save-dev -g -f yarn \
@@ -321,19 +309,18 @@ RUN n --no-preserve $NODE_18_VERSION && npm install --save-dev -g -f grunt \
     && npm install --save-dev -g -f yarn \
     && cd / && rm -rf $N_SRC_DIR \
     && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
+
 #****************      END NODEJS     ****************************************************
 
 #**************** RUBY *********************************************************
 
-ENV RUBY_VERSIONS="4.0.1 3.4.8 3.3.10 3.2.10 3.1.7" \
+ENV RUBY_VERSIONS="4.0.1 3.4.8 3.3.10 3.2.10" \
     RUBY_40_VERSION="4.0.1" \
     RUBY_34_VERSION="3.4.8" \
-    RUBY_33_VERSION="3.3.10" \
-    RUBY_32_VERSION="3.2.10" \
-    RUBY_31_VERSION="3.1.7"
+    RUBY_33_VERSION="3.3.10"
 
 RUN for version in $RUBY_VERSIONS; do rbenv install $version; done \
-    && rbenv global $RUBY_32_VERSION \
+    && rbenv global $RUBY_40_VERSION \
     && rm -rf /tmp/*
 
 #**************** END RUBY *****************************************************
@@ -344,7 +331,6 @@ ENV PYTHON_314_VERSION="3.14.3" \
     PYTHON_312_VERSION="3.12.13" \
     PYTHON_311_VERSION="3.11.15" \
     PYTHON_310_VERSION="3.10.20" \
-    PYTHON_39_VERSION="3.9.25" \
     PYTHON_PIP_VERSION="26.0.1" \
     PYYAML_VERSION="6.0.3" \
     PYTHON_SETUPTOOLS_VERSION="82.0.0" \
@@ -352,7 +338,7 @@ ENV PYTHON_314_VERSION="3.14.3" \
 
 
 RUN set -ex \
-    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION $PYTHON_39_VERSION; do \
+    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION; do \
         pyenv install $version \
         && pyenv global $version \
         && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -368,12 +354,11 @@ RUN set -ex \
 #****************      PHP     ****************************************************
 
 # Installed in packages
-ENV PHP_VERSIONS="8.5.3 8.4.18 8.3.30 8.2.30 8.1.34" \
+ENV PHP_VERSIONS="8.5.3 8.4.18 8.3.30 8.2.30" \
     PHP_85_VERSION="8.5.3" \
     PHP_84_VERSION="8.4.18" \
     PHP_83_VERSION="8.3.30" \
-    PHP_82_VERSION="8.2.30" \
-    PHP_81_VERSION="8.1.34"
+    PHP_82_VERSION="8.2.30"
 
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
@@ -382,21 +367,17 @@ ENV PHP_BUILD_EXTRA_MAKE_ARGUMENTS="-j4"
 
 RUN phpenv update \
     && for version in $PHP_VERSIONS; do phpenv install $version; done \
-    && phpenv global $PHP_81_VERSION \
+    && phpenv global $PHP_85_VERSION \
     && for version in $PHP_VERSIONS; do echo "memory_limit = 1G;" >> "/root/.phpenv/versions/$version/etc/conf.d/memory.ini"; done \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
     && rm -rf /tmp/*
 #****************      END PHP     ****************************************************
 
 #****************     GOLANG     ****************************************************
-ENV GOLANG_VERSIONS="1.20.14 1.21.13 1.22.12 1.23.12 1.24.13 1.25.8 1.26.1" \
+ENV GOLANG_VERSIONS="1.24.13 1.25.8 1.26.1" \
     GOLANG_26_VERSION="1.26.1" \
     GOLANG_25_VERSION="1.25.8" \
-    GOLANG_24_VERSION="1.24.13" \
-    GOLANG_23_VERSION="1.23.12" \
-    GOLANG_22_VERSION="1.22.12" \
-    GOLANG_21_VERSION="1.21.13" \
-    GOLANG_20_VERSION="1.20.14"
+    GOLANG_24_VERSION="1.24.13"
 
 RUN for version in $GOLANG_VERSIONS; do goenv install $version; done && rm -rf /tmp/*
 
@@ -404,9 +385,12 @@ RUN for version in $GOLANG_VERSIONS; do goenv install $version; done && rm -rf /
 
 #****************     RUST     ****************************************************
 ENV RUST_94_VERSION="1.94.0"
+
 RUN rustup install $RUST_94_VERSION && rm -rf /tmp/*
 RUN rustc --version
+
 #****************      END RUST     ****************************************************
+
 #=======================End of layer: runtimes_1  =================
 FROM runtimes_1 AS runtimes_2
 
@@ -444,12 +428,14 @@ RUN set -ex \
     && curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-Linux-aarch64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
     && chmod +x /usr/local/bin/dind /usr/local/lib/docker/cli-plugins/docker-compose \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose \
+    # Ensure docker-compose and docker compose work
     && docker-compose version \
     && docker compose version \
     # Add docker buildx tool
     && curl -L https://github.com/docker/buildx/releases/download/v${DOCKER_BUILDX_VERSION}/buildx-v${DOCKER_BUILDX_VERSION}.linux-arm64 -o /usr/local/lib/docker/cli-plugins/docker-buildx \
     && chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx \
     && ln -s /usr/local/lib/docker/cli-plugins/docker-buildx /usr/local/bin/docker-buildx \
+    # Ensure docker-buildx works
     && docker-buildx version \
     && docker buildx version
 
@@ -463,9 +449,7 @@ FROM runtimes_2 AS runtimes_3
 #DotNet
 ENV DOTNET_10_SDK_VERSION="10.0.103" \
     DOTNET_8_SDK_VERSION="8.0.418" \
-    DOTNET_6_SDK_VERSION="6.0.428" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
-    DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
     DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
 
@@ -478,13 +462,6 @@ RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_10_SDK_VERSION \
 RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_8_SDK_VERSION \
     && dotnet --list-sdks \
     && rm -rf /tmp/*
-
-# Add .NET Core 6.0 Global Tools install folder to PATH and set as default
-RUN /usr/local/bin/dotnet-install.sh -v $DOTNET_6_SDK_VERSION \
-    && dotnet --list-sdks \
-    && rm -rf /tmp/* \
-    && mkdir /codebuild && cd /codebuild \
-    && dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 ## Trigger the population of the local package cache
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT true
@@ -509,13 +486,13 @@ RUN set -ex \
 FROM runtimes_3 AS aarch64_v3
 
 # Activate runtime versions specific to image version.
-RUN n $NODE_18_VERSION
-RUN pyenv global $PYTHON_311_VERSION
-RUN phpenv global $PHP_81_VERSION
-RUN rbenv global $RUBY_32_VERSION
-RUN goenv global $GOLANG_20_VERSION
+RUN n --preserve $NODE_24_VERSION
+RUN pyenv global $PYTHON_314_VERSION
+RUN phpenv global $PHP_85_VERSION
+RUN rbenv global $RUBY_40_VERSION
+RUN goenv global $GOLANG_26_VERSION
 RUN rustup default $RUST_94_VERSION
-RUN dotnet new globaljson --force --sdk-version $DOTNET_6_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
+RUN dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH
 COPY ssh_config /root/.ssh/config
