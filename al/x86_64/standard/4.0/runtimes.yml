@@ -1,0 +1,110 @@
+version: 0.1
+
+runtimes:
+  java:
+    versions:
+      corretto17:
+        commands:
+          - echo "Installing corretto(OpenJDK) version 17 ..."
+          - export JAVA_HOME="$JAVA_17_HOME"
+          - export JRE_HOME="$JRE_17_HOME"
+          - export JDK_HOME="$JDK_17_HOME"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+      default:
+        commands:
+          - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
+          - JAVA_VERSION="$VERSION"
+          - |
+            if [ "$VERSION" = "8" ]; then
+              JAVA_VERSION="1.8.0"
+            fi
+          - export JAVA_HOME="/usr/lib/jvm/java-$JAVA_VERSION-amazon-corretto"
+          - export JRE_HOME=$JAVA_HOME
+          - export JDK_HOME=$JAVA_HOME
+          - yum --disablerepo="*" --enablerepo="AmazonCorretto" -y install java-$JAVA_VERSION-amazon-corretto-devel
+          - |
+            for tool_path in "$JAVA_HOME"/bin/*; do
+              tool=`basename "$tool_path"`
+              if [ "$tool" != "java-rmi.cgi" ]; then
+                echo "Updating alternatives for $tool"
+                rm -f /usr/bin/$tool /var/lib/alternatives/$tool
+                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000
+              fi
+            done
+  golang:
+    versions:
+      1.18:
+        commands:
+          - echo "Installing Go version 1.18 ..."
+          - goenv global  $GOLANG_18_VERSION
+      default:
+        commands:
+          - echo "Installing custom Go version $VERSION ..."
+          - goenv install $VERSION && rm -rf /tmp/*
+          - goenv global $VERSION
+  python:
+    versions:
+      3.9:
+        commands:
+          - echo "Installing Python version 3.9 ..."
+          - pyenv global  $PYTHON_39_VERSION
+      default:
+        commands:
+          - echo "Installing custom Python version $VERSION ..."
+          - pyenv install $VERSION && rm -rf /tmp/*
+          - pyenv global $VERSION
+  php:
+    versions:
+      8.1:
+        commands:
+          - echo "Installing PHP version 8.1 ..."
+          - phpenv global $PHP_81_VERSION
+      default:
+        commands:
+          - echo "Installing custom PHP version $VERSION ..."
+          - phpenv install $VERSION && rm -rf /tmp/*
+          - phpenv global $VERSION
+  ruby:
+    versions:
+      3.1:
+        commands:
+          - echo "Installing Ruby version 3.1 ..."
+          - rbenv global $RUBY_31_VERSION
+      default:
+        commands:
+          - echo "Installing custom Ruby version $VERSION ..."
+          - rbenv install $VERSION && rm -rf /tmp/*
+          - rbenv global $VERSION
+  nodejs:
+    versions:
+      16:
+        commands:
+          - echo "Installing Node.js version 16 ..."
+          - n $NODE_16_VERSION
+      default:
+        commands:
+          - echo "Installing custom Node.js version $VERSION ..."
+          - n $VERSION && rm -rf /tmp/*
+  docker:
+    versions:
+      20:
+        commands:
+          - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION"
+  dotnet:
+    versions:
+      6.0:
+        commands:
+          - echo "Installing .NET version 6.0 ..."
+      default:
+        commands:
+          - echo "Installing custom .Net version $VERSION ..."
+          - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $VERSION --roll-forward feature

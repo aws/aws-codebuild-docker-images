@@ -19,10 +19,6 @@ RUN set -ex \
     && apt install -y -qq apt-transport-https gnupg ca-certificates \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF \
     && apt-get install software-properties-common -y -qq --no-install-recommends \
-    && apt-add-repository -y ppa:git-core/ppa \
-    && apt-get update \
-    && apt-get install git=1:2.* -y -qq --no-install-recommends \
-    && git version \
     && apt-get install -y -qq --no-install-recommends openssh-client \
     && mkdir ~/.ssh \
     && mkdir -p /codebuild/image/config \
@@ -59,6 +55,19 @@ RUN useradd codebuild-user
 
 
 FROM core AS tools
+
+# Install Git
+RUN set -ex \
+   && GIT_VERSION=2.43.2 \
+   && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
+   && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
+   && curl -L -o $GIT_TAR_FILE $GIT_SRC \
+   && tar zxf $GIT_TAR_FILE \
+   && cd git-$GIT_VERSION \
+   && make -j4 \
+   && make install prefix=/usr \
+   && cd .. && rm -rf git-$GIT_VERSION \
+   && rm -rf $GIT_TAR_FILE /tmp/*
 
 # Install stunnel
 RUN set -ex \
@@ -125,7 +134,7 @@ RUN set -ex \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
 #python
-RUN curl https://pyenv.run | bash
+RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
 #php
@@ -143,7 +152,7 @@ FROM tools AS runtimes
 
 #****************     .NET-CORE     *******************************************************
 
-ENV DOTNET_6_SDK_VERSION="6.0.410"
+ENV DOTNET_6_SDK_VERSION="6.0.419"
 ENV DOTNET_ROOT="/root/.dotnet"
 
 # Add .NET Core 6 Global Tools install folder to PATH
@@ -179,7 +188,7 @@ RUN set -ex \
 
 #****************      NODEJS     ****************************************************
 
-ENV NODE_16_VERSION="16.20.1"
+ENV NODE_16_VERSION="16.20.2"
 
 RUN  n $NODE_16_VERSION && npm install --save-dev -g -f grunt && npm install --save-dev -g -f grunt-cli && npm install --save-dev -g -f webpack \
      && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
@@ -248,15 +257,15 @@ ENV JAVA_17_HOME="/usr/lib/jvm/java-17-amazon-corretto" \
     JRE_17_HOME="/usr/lib/jvm/java-17-amazon-corretto"
 ARG ANT_VERSION=1.10.13
 ARG MAVEN_HOME="/opt/maven"
-ARG MAVEN_VERSION=3.9.2
-ARG INSTALLED_GRADLE_VERSIONS="7.6.1"
-ARG GRADLE_VERSION=7.6.1
-ARG SBT_VERSION=1.8.3
+ARG MAVEN_VERSION=3.9.5
+ARG INSTALLED_GRADLE_VERSIONS="7.6.3"
+ARG GRADLE_VERSION=7.6.3
+ARG SBT_VERSION=1.9.6
 ARG GRADLE_PATH="$SRC_DIR/gradle"
 ARG ANT_DOWNLOAD_SHA512="de4ac604629e39a86a306f0541adb3775596909ad92feb8b7de759b1b286417db24f557228737c8b902d6abf722d2ce5bb0c3baa3640cbeec3481e15ab1958c9"
-ARG MAVEN_DOWNLOAD_SHA512="900bdeeeae550d2d2b3920fe0e00e41b0069f32c019d566465015bdd1b3866395cbe016e22d95d25d51d3a5e614af2c83ec9b282d73309f644859bbad08b63db"
-ARG GRADLE_DOWNLOADS_SHA256="518a863631feb7452b8f1b3dc2aaee5f388355cc3421bbd0275fbeadd77e84b2 7.6.1"
-ARG SBT_DOWNLOAD_SHA256="21F4210786FD68FD15DCA3F4C8EE9CAE0DB249C54E1B0EF6E829E9FA4936423A"
+ARG MAVEN_DOWNLOAD_SHA512="4810523ba025104106567d8a15a8aa19db35068c8c8be19e30b219a1d7e83bcab96124bf86dc424b1cd3c5edba25d69ec0b31751c136f88975d15406cab3842b"
+ARG GRADLE_DOWNLOADS_SHA256="6001aba9b2204d26fa25a5800bb9382cf3ee01ccb78fe77317b2872336eb2f80 7.6.3"
+ARG SBT_DOWNLOAD_SHA256="923d7917ccb99a9fd985f4abfd81caacaed42284e67d3f7696cc5239e7c595cb"
 ENV LOG4J_UNSAFE_VERSIONS="2.11.1 1.2.8"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
@@ -269,10 +278,10 @@ ENV PATH="${PATH}:/opt/tools"
 
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y -qq software-properties-common apt-utils \
+    && apt-get install -y -qq software-properties-common apt-utils sudo \
     # Install Corretto 17
-    && wget -qO- https://apt.corretto.aws/corretto.key | apt-key add - \
-    && add-apt-repository 'deb https://apt.corretto.aws stable main' \
+    && wget -O - https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list \
     && apt-get update \
     && apt-get install -y -qq java-17-amazon-corretto-jdk \
     && apt-get install -y -qq --no-install-recommends ca-certificates-java \
@@ -353,6 +362,11 @@ RUN set -ex \
     && tar --extract --file docker.tgz --strip-components 1  --directory /usr/local/bin/ \
     && rm docker.tgz \
     && docker -v \
+    # replace runc package to resolve CVE-2024-21626
+    && apt-get update && apt-get -y install runc \
+    && rm -f /usr/local/bin/runc \
+    && ln -s /usr/sbin/runc /usr/local/bin/runc \
+    && runc -v \
     # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
     && addgroup dockremap \
     && useradd -g dockremap dockremap \

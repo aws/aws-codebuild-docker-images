@@ -1,0 +1,150 @@
+version: 0.1
+
+runtimes:
+  java:
+    versions:
+      corretto11:
+        commands:
+          - echo "Installing corretto (OpenJDK) version 11 ..."
+          - export JAVA_HOME="$JAVA_11_HOME"
+          - export JRE_HOME="$JRE_11_HOME"
+          - export JDK_HOME="$JDK_11_HOME"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*; 
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ]; 
+              then 
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi; 
+            done
+      corretto8:
+        commands:
+          - echo "Installing corretto (OpenJDK) version 8 ..."
+          - export JAVA_HOME="$JAVA_8_HOME"
+          - export JRE_HOME="$JRE_8_HOME"
+          - export JDK_HOME="$JDK_8_HOME"
+          - |-
+            for tool_path in "$JAVA_8_HOME"/bin/* "$JRE_8_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+      default:
+        commands:
+          - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
+          - export JAVA_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JRE_HOME=$JAVA_HOME
+          - export JDK_HOME=$JAVA_HOME
+          - yum --disablerepo="*" --enablerepo="AmazonCorretto" -y install java-$VERSION-amazon-corretto-devel
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+               rm -f /usr/bin/$tool /var/lib/alternatives/$tool \
+                && update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+              fi;
+            done
+  golang:
+    versions:
+      1.12:
+        commands:
+          - echo "Installing Go version 1.12 ..."
+          - rm -rf /usr/local/go
+          - ln -s /usr/local/go12 /usr/local/go
+      1.13:
+        commands:
+          - echo "Installing Go version 1.13 ..."
+          - rm -rf /usr/local/go
+          - ln -s /usr/local/go13 /usr/local/go
+      1.14:
+        commands:
+          - echo "Installing Go version 1.14 ..."
+      default:
+        commands:
+          - echo "Installing custom Go version $VERSION ..."
+          - rm -rf /usr/local/go
+          - goenv install $VERSION && rm -rf /tmp/*
+          - goenv global $VERSION
+  python:
+    versions:
+      3.9:
+        commands:
+          - echo "Installing Python version 3.9 ..."
+          - pyenv global  $PYTHON_39_VERSION
+      3.8:
+        commands:
+          - echo "Installing Python version 3.8 ..."
+          - pyenv global  $PYTHON_38_VERSION
+      3.7:
+        commands:
+          - echo "Installing Python version 3.7 ..."
+          - pyenv global  $PYTHON_37_VERSION
+      default:
+        commands:
+          - echo "Installing custom Python version $VERSION ..."
+          - pyenv install $VERSION && rm -rf /tmp/*
+          - pyenv global $VERSION
+  php:
+    versions:
+      7.4:
+        commands:
+          - echo "Installing PHP version 7.4 ..."
+          - phpenv global $PHP_74_VERSION
+      7.3:
+        commands:
+          - echo "Installing PHP version 7.3 ..."
+          - phpenv global $PHP_73_VERSION
+      default:
+        commands:
+          - echo "Installing custom PHP version $VERSION ..."
+          - phpenv install $VERSION && rm -rf /tmp/*
+          - phpenv global $VERSION
+  ruby:
+    versions:
+      2.6:
+        commands:
+          - echo "Installing Ruby version 2.6 ..."
+          - rbenv global $RUBY_26_VERSION
+      2.7:
+        commands:
+          - echo "Installing Ruby version 2.7 ..."
+          - rbenv global $RUBY_27_VERSION
+      default:
+        commands:
+          - echo "Installing custom Ruby version $VERSION ..."
+          - rbenv install $VERSION && rm -rf /tmp/*
+          - rbenv global $VERSION
+  nodejs:
+    versions:
+      10:
+        commands:
+          - echo "Installing Node.js version 10 ..."
+          - n $NODE_10_VERSION
+      12:
+        commands:
+          - echo "Installing Node.js version 12 ..."
+          - n $NODE_12_VERSION
+      default:
+        commands:
+          - echo "Installing custom Node.js version $VERSION ..."
+          - n $VERSION && rm -rf /tmp/*
+  docker:
+    versions:
+      19:
+        commands:
+          - echo "Specifying docker version in buildspec is deprecated. Using docker $DOCKER_VERSION"
+  dotnet:
+    versions:
+      3.1:
+        commands:
+          - echo "Installing .NET version 3.1 ..."
+      default:
+        commands:
+          - echo "Installing custom .Net version $VERSION ..."
+          - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $VERSION

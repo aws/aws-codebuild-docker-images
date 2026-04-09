@@ -84,6 +84,15 @@ RUN curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazon
     && chmod +x /usr/local/bin/kubectl /usr/local/bin/aws-iam-authenticator /usr/local/bin/ecs-cli /usr/local/bin/eksctl
 #=======================  End of layer: tools  =================
 
+FROM tools AS ruby_runtime
+
+ENV GEM_HOME="$LAMBDA_USER_HOME/ruby/gems"
+ENV PATH="$GEM_HOME/bin:$PATH"
+
+#=======================End of layer: ruby_runtime  =================
+
+FROM ruby_runtime AS al_v1
+
 FROM tools AS al_v1
 
 COPY legal/bill_of_material.txt /usr/share/doc/bill_of_material.txt

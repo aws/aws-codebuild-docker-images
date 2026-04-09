@@ -34,27 +34,36 @@ Some of the images in this repository are no longer actively maintained by AWS C
 
 The following images are actively maintained by AWS CodeBuild, and are listed in the CodeBuild console.
 
-+ [standard 5.0](ubuntu/standard/5.0)
-+ [standard 6.0](ubuntu/standard/6.0)
+#### EC2 Compute
+
 + [standard 7.0](ubuntu/standard/7.0)
 + [standard 8.0](ubuntu/standard/8.0)
-+ [amazonlinux2-x86_64-standard:4.0](al2/x86_64/standard/4.0)
-+ [amazonlinux2-x86_64-standard:5.0](al2/x86_64/standard/5.0)
-+ [amazonlinux2-x86_64-standard:corretto8](al2/x86_64/standard/corretto8)
-+ [amazonlinux2-x86_64-standard:corretto11](al2/x86_64/standard/corretto11)
-+ [amazonlinux2-aarch64-standard:2.0](al2/aarch64/standard/2.0)
-+ [amazonlinux2-aarch64-standard:3.0](al2/aarch64/standard/3.0)
++ [amazonlinux-x86_64-standard:5.0](al/x86_64/standard/5.0)
++ [amazonlinux-x86_64-standard:6.0](al/x86_64/standard/6.0)
++ [amazonlinux-aarch64-standard:3.0](al/aarch64/standard/3.0)
++ [amazonlinux-aarch64-standard:4.0](al/aarch64/standard/4.0)
+
+#### Lambda Compute
+
 + [amazonlinux-x86_64-lambda-standard:corretto11](al-lambda/x86_64/corretto11)
 + [amazonlinux-x86_64-lambda-standard:corretto17](al-lambda/x86_64/corretto17)
++ [amazonlinux-x86_64-lambda-standard:corretto21](al-lambda/x86_64/corretto21)
 + [amazonlinux-x86_64-lambda-standard:dotnet6](al-lambda/x86_64/dotnet6)
++ [amazonlinux-x86_64-lambda-standard:dotnet8](al-lambda/x86_64/dotnet8)
 + [amazonlinux-x86_64-lambda-standard:go1.21](al-lambda/x86_64/go1.21)
 + [amazonlinux-x86_64-lambda-standard:nodejs18](al-lambda/x86_64/nodejs18)
++ [amazonlinux-x86_64-lambda-standard:nodejs20](al-lambda/x86_64/nodejs20)
 + [amazonlinux-x86_64-lambda-standard:python3.11](al-lambda/x86_64/python3.11)
++ [amazonlinux-x86_64-lambda-standard:python3.12](al-lambda/x86_64/python3.12)
 + [amazonlinux-x86_64-lambda-standard:ruby3.2](al-lambda/x86_64/ruby3.2)
 + [amazonlinux-aarch64-lambda-standard:corretto11](al-lambda/aarch64/corretto11)
 + [amazonlinux-aarch64-lambda-standard:corretto17](al-lambda/aarch64/corretto17)
++ [amazonlinux-aarch64-lambda-standard:corretto21](al-lambda/aarch64/corretto21)
 + [amazonlinux-aarch64-lambda-standard:dotnet6](al-lambda/aarch64/dotnet6)
++ [amazonlinux-aarch64-lambda-standard:dotnet8](al-lambda/aarch64/dotnet8)
 + [amazonlinux-aarch64-lambda-standard:go1.21](al-lambda/aarch64/go1.21)
 + [amazonlinux-aarch64-lambda-standard:nodejs18](al-lambda/aarch64/nodejs18)
++ [amazonlinux-aarch64-lambda-standard:nodejs20](al-lambda/aarch64/nodejs20)
 + [amazonlinux-aarch64-lambda-standard:python3.11](al-lambda/aarch64/python3.11)
++ [amazonlinux-aarch64-lambda-standard:python3.12](al-lambda/aarch64/python3.12)
 + [amazonlinux-aarch64-lambda-standard:ruby3.2](al-lambda/aarch64/ruby3.2)

@@ -6,39 +6,51 @@ runtimes:
       corretto8:
         commands:
           - echo "Installing Java version 8 ..."
-
           - export JAVA_HOME="$JAVA_8_HOME"
-
           - export JRE_HOME="$JRE_8_HOME"
-
           - export JDK_HOME="$JDK_8_HOME"
-
           - |-
             for tool_path in "$JAVA_8_HOME"/bin/* "$JRE_8_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-              update-alternatives --list "$tool" | grep -q "$tool_path" \
-               && update-alternatives --set "$tool" "$tool_path";
+                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
+                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+                update-alternatives --set $tool $tool_path;
               fi;
             done
       corretto11:
         commands:
           - echo "Installing Java version 11 ..."
-
           - export JAVA_HOME="$JAVA_11_HOME"
-
           - export JRE_HOME="$JRE_11_HOME"
-
           - export JDK_HOME="$JDK_11_HOME"
-
           - |-
             for tool_path in "$JAVA_HOME"/bin/*;
              do tool=`basename "$tool_path"`;
               if [ $tool != 'java-rmi.cgi' ];
               then
-               update-alternatives --list "$tool" | grep -q "$tool_path" \
-                && update-alternatives --set "$tool" "$tool_path";
+                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
+                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+                update-alternatives --set $tool $tool_path;
+              fi;
+            done
+      default:
+        commands:
+          - echo "Installing custom Corretto(OpenJDK) version $VERSION ..."
+          - apt-get update
+          - apt-get install -y java-$VERSION-amazon-corretto-jdk
+          - export JAVA_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JRE_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - export JDK_HOME="/usr/lib/jvm/java-$VERSION-amazon-corretto"
+          - |-
+            for tool_path in "$JAVA_HOME"/bin/*;
+             do tool=`basename "$tool_path"`;
+              if [ $tool != 'java-rmi.cgi' ];
+              then
+                rm -f /usr/bin/$tool /var/lib/alternatives/$tool;
+                update-alternatives --install /usr/bin/$tool $tool $tool_path 20000;
+                update-alternatives --set $tool $tool_path;
               fi;
             done
   golang:
@@ -50,7 +62,12 @@ runtimes:
       1.16:
         commands:
           - echo "Installing Go version 1.16 ..."
-          - goenv global  $GOLANG_16_VERSION          
+          - goenv global  $GOLANG_16_VERSION
+      default:
+        commands:
+          - echo "Installing custom Go version $VERSION ..."
+          - goenv install $VERSION && rm -rf /tmp/*
+          - goenv global $VERSION
   python:
     versions:
       3.7:
@@ -65,6 +82,11 @@ runtimes:
         commands:
           - echo "Installing Python version 3.9 ..."
           - pyenv global  $PYTHON_39_VERSION
+      default:
+        commands:
+          - echo "Installing custom Python version $VERSION ..."
+          - pyenv install $VERSION && rm -rf /tmp/*
+          - pyenv global $VERSION
   php:
     versions:
       7.3:
@@ -79,6 +101,11 @@ runtimes:
         commands:
           - echo "Installing PHP version 8.0 ..."
           - phpenv global $PHP_80_VERSION
+      default:
+        commands:
+          - echo "Installing custom PHP version $VERSION ..."
+          - phpenv install $VERSION && rm -rf /tmp/*
+          - phpenv global $VERSION
   ruby:
     versions:
       2.6:
@@ -89,6 +116,11 @@ runtimes:
         commands:
           - echo "Installing Ruby version 2.7 ..."
           - rbenv global $RUBY_27_VERSION
+      default:
+        commands:
+          - echo "Installing custom Ruby version $VERSION ..."
+          - rbenv install $VERSION && rm -rf /tmp/*
+          - rbenv global $VERSION
   nodejs:
     versions:
       12:
@@ -99,6 +131,10 @@ runtimes:
         commands:
           - echo "Installing Node.js version 14 ..."
           - n $NODE_14_VERSION
+      default:
+        commands:
+          - echo "Installing custom Node.js version $VERSION ..."
+          - n $VERSION && rm -rf /tmp/*
   dotnet:
     versions:
       3.1:
@@ -109,3 +145,8 @@ runtimes:
         commands:
           - echo "Installing .NET version 5.0 ..."
           - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $DOTNET_5_SDK_VERSION
+      default:
+        commands:
+          - echo "Installing custom .Net version $VERSION ..."
+          - /usr/local/bin/dotnet-install.sh -v $VERSION && rm -rf /tmp/*
+          - test -f "global.json" && echo "Using provided global.json" || dotnet new globaljson --sdk-version $VERSION
