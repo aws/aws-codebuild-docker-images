@@ -222,7 +222,7 @@ ENV JAVA_HOME="$JAVA_17_HOME" \
 RUN set -x \
     && rpm --import https://yum.corretto.aws/corretto.key \
     && curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo \
-    # Install Amazon Corretto 17
+    # Install Amazon Corretto JDKs (8, 11, 17, 21, 25)
     # Note: We will use update-alternatives to make sure JDK17 has higher priority for all the tools \
     && yum install -y -q java-25-amazon-corretto java-25-amazon-corretto-devel \
     && yum install -y -q java-21-amazon-corretto java-21-amazon-corretto-devel \
