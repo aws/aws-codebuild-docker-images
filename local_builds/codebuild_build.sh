@@ -3,6 +3,17 @@
 function allOSRealPath() {
     if isOSWindows
     then
+      path=""
+      if [ "$MSYSTEM" == "MINGW64" ]; then
+        case $1 in
+		   . ) path="$PWD" ;;
+          /* ) path="$1" ;;
+          *  ) path="$PWD/${1#./}" ;;
+        esac
+        #res=$( echo "/$path" | sed -e 's|^/c/|/mnt/c/|' -e 's|^//c/|/mnt/c/|' )
+        #echo "DEBUG:: $MSYSTEM input: [${1}]; output [${res}]" >&2
+        echo "/$path" | sed -e 's|^//|/|' -e 's|^/c/|/mnt/c/|'
+      else
         path=""
         case $1 in
             .* ) path="$PWD/${1#./}" ;;
@@ -11,6 +22,7 @@ function allOSRealPath() {
         esac
 
         echo "/$path" | sed -e 's/\\/\//g' -e 's/://' -e 's/./\U&/3'
+      fi
     else
         case $1 in
             /* ) echo "$1"; exit;;
@@ -96,7 +108,7 @@ then
     exit 1
 fi
 
-docker_command="docker run -it "
+docker_command="docker run --rm -it "
 if isOSWindows
 then
     docker_command+="-v //var/run/docker.sock:/var/run/docker.sock -e "
@@ -197,9 +209,18 @@ do
     exposed_command="$(echo $exposed_command | sed "s/\($variable\)[^ ]*/\1********\"/")"
 done
 
+# echo "BEFORE:"
+# echo $exposed_command
+# exposed_command=$( echo "$exposed_command" | sed -e 's|//C/|/mnt/c/|g' -e 's|BUILDSPEC=//Buildspec|BUILDSPEC=buildspec|g' )
+
 echo "Build Command:"
 echo ""
 echo $exposed_command
 echo ""
 
-eval $docker_command
+if [ "$MSYSTEM" != "MINGW64" ]; then
+    eval $docker_command
+else
+    echo "INFO: RUNNING command above via PowerShell, since this is $MSYSTEM"
+    powershell -c "$exposed_command"
+fi
