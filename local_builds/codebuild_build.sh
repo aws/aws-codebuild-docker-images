@@ -52,6 +52,7 @@ function usage {
     echo "               * Blank lines are ignored"
     echo "               * File can be of type .env or .txt"
     echo "               * There is no special handling of quotation marks, meaning they will be part of the VAL"
+    echo "  -f PLATFORM  Used to specify the platform argument to docker command."
     exit 1
 }
 
@@ -61,7 +62,7 @@ awsconfig_flag=false
 mount_src_dir_flag=false
 docker_privileged_mode_flag=false
 
-while getopts "cmdi:a:r:s:b:e:l:p:h" opt; do
+while getopts "cmdi:a:r:s:b:e:l:p:f:h" opt; do
     case $opt in
         i  ) image_flag=true; image_name=$OPTARG;;
         a  ) artifact_flag=true; artifact_dir=$OPTARG;;
@@ -74,6 +75,7 @@ while getopts "cmdi:a:r:s:b:e:l:p:h" opt; do
         e  ) environment_variable_file=$OPTARG;;
         l  ) local_agent_image=$OPTARG;;
         p  ) aws_profile=$OPTARG;;
+        f  ) docker_platform=$OPTARG;;
         h  ) usage; exit;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -180,6 +182,11 @@ then
     docker_command+=" -e \"INITIATOR=$USERNAME\""
 else
     docker_command+=" -e \"INITIATOR=$USER\""
+fi
+
+if [ -n "$docker_platform" ]
+then
+    docker_command+=" --platform \"$docker_platform\""
 fi
 
 if [ -n "$local_agent_image" ]

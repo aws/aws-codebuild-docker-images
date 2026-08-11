@@ -36,6 +36,7 @@ Download and use our codebuild_build.sh script to run your local builds.
     * First `-s` is for primary source
     * Use additional `-s` in `<sourceIdentifier>:<sourceLocation>` format for secondary source
     * For `sourceIdentifier`, use a value that is fewer than 128 characters and contains only alphanumeric characters and underscores
+  * `-f`        Used to specify the platform argument to docker command.
 
 **Environment variable file format:**
   * Expects each line to be in VAR=VAL format
