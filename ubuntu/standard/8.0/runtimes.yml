@@ -137,10 +137,10 @@ runtimes:
           - goenv global $VERSION
   rust:
     versions:
-      1.93:
+      1.97:
         commands:
-          - echo "Installing Rust version 1.93 ..."
-          - rustup default $RUST_93_VERSION
+          - echo "Installing Rust version 1.97 ..."
+          - rustup default $RUST_97_VERSION
       default:
         commands:
           - echo "Installing custom Rust version $VERSION ..."
@@ -217,6 +217,10 @@ runtimes:
           - rbenv global $VERSION
   nodejs:
     versions:
+      26:
+        commands:
+          - echo "Installing Node.js version 26 ..."
+          - n $NODE_26_VERSION
       24:
         commands:
           - echo "Installing Node.js version 24 ..."

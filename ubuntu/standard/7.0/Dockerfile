@@ -73,15 +73,19 @@ FROM core AS tools
 
 # Install Git
 RUN set -ex \
-    && GIT_VERSION=2.53.0 \
+    # Git >= 2.55 builds Rust components (libgitcore) by default; install cargo
+    # transiently for the build and remove it after (the Rust lib is statically linked)
+    && apt-get update && apt-get install -y --no-install-recommends cargo \
+    && GIT_VERSION=2.55.0 \
     && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
     && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
-    && curl -L -o $GIT_TAR_FILE $GIT_SRC \
+    && curl -L --retry 1 --retry-delay 10 --fail -o $GIT_TAR_FILE $GIT_SRC \
     && tar zxf $GIT_TAR_FILE \
     && cd git-$GIT_VERSION \
     && make -j4 \
     && make install prefix=/usr \
     && cd .. && rm -rf git-$GIT_VERSION \
+    && apt-get purge -y cargo rustc && apt-get autoremove -y --purge && rm -rf /var/lib/apt/lists/* \
     && rm -rf $GIT_TAR_FILE /tmp/* \
     && git --version
 
@@ -102,9 +106,9 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
 
 # Install stunnel
 RUN set -ex \
-    && STUNNEL_VERSION=5.77 \
+    && STUNNEL_VERSION=5.80 \
     && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-    && STUNNEL_SHA256="ec026f4fae4e0d25b940cc7a9451d925e359e7fd59e9edad20baea66ce45f263" \
+    && STUNNEL_SHA256="6d0841d48de07cbbaf4a055919065bf7bb5ebc63cc15c97a2c76caa2bf285513" \
     && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
     && cd stunnel-$STUNNEL_VERSION \
     && ./configure \
@@ -124,8 +128,8 @@ RUN set -ex \
 # Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
 # https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_amd64_kubectl
 RUN set -ex \
-    && KUBERNETES_VERSION=1.35.2 \
-    && AMAZON_EKS_S3_PATH=2026-02-27 \
+    && KUBERNETES_VERSION=1.36.2 \
+    && AMAZON_EKS_S3_PATH=2026-06-17 \
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -164,8 +168,8 @@ RUN set -ex \
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="5.1.0"
-ARG DOCKER_BUILDX_VERSION="0.32.1"
+ARG DOCKER_COMPOSE_VERSION="5.4.0"
+ARG DOCKER_BUILDX_VERSION="0.36.1"
 ARG SRC_DIR="/usr/src"
 
 ARG DOCKER_SHA256="ea90cfd12e1eeb12aa1c971741adb8bd4ed88e2a574eaac13f5029a1dbc6300d"
@@ -273,9 +277,9 @@ RUN set -ex  \
     && wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
-ENV DOTNET_10_SDK_VERSION="10.0.101" \
+ENV DOTNET_10_SDK_VERSION="10.0.302" \
     DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0" \
-    DOTNET_8_SDK_VERSION="8.0.411" \
+    DOTNET_8_SDK_VERSION="8.0.423" \
     DOTNET_6_SDK_VERSION="6.0.428" \
     DOTNET_6_GLOBAL_JSON_SDK_VERSION="6.0.0" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0"
@@ -309,9 +313,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.4#installation-using-a-binary-archive-file
-ARG POWERSHELL_VERSION=7.5.4
+ARG POWERSHELL_VERSION=7.6.4
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=1FD7983FE56CA9E6233F126925EDB24BF6B6B33E356B69996D925C4DB94E2FEF
+ARG POWERSHELL_DOWNLOAD_SHA=4471B5A36BFE86EC7AF8525D36BB1CACBA0128E7AAC22D05CC064BC00E604721
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -332,9 +336,10 @@ ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 
 ENV NODE_18_VERSION="18.20.8" \
-    NODE_20_VERSION="20.20.0" \
-    NODE_22_VERSION="22.22.0" \
-    NODE_24_VERSION="24.14.0"
+    NODE_20_VERSION="20.20.2" \
+    NODE_22_VERSION="22.23.2" \
+    NODE_24_VERSION="24.19.0" \
+    NODE_26_VERSION="26.7.0"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
@@ -342,13 +347,15 @@ RUN git clone https://github.com/tj/n $N_SRC_DIR \
 RUN n $NODE_18_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
     n $NODE_20_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
     n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
-    n $NODE_24_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn
+    n $NODE_24_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
+    n $NODE_26_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn
 
-# Install npm 11.7.0 globally and copy to Node 22 and 24 cache locations
+# Install npm 11.7.0 globally and copy to Node 22, 24, and 26 cache locations
 # Node 18 and 20 use their default bundled npm versions
 RUN npm install -g npm@11.7.0 && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_22_VERSION/lib/node_modules/ && \
-    cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_24_VERSION/lib/node_modules/
+    cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_24_VERSION/lib/node_modules/ && \
+    cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_26_VERSION/lib/node_modules/
 
 RUN cd / && rm -rf $N_SRC_DIR && rm -rf /tmp/* && rm -rf ~/.npm/_logs/
 
@@ -369,10 +376,10 @@ RUN set -ex \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
-ENV RUBY_40_VERSION="4.0.1" \
-    RUBY_34_VERSION="3.4.8" \
-    RUBY_33_VERSION="3.3.10" \
-    RUBY_32_VERSION="3.2.10" \
+ENV RUBY_40_VERSION="4.0.6" \
+    RUBY_34_VERSION="3.4.10" \
+    RUBY_33_VERSION="3.3.12" \
+    RUBY_32_VERSION="3.2.11" \
     RUBY_31_VERSION="3.1.7"
 
 RUN rbenv install $RUBY_40_VERSION \
@@ -390,27 +397,28 @@ RUN rbenv install $RUBY_40_VERSION \
 RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-ENV PYTHON_314_VERSION="3.14.3" \
-    PYTHON_313_VERSION="3.13.12" \
+ENV PYTHON_314_VERSION="3.14.7" \
+    PYTHON_313_VERSION="3.13.15" \
     PYTHON_312_VERSION="3.12.13" \
     PYTHON_311_VERSION="3.11.15" \
     PYTHON_310_VERSION="3.10.20" \
     PYTHON_39_VERSION="3.9.25" \
+    # pip >= 26.1 and setuptools >= 83 require Python >= 3.10; hold back while 3.9 ships in this image
     PYTHON_PIP_VERSION="26.0.1" \
     PYYAML_VERSION="6.0.3" \
-    PYTHON_SETUPTOOLS_VERSION="82.0.0" \
+    PYTHON_SETUPTOOLS_VERSION="82.0.1" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
 #Install python 14, 13, 12, 11, 10, 9
 RUN set -ex \
     && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION $PYTHON_39_VERSION; do \
-        pyenv install $version \
+        { pyenv install $version \
         && pyenv global $version \
         && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
         && pip3 install wheel \
         && pip3 install --no-cache-dir --upgrade "setuptools==$PYTHON_SETUPTOOLS_VERSION" boto3 pipenv virtualenv \
         && pip3 install --no-build-isolation "Cython<3" "PyYAML==$PYYAML_VERSION" \
-        && pip3 uninstall cython --yes; \
+        && pip3 uninstall cython --yes; } || exit 1; \
     done \
     && rm -rf /tmp/*
 #**************** END PYTHON *****************************************************
@@ -421,10 +429,10 @@ RUN set -ex \
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_85_VERSION="8.5.3" \
-    PHP_84_VERSION="8.4.18" \
-    PHP_83_VERSION="8.3.30" \
-    PHP_82_VERSION="8.2.30"
+ENV PHP_85_VERSION="8.5.9" \
+    PHP_84_VERSION="8.4.24" \
+    PHP_83_VERSION="8.3.33" \
+    PHP_82_VERSION="8.2.33"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
 
@@ -449,8 +457,8 @@ RUN phpenv update \
 RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
 ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
-ENV GOLANG_26_VERSION="1.26.0" \
-    GOLANG_25_VERSION="1.25.7" \
+ENV GOLANG_26_VERSION="1.26.5" \
+    GOLANG_25_VERSION="1.25.12" \
     GOLANG_24_VERSION="1.24.13" \
     GOLANG_23_VERSION="1.23.12" \
     GOLANG_22_VERSION="1.22.12" \
@@ -488,18 +496,18 @@ ENV JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto"
-ARG ANT_VERSION=1.10.15
+ARG ANT_VERSION=1.10.17
 ARG MAVEN_HOME="/opt/maven"
-ARG MAVEN_VERSION=3.9.12
-ARG INSTALLED_GRADLE_VERSIONS="8.14.4 9.4.0"
-ARG GRADLE_9_VERSION=9.4.0
-ARG GRADLE_8_VERSION=8.14.4
-ARG GRADLE_VERSION=8.14.4
+ARG MAVEN_VERSION=3.9.16
+ARG INSTALLED_GRADLE_VERSIONS="8.14.5 9.7.0"
+ENV GRADLE_9_VERSION=9.7.0
+ENV GRADLE_8_VERSION=8.14.5
+ENV GRADLE_VERSION=$GRADLE_8_VERSION
 ARG SBT_VERSION=1.12.5
 ARG GRADLE_PATH="$SRC_DIR/gradle"
-ARG ANT_DOWNLOAD_SHA512="d78427aff207592c024ff1552dc04f7b57065a195c42d398fcffe7a0145e8d00cd46786f5aa52e77ab0fdf81334f065eb8011eecd2b48f7228e97ff4cb20d16c"
-ARG MAVEN_DOWNLOAD_SHA512="0a1be79f02466533fc1a80abbef8796e4f737c46c6574ede5658b110899942a94db634477dfd3745501c80aef9aac0d4f841d38574373f7e2d24cce89d694f70"
-ARG GRADLE_DOWNLOADS_SHA256="e571f9dc2cafeabaf6319756838042bb27c3c1aad307d41c1400cb12dec7b9e0 8.14.4\nb21468753cb43c167738ee04f10c706c46459cf8f8ae6ea132dc9ce589a261f2 9.4.0"
+ARG ANT_DOWNLOAD_SHA512="a96ca6455ec9af5e702df7d1ed5a2ec1cfb381eac3e9a767ecb6be1706e826941045e8fd7ca663ba101bc47bfa18351f540dd27e9e7af57908ac78e65268eee7"
+ARG MAVEN_DOWNLOAD_SHA512="831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6"
+ARG GRADLE_DOWNLOADS_SHA256="62c3769155d7d17ea05084ad498067824c1804568a408a6faa78a5ef95ed67a8 8.14.5\na9ecb5ac5c2ca40691e6527724d11d0b43b8c0a52825b77c09899f2a72d2d2bf 9.7.0"
 ARG SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f979f289be0"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"

@@ -213,6 +213,10 @@ runtimes:
           - rbenv global $VERSION
   nodejs:
     versions:
+      26:
+        commands:
+          - echo "Installing Node.js version 26 ..."
+          - n $NODE_26_VERSION
       24:
         commands:
           - echo "Installing Node.js version 24 ..."
