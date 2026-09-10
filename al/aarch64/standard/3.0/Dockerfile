@@ -157,7 +157,7 @@ RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
 ##go
-RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
+RUN git clone -b master https://github.com/go-nv/goenv.git $HOME/.goenv
 ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 ENV GOENV_DISABLE_GOPATH=1
 ENV GOPATH="/go"
