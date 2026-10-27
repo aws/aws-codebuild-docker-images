@@ -39,6 +39,10 @@ RUN set -ex \
            subversion-perl tar tcl tk vim wget which xfsprogs xmlto xorg-x11-server-Xvfb xz-devel \
            amazon-ecr-credential-helper runc
 
+# Update CA certificates
+RUN yum update -y ca-certificates \
+    && update-ca-trust extract
+
 RUN useradd codebuild-user
 
 #=======================End of layer: core  =================
@@ -230,7 +234,9 @@ RUN set -ex \
     && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
-    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+    && chmod +x /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh \
+    && DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true pwsh --version
 #****************     END Powershell     *******************************************************
 
 

@@ -108,18 +108,14 @@ runtimes:
             done
   golang:
     versions:
+      1.27:
+        commands:
+          - echo "Installing Go version 1.27 ..."
+          - goenv global $GOLANG_27_VERSION
       1.26:
         commands:
           - echo "Installing Go version 1.26 ..."
           - goenv global $GOLANG_26_VERSION
-      1.25:
-        commands:
-          - echo "Installing Go version 1.25 ..."
-          - goenv global $GOLANG_25_VERSION
-      1.24:
-        commands:
-          - echo "Installing Go version 1.24 ..."
-          - goenv global $GOLANG_24_VERSION
       default:
         commands:
           - echo "Installing custom Go version $VERSION ..."
@@ -127,10 +123,10 @@ runtimes:
           - goenv global $VERSION
   rust:
     versions:
-      1.97:
+      1.99:
         commands:
-          - echo "Installing Rust version 1.97 ..."
-          - rustup default $RUST_97_VERSION
+          - echo "Installing Rust version 1.99 ..."
+          - rustup default $RUST_99_VERSION
       default:
         commands:
           - echo "Installing custom Rust version $VERSION ..."
@@ -138,6 +134,10 @@ runtimes:
           - rustup default $VERSION
   python:
     versions:
+      3.15:
+        commands:
+          - echo "Installing Python version 3.15 ..."
+          - pyenv global $PYTHON_315_VERSION
       3.14:
         commands:
           - echo "Installing Python version 3.14 ..."
@@ -154,10 +154,6 @@ runtimes:
         commands:
           - echo "Installing Python version 3.11 ..."
           - pyenv global $PYTHON_311_VERSION
-      3.10:
-        commands:
-          - echo "Installing Python version 3.10 ..."
-          - pyenv global $PYTHON_310_VERSION
       default:
         commands:
           - echo "Installing custom Python version $VERSION ..."

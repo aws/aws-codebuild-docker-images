@@ -43,6 +43,10 @@ RUN set -ex \
            amazon-ecr-credential-helper \
     && rm /etc/yum.repos.d/mono-centos7-stable.repo
 
+# Update CA certificates
+RUN yum update -y ca-certificates \
+    && update-ca-trust extract
+
 RUN useradd codebuild-user
 
 #=======================End of layer: core  =================
@@ -235,7 +239,9 @@ RUN set -ex \
     && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
-    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+    && chmod +x /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh \
+    && pwsh --version
 
 #DotNet 6.0
 ENV DOTNET_60_SDK_VERSION="6.0.419"

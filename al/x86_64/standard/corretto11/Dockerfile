@@ -24,6 +24,10 @@ RUN set -ex \
     && chmod 600 ~/.ssh/known_hosts \
     && yum install -y -q make gettext-devel gcc openssl-devel curl-devel expat-devel iptables
 
+# Update CA certificates
+RUN yum update -y ca-certificates \
+    && update-ca-trust extract
+
 RUN useradd codebuild-user
 
 ARG MAVEN_HOME="/opt/maven"

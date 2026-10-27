@@ -172,9 +172,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux
-ARG POWERSHELL_VERSION=7.2.11
+ARG POWERSHELL_VERSION=7.4.6
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=9D6F798461D172391B508FCF27F9CBBB4BEF307EBFD6886ED50860C322C7D1B3
+ARG POWERSHELL_DOWNLOAD_SHA=6F6015203C47806C5CC444C19D8ED019695E610FBD948154264BF9CA8E157561
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -182,7 +182,9 @@ RUN set -ex \
     && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
-    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+    && chmod +x /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh \
+    && pwsh --version
 #****************     END .NET-CORE     *******************************************************
 
 
