@@ -83,7 +83,7 @@ RUN set -ex \
 # Install Chrome
 RUN set -ex \
     && curl -L https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb --output /tmp/google-chrome-stable_current_amd64.deb \
-    && dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y \
+    && (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y) \
     && rm -rf /tmp/* \
     && google-chrome --version
 
@@ -217,7 +217,9 @@ RUN set -ex \
     && mkdir -p /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && tar zxf powershell.tar.gz -C /opt/microsoft/powershell/$POWERSHELL_VERSION \
     && rm powershell.tar.gz \
-    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh
+    && chmod +x /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh \
+    && ln -s /opt/microsoft/powershell/$POWERSHELL_VERSION/pwsh /usr/bin/pwsh \
+    && pwsh --version
 #****************     END .NET-CORE     *******************************************************
 
 

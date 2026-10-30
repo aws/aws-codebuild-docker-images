@@ -77,7 +77,7 @@ RUN set -ex \
     # Git >= 2.55 builds Rust components (libgitcore) by default; install cargo
     # transiently for the build and remove it after (the Rust lib is statically linked)
     && apt-get update && apt-get install -y --no-install-recommends cargo \
-    && GIT_VERSION=2.55.0 \
+    && GIT_VERSION=2.56.0 \
     && GIT_TAR_FILE=git-$GIT_VERSION.tar.gz \
     && GIT_SRC=https://github.com/git/git/archive/v${GIT_VERSION}.tar.gz  \
     && curl -L --retry 1 --retry-delay 10 --fail -o $GIT_TAR_FILE $GIT_SRC \
@@ -107,9 +107,9 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscli
 
 # Install stunnel
 RUN set -ex \
-    && STUNNEL_VERSION=5.80 \
+    && STUNNEL_VERSION=5.82 \
     && STUNNEL_TAR=stunnel-$STUNNEL_VERSION.tar.gz \
-    && STUNNEL_SHA256="6d0841d48de07cbbaf4a055919065bf7bb5ebc63cc15c97a2c76caa2bf285513" \
+    && STUNNEL_SHA256="8e7438ccd6b3a2ab05182d0846e112a56a7f557ecdee40de07bf67820008bef7" \
     && curl -o $STUNNEL_TAR https://www.stunnel.org/archive/5.x/$STUNNEL_TAR && echo "$STUNNEL_SHA256 $STUNNEL_TAR" | sha256sum --check && tar xfz $STUNNEL_TAR \
     && cd stunnel-$STUNNEL_VERSION \
     && ./configure \
@@ -129,8 +129,8 @@ RUN set -ex \
 # Check out the KUBERNETES_VERSION and AMAZON_EKS_S3_PATH from the curl command in:
 # https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#linux_amd64_kubectl
 RUN set -ex \
-    && KUBERNETES_VERSION=1.36.2 \
-    && AMAZON_EKS_S3_PATH=2026-06-17 \
+    && KUBERNETES_VERSION=1.37.1 \
+    && AMAZON_EKS_S3_PATH=2026-10-23 \
     && curl -sS -o /usr/local/bin/aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/$KUBERNETES_VERSION/$AMAZON_EKS_S3_PATH/bin/linux/amd64/aws-iam-authenticator \
     && chmod +x /usr/local/bin/aws-iam-authenticator \
     && aws-iam-authenticator version \
@@ -161,7 +161,7 @@ RUN set -ex \
 
 # Install Pack
 RUN set -ex \
-    && PACK_VERSION=0.39.1 \
+    && PACK_VERSION=0.40.10 \
     && (curl -sSL "https://github.com/buildpacks/pack/releases/download/v${PACK_VERSION}/pack-v${PACK_VERSION}-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack) \
     && pack --version
 
@@ -169,12 +169,12 @@ RUN set -ex \
 ARG DOCKER_BUCKET="download.docker.com"
 ARG DOCKER_CHANNEL="stable"
 ARG DIND_COMMIT="3b5fac462d21ca164b3778647420016315289034"
-ARG DOCKER_COMPOSE_VERSION="5.4.0"
-ARG DOCKER_BUILDX_VERSION="0.36.1"
+ARG DOCKER_COMPOSE_VERSION="5.6.1"
+ARG DOCKER_BUILDX_VERSION="0.38.1"
 ARG SRC_DIR="/usr/src"
 
-ARG DOCKER_SHA256="ea90cfd12e1eeb12aa1c971741adb8bd4ed88e2a574eaac13f5029a1dbc6300d"
-ARG DOCKER_VERSION="28.5.2"
+ARG DOCKER_SHA256="9ac225999fd5e863f7694c728ef23d480616b1e5639328fa309befd4243d69eb"
+ARG DOCKER_VERSION="29.9.2"
 
 # Install Docker
 RUN set -ex \
@@ -222,7 +222,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 # Install Chrome
 RUN set -ex \
     && curl -L https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb --output /tmp/google-chrome-stable_current_amd64.deb \
-    && dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y \
+    && (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get install -f -y) \
     && rm -rf /tmp/* \
     && google-chrome --version
 
@@ -251,15 +251,35 @@ RUN set -ex \
     && chromium-browser --version
 
 # Install Mozilla Firefox
+ARG MOZILLA_APT_KEY_FINGERPRINT=35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3
 RUN set -ex \
-    && add-apt-repository ppa:mozillateam/ppa \
-    && printf "Package: *\nPin: release o=LP-PPA-mozillateam\nPin-Priority: 1001\n" > /etc/apt/preferences.d/mozilla \
-    && apt install -y -qq --no-install-recommends firefox \
+    && install -d -m 0755 /etc/apt/keyrings \
+    && curl -fsSL https://packages.mozilla.org/apt/repo-signing-key.gpg \
+       -o /etc/apt/keyrings/packages.mozilla.org.asc \
+    && actual_fpr=$(gpg -n -q --import --import-options import-show \
+                   /etc/apt/keyrings/packages.mozilla.org.asc \
+                  | grep -oE '[A-F0-9]{40}' | head -n1) \
+    && if [ "$actual_fpr" != "$MOZILLA_APT_KEY_FINGERPRINT" ]; then \
+       echo "FATAL: Mozilla APT key fingerprint mismatch" >&2; \
+       echo "  expected: $MOZILLA_APT_KEY_FINGERPRINT" >&2; \
+       echo "  actual:   $actual_fpr" >&2; \
+       exit 1; \
+       fi \
+    && echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" \
+       > /etc/apt/sources.list.d/mozilla.list \
+    && printf "Package: *\nPin: origin packages.mozilla.org\nPin-Priority: 1001\n" \
+       > /etc/apt/preferences.d/mozilla \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends firefox \
     && firefox --version
 
 # Install Geckodriver
+ARG GECKODRIVER_VERSION=0.37.1
 RUN set -ex \
-    && apt install -y -qq firefox-geckodriver \
+    && curl -fsSL "https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz" -o /tmp/geckodriver.tar.gz \
+    && tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin/ \
+    && rm /tmp/geckodriver.tar.gz \
+    && chmod +x /usr/local/bin/geckodriver \
     && geckodriver --version
 
 # Install Selenium server
@@ -273,9 +293,9 @@ FROM tools AS runtimes
 #****************      RUST     ****************************************************
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none
 ENV PATH="/root/.cargo/bin:$PATH"
-ENV RUST_97_VERSION="1.97.1"
+ENV RUST_99_VERSION="1.99.1"
 
-RUN rustup install $RUST_97_VERSION && rm -rf /tmp/*
+RUN rustup install $RUST_99_VERSION && rm -rf /tmp/*
 RUN rustc --version
 #****************     END RUST     ****************************************************
 
@@ -287,8 +307,8 @@ RUN set -ex  \
     && wget -qO /usr/local/bin/dotnet-install.sh https://dot.net/v1/dotnet-install.sh \
     && chmod +x /usr/local/bin/dotnet-install.sh
 
-ENV DOTNET_10_SDK_VERSION="10.0.302" \
-    DOTNET_8_SDK_VERSION="8.0.423" \
+ENV DOTNET_10_SDK_VERSION="10.0.402" \
+    DOTNET_8_SDK_VERSION="8.0.426" \
     DOTNET_8_GLOBAL_JSON_SDK_VERSION="8.0.0" \
     DOTNET_10_GLOBAL_JSON_SDK_VERSION="10.0.0"
 ENV DOTNET_ROOT="/root/.dotnet"
@@ -316,9 +336,9 @@ RUN set -ex \
 
 # Install Powershell Core
 # See instructions at https://learn.microsoft.com/en-us/powershell/scripting/install/install-other-linux?view=powershell-7.4#installation-using-a-binary-archive-file
-ARG POWERSHELL_VERSION=7.6.4
+ARG POWERSHELL_VERSION=7.6.8
 ARG POWERSHELL_DOWNLOAD_URL=https://github.com/PowerShell/PowerShell/releases/download/v$POWERSHELL_VERSION/powershell-$POWERSHELL_VERSION-linux-x64.tar.gz
-ARG POWERSHELL_DOWNLOAD_SHA=4471B5A36BFE86EC7AF8525D36BB1CACBA0128E7AAC22D05CC064BC00E604721
+ARG POWERSHELL_DOWNLOAD_SHA=59112E38AD83350E4F6DC0195953C66B5926792F300CA2E7691B8242E7A16E7F
 
 RUN set -ex \
     && curl -SL $POWERSHELL_DOWNLOAD_URL --output powershell.tar.gz \
@@ -338,9 +358,9 @@ RUN set -ex \
 ARG SRC_DIR="/usr/src"
 ARG N_SRC_DIR="$SRC_DIR/n"
 
-ENV NODE_22_VERSION="22.23.2" \
-    NODE_24_VERSION="24.19.0" \
-    NODE_26_VERSION="26.7.0"
+ENV NODE_22_VERSION="22.23.4" \
+    NODE_24_VERSION="24.22.1" \
+    NODE_26_VERSION="26.12.1"
 
 RUN git clone https://github.com/tj/n $N_SRC_DIR \
     && cd $N_SRC_DIR && make install
@@ -350,8 +370,8 @@ RUN n $NODE_22_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack y
     n $NODE_24_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn && \
     n $NODE_26_VERSION && npm install --save-dev -g -f grunt grunt-cli webpack yarn
 
-# Install npm 11.7.0 globally and copy to Node 22, 24, and 26 cache locations
-RUN npm install -g npm@11.7.0 && \
+# Install npm 11.21.1 globally and copy to Node 22, 24, and 26 cache locations
+RUN npm install -g npm@11.21.1 && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_22_VERSION/lib/node_modules/ && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_24_VERSION/lib/node_modules/ && \
     cp -rf /usr/local/lib/node_modules/npm /usr/local/n/versions/node/$NODE_26_VERSION/lib/node_modules/
@@ -376,9 +396,9 @@ RUN set -ex \
     && git clone https://github.com/rbenv/ruby-build.git $RUBY_BUILD_SRC_DIR \
     && sh $RUBY_BUILD_SRC_DIR/install.sh
 
-ENV RUBY_40_VERSION="4.0.6" \
-    RUBY_34_VERSION="3.4.10" \
-    RUBY_33_VERSION="3.3.12"
+ENV RUBY_40_VERSION="4.0.9" \
+    RUBY_34_VERSION="3.4.12" \
+    RUBY_33_VERSION="3.3.13"
 
 RUN rbenv install $RUBY_40_VERSION \
     && rbenv install $RUBY_34_VERSION \
@@ -393,19 +413,19 @@ RUN rbenv install $RUBY_40_VERSION \
 RUN curl -s -S -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
 ENV PATH="/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 
-ENV PYTHON_314_VERSION="3.14.7" \
-    PYTHON_313_VERSION="3.13.15" \
-    PYTHON_312_VERSION="3.12.13" \
-    PYTHON_311_VERSION="3.11.15" \
-    PYTHON_310_VERSION="3.10.20" \
-    PYTHON_PIP_VERSION="26.2.1" \
+ENV PYTHON_315_VERSION="3.15.1" \
+    PYTHON_314_VERSION="3.14.9" \
+    PYTHON_313_VERSION="3.13.17" \
+    PYTHON_312_VERSION="3.12.15" \
+    PYTHON_311_VERSION="3.11.17" \
+    PYTHON_PIP_VERSION="26.2.2" \
     PYYAML_VERSION="6.0.3" \
-    PYTHON_SETUPTOOLS_VERSION="83.0.0" \
+    PYTHON_SETUPTOOLS_VERSION="84.2.1" \
     PYTHON_CONFIGURE_OPTS="--enable-shared --enable-loadable-sqlite-extensions"
 
-#Install python 14, 13, 12, 11, 10
+#Install python 15, 14, 13, 12, 11
 RUN set -ex \
-    && for version in $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION $PYTHON_310_VERSION; do \
+    && for version in $PYTHON_315_VERSION $PYTHON_314_VERSION $PYTHON_313_VERSION $PYTHON_312_VERSION $PYTHON_311_VERSION; do \
         { pyenv install $version \
         && pyenv global $version \
         && pip3 install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
@@ -426,10 +446,10 @@ RUN apt-get install -y -qq libargon2-dev && rm -rf /var/lib/apt/lists/*
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer | bash
 ENV PATH="/root/.phpenv/shims:/root/.phpenv/bin:$PATH"
 
-ENV PHP_85_VERSION="8.5.9" \
-    PHP_84_VERSION="8.4.24" \
-    PHP_83_VERSION="8.3.33" \
-    PHP_82_VERSION="8.2.33"
+ENV PHP_85_VERSION="8.5.12" \
+    PHP_84_VERSION="8.4.27" \
+    PHP_83_VERSION="8.3.36" \
+    PHP_82_VERSION="8.2.35"
 # Set environment variables for PHP configure options
 ENV PHP_BUILD_CONFIGURE_OPTS="--with-curl --with-password-argon2 --with-pdo-pgsql --with-libedit"
 
@@ -454,17 +474,15 @@ RUN phpenv update \
 RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
 ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
-ENV GOLANG_26_VERSION="1.26.5" \
-    GOLANG_25_VERSION="1.25.12" \
-    GOLANG_24_VERSION="1.24.13"
+ENV GOLANG_27_VERSION="1.27.3" \
+    GOLANG_26_VERSION="1.26.10"
 
 ENV GOENV_DISABLE_GOPATH=1 \
     GOPATH="/go"
 
-RUN goenv install $GOLANG_26_VERSION \
-    && goenv install $GOLANG_25_VERSION \
-    && goenv install $GOLANG_24_VERSION \
-    && goenv global $GOLANG_26_VERSION \
+RUN goenv install $GOLANG_27_VERSION \
+    && goenv install $GOLANG_26_VERSION \
+    && goenv global $GOLANG_27_VERSION \
     && rm -rf /tmp/*
 #****************      END GOLANG     *******************************
 
@@ -484,19 +502,19 @@ ENV JAVA_25_HOME="/usr/lib/jvm/java-25-amazon-corretto" \
     JAVA_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JDK_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto" \
     JRE_8_HOME="/usr/lib/jvm/java-1.8.0-amazon-corretto"
-ARG ANT_VERSION=1.10.17
+ARG ANT_VERSION=1.10.18
 ARG MAVEN_HOME="/opt/maven"
 ARG MAVEN_VERSION=3.9.16
-ARG INSTALLED_GRADLE_VERSIONS="8.14.5 9.7.0"
-ENV GRADLE_9_VERSION=9.7.0
-ENV GRADLE_8_VERSION=8.14.5
+ARG INSTALLED_GRADLE_VERSIONS="8.14.6 9.8.2"
+ENV GRADLE_9_VERSION=9.8.2
+ENV GRADLE_8_VERSION=8.14.6
 ENV GRADLE_VERSION=$GRADLE_9_VERSION
-ARG SBT_VERSION=1.12.5
+ARG SBT_VERSION=1.13.0
 ARG GRADLE_PATH="$SRC_DIR/gradle"
-ARG ANT_DOWNLOAD_SHA512="a96ca6455ec9af5e702df7d1ed5a2ec1cfb381eac3e9a767ecb6be1706e826941045e8fd7ca663ba101bc47bfa18351f540dd27e9e7af57908ac78e65268eee7"
+ARG ANT_DOWNLOAD_SHA512="c510d744876d8da48dabc9495b023b6ec5284a0f18b40ee50d98ce099e791ca5c73e3cd4c80d3c90d3efc03f9620be43aad0a373ed47198284f7e3373e0db2c3"
 ARG MAVEN_DOWNLOAD_SHA512="831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6"
-ARG GRADLE_DOWNLOADS_SHA256="62c3769155d7d17ea05084ad498067824c1804568a408a6faa78a5ef95ed67a8 8.14.5\na9ecb5ac5c2ca40691e6527724d11d0b43b8c0a52825b77c09899f2a72d2d2bf 9.7.0"
-ARG SBT_DOWNLOAD_SHA256="f213d84b2efd01cc6b52799a9c92984a0c5d5f072b5ea41722ab8f979f289be0"
+ARG GRADLE_DOWNLOADS_SHA256="24fc39aedd1b68c3de8e4d46a0277c9b42d9ccdb172231a634fad54a3693e50a 8.14.6\na1bb7e9651ef09e4cd9a62d471564e0ee23b5757e5f21fd7358d7cfc21018fdf 9.8.2"
+ARG SBT_DOWNLOAD_SHA256="06806805ffd26232727326216766ed4793b549f8c1e6ffeef2e610db7245b698"
 
 ARG MAVEN_CONFIG_HOME="/root/.m2"
 
@@ -582,8 +600,8 @@ RUN n $NODE_24_VERSION
 RUN pyenv global $PYTHON_314_VERSION
 RUN phpenv global $PHP_84_VERSION
 RUN rbenv global $RUBY_40_VERSION
-RUN goenv global $GOLANG_26_VERSION
-RUN rustup default $RUST_97_VERSION
+RUN goenv global $GOLANG_27_VERSION
+RUN rustup default $RUST_99_VERSION
 RUN dotnet new globaljson --force --sdk-version $DOTNET_10_GLOBAL_JSON_SDK_VERSION --roll-forward latestFeature
 
 # Configure SSH

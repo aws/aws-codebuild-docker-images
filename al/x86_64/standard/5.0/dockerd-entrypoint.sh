@@ -11,7 +11,8 @@ if [ "$CODEBUILD_GPU_BUILD" = "true" ]; then
   export NVIDIA_DRIVER_CAPABILITIES=compute,utility
 fi
 
-/usr/local/bin/dockerd \
+# Docker 29 rejects API clients older than 1.40; 1.24 keeps what Docker 28 accepted, so old Testcontainers still connect.
+DOCKER_MIN_API_VERSION=1.24 /usr/local/bin/dockerd \
 	--host=unix:///var/run/docker.sock \
 	--host=tcp://127.0.0.1:2375 \
 	--storage-driver=overlay2 &>/var/log/docker.log &
