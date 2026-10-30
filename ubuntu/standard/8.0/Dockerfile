@@ -471,7 +471,7 @@ RUN phpenv update \
 #****************     GOLANG     ****************************************************
 
 #goenv
-RUN git clone https://github.com/syndbg/goenv.git $HOME/.goenv
+RUN git clone -b master https://github.com/go-nv/goenv.git $HOME/.goenv
 ENV PATH="/root/.goenv/shims:/root/.goenv/bin:/go/bin:$PATH"
 
 ENV GOLANG_27_VERSION="1.27.3" \
